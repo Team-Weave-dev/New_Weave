@@ -1,4 +1,4 @@
-import { getSupabaseClient } from '@/lib/supabase/client'
+import { getSupabaseClientSafe } from '@/lib/supabase/client'
 
 // 타입 정의
 export interface ChatSession {
@@ -23,7 +23,7 @@ export interface ChatMessage {
 export type ChatMessageInsert = Omit<ChatMessage, 'id' | 'created_at'>
 
 export class ChatService {
-  private supabase = getSupabaseClient()
+  private supabase = getSupabaseClientSafe()
 
   // 채팅 세션 생성
   async createSession(userId: string, type: ChatSession['type'] = 'general', title?: string): Promise<ChatSession> {

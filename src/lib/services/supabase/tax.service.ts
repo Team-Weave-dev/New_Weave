@@ -1,4 +1,4 @@
-import { getSupabaseClient } from '@/lib/supabase/client'
+import { getSupabaseClientSafe } from '@/lib/supabase/client'
 import type { Database } from '@/lib/supabase/database.types'
 
 type TaxRecord = Database['public']['Tables']['tax_records']['Row']
@@ -6,10 +6,21 @@ type TaxRecordInsert = Database['public']['Tables']['tax_records']['Insert']
 type TaxRecordUpdate = Database['public']['Tables']['tax_records']['Update']
 
 export class TaxService {
-  private supabase = getSupabaseClient()
+  private supabase = getSupabaseClientSafe()
 
   // 세무 기록 생성
   async createTaxRecord(record: Omit<TaxRecordInsert, 'id' | 'created_at' | 'updated_at'>) {
+    // Mock 모드에서는 null 처리
+    if (!this.supabase) {
+      console.warn('Supabase client disabled - using mock mode for tax records');
+      return {
+        id: `tax-record-${Date.now()}`,
+        ...record,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      } as TaxRecord;
+    }
+
     const insertData: any = record;
     const { data, error } = await this.supabase
       .from('tax_records')

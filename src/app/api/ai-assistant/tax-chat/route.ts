@@ -4,6 +4,10 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+
+// 빌드 타임에 정적 생성하지 않고 런타임에만 실행
+export const dynamic = 'force-dynamic';
+
 import RAGPipeline from '@/lib/rag/ragPipeline';
 import TaxKnowledgeBase, { TaxCategory } from '@/lib/tax/taxKnowledgeBase';
 import TaxPromptEngine, { TaxConsultationContext } from '@/lib/tax/taxPromptEngine';
