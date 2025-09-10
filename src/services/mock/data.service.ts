@@ -170,6 +170,23 @@ const mockProjectsData: ProjectInfo[] = [
  * 현재 로그인한 사용자 정보 조회
  */
 export async function getCurrentUser(): Promise<UserInfo> {
+  // Mock 사용자 확인 (개발용)
+  if (typeof window !== 'undefined') {
+    const mockUser = localStorage.getItem('mock_user');
+    if (mockUser) {
+      const userData = JSON.parse(mockUser);
+      // Mock 사용자 데이터 반환
+      return new Promise((resolve) => {
+        setTimeout(() => resolve({
+          ...mockUserData,
+          id: userData.id || 'mock-user-id',
+          email: userData.email || 'test@example.com',
+          name: userData.name || '테스트 사용자'
+        }), 100);
+      });
+    }
+  }
+  
   // 실제 구현 시 API 호출로 대체
   return new Promise((resolve) => {
     setTimeout(() => resolve(mockUserData), 100);

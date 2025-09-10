@@ -1,344 +1,240 @@
-import { getSupabaseClient } from '@/lib/supabase/client'
-import type { Database } from '@/lib/supabase/database.types'
+// Mock 인보이스 서비스 - Supabase 연결 제거
 
-type Invoice = Database['public']['Tables']['invoices']['Row']
-type InvoiceInsert = Database['public']['Tables']['invoices']['Insert']
-type InvoiceUpdate = Database['public']['Tables']['invoices']['Update']
+export interface Invoice {
+  id: string;
+  created_at: string;
+  updated_at: string;
+  user_id: string;
+  invoice_number: string;
+  client_id?: string;
+  project_id?: string;
+  issue_date?: string;
+  due_date?: string;
+  status: 'draft' | 'sent' | 'paid' | 'overdue' | 'cancelled';
+  items?: any[];
+  subtotal?: number;
+  tax?: number;
+  total?: number;
+  notes?: string;
+  payment_terms?: string;
+  clients?: {
+    id: string;
+    name?: string;
+    company?: string;
+  };
+  projects?: {
+    id: string;
+    name?: string;
+  };
+}
+
+export type InvoiceInsert = Omit<Invoice, 'id' | 'created_at' | 'updated_at' | 'clients' | 'projects'>;
+export type InvoiceUpdate = Partial<InvoiceInsert>;
+
+// Mock 데이터
+const mockInvoices: Invoice[] = [
+  {
+    id: 'inv-1',
+    created_at: '2024-12-01T09:00:00Z',
+    updated_at: '2024-12-01T09:00:00Z',
+    user_id: 'mock-user',
+    invoice_number: 'INV-2024-001',
+    client_id: 'client-1',
+    project_id: 'proj-1',
+    issue_date: '2024-12-01',
+    due_date: '2024-12-31',
+    status: 'sent',
+    items: [
+      { description: '웹사이트 개발', quantity: 1, price: 5000000, total: 5000000 }
+    ],
+    subtotal: 5000000,
+    tax: 500000,
+    total: 5500000,
+    notes: '프로젝트 1차 대금',
+    payment_terms: '30일 이내',
+    clients: {
+      id: 'client-1',
+      name: '김철수',
+      company: '㈜테크스타트'
+    },
+    projects: {
+      id: 'proj-1',
+      name: '웹사이트 리뉴얼'
+    }
+  },
+  {
+    id: 'inv-2',
+    created_at: '2024-11-15T10:00:00Z',
+    updated_at: '2024-11-20T10:00:00Z',
+    user_id: 'mock-user',
+    invoice_number: 'INV-2024-002',
+    client_id: 'client-3',
+    project_id: 'proj-3',
+    issue_date: '2024-11-15',
+    due_date: '2024-12-15',
+    status: 'paid',
+    items: [
+      { description: '쇼핑몰 구축', quantity: 1, price: 6000000, total: 6000000 }
+    ],
+    subtotal: 6000000,
+    tax: 600000,
+    total: 6600000,
+    notes: '프로젝트 완료 대금',
+    payment_terms: '30일 이내',
+    clients: {
+      id: 'client-3',
+      name: '박민수',
+      company: '이커머스플러스'
+    },
+    projects: {
+      id: 'proj-3',
+      name: '쇼핑몰 구축'
+    }
+  },
+  {
+    id: 'inv-3',
+    created_at: '2024-10-01T11:00:00Z',
+    updated_at: '2024-10-01T11:00:00Z',
+    user_id: 'mock-user',
+    invoice_number: 'INV-2024-003',
+    client_id: 'client-2',
+    issue_date: '2024-10-01',
+    due_date: '2024-10-31',
+    status: 'overdue',
+    items: [
+      { description: '디자인 작업', quantity: 1, price: 2000000, total: 2000000 }
+    ],
+    subtotal: 2000000,
+    tax: 200000,
+    total: 2200000,
+    notes: '디자인 프로젝트',
+    payment_terms: '30일 이내',
+    clients: {
+      id: 'client-2',
+      name: '이영희',
+      company: '디자인컴퍼니'
+    }
+  }
+];
 
 export class InvoicesService {
-  private supabase = getSupabaseClient()
-
   // 인보이스 생성
-  async createInvoice(invoice: Omit<InvoiceInsert, 'id' | 'created_at' | 'updated_at'>) {
-    const insertData: any = invoice;
-    const { data, error } = await this.supabase
-      .from('invoices')
-      .insert(insertData)
-      .select()
-      .single()
-
-    if (error) throw error
-    return data
+  async createInvoice(invoice: Omit<InvoiceInsert, 'id' | 'created_at' | 'updated_at'>): Promise<Invoice> {
+    const newInvoice: Invoice = {
+      ...invoice as InvoiceInsert,
+      id: `inv-${Date.now()}`,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+    
+    // 클라이언트와 프로젝트 정보 추가 (mock)
+    if (invoice.client_id) {
+      newInvoice.clients = {
+        id: invoice.client_id,
+        name: 'Mock Client',
+        company: 'Mock Company'
+      };
+    }
+    
+    mockInvoices.push(newInvoice);
+    return newInvoice;
   }
 
   // 인보이스 목록 조회
   async getInvoices(userId: string, status?: Invoice['status']): Promise<Invoice[]> {
-    let query = this.supabase
-      .from('invoices')
-      .select(`
-        *,
-        clients (
-          id,
-          name,
-          company,
-          email,
-          phone
-        ),
-        projects (
-          id,
-          name
-        )
-      `)
-      .eq('user_id', userId)
-      .order('created_at', { ascending: false })
-
+    let result = mockInvoices.filter(inv => inv.user_id === 'mock-user');
+    
     if (status) {
-      query = query.eq('status', status)
+      result = result.filter(inv => inv.status === status);
     }
-
-    const { data, error } = await query
-
-    if (error) throw error
-    return data || []
+    
+    // 날짜 역순 정렬
+    result.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    
+    return result;
   }
 
-  // 특정 인보이스 조회
-  async getInvoiceById(id: string) {
-    const { data, error } = await this.supabase
-      .from('invoices')
-      .select(`
-        *,
-        clients (
-          id,
-          name,
-          company,
-          email,
-          phone,
-          address,
-          business_number,
-          tax_type
-        ),
-        projects (
-          id,
-          name
-        )
-      `)
-      .eq('id', id)
-      .single()
-
-    if (error) throw error
-    return data
-  }
-
-  // 인보이스 번호로 조회
-  async getInvoiceByNumber(invoiceNumber: string, userId: string) {
-    const { data, error } = await this.supabase
-      .from('invoices')
-      .select('*')
-      .eq('invoice_number', invoiceNumber)
-      .eq('user_id', userId)
-      .single()
-
-    if (error && error.code !== 'PGRST116') throw error
-    return data
+  // 인보이스 ID로 조회
+  async getInvoiceById(id: string): Promise<Invoice | null> {
+    return mockInvoices.find(inv => inv.id === id) || null;
   }
 
   // 인보이스 업데이트
-  async updateInvoice(id: string, updates: InvoiceUpdate) {
-    const { data, error } = await (this.supabase
-      .from('invoices') as any)
-      .update(updates)
-      .eq('id', id)
-      .select()
-      .single()
-
-    if (error) throw error
-    return data
-  }
-
-  // 인보이스 상태 업데이트
-  async updateInvoiceStatus(id: string, status: Invoice['status'], paidDate?: string) {
-    const updates: InvoiceUpdate = {
-      status
-    }
-
-    if (status === 'paid' && paidDate) {
-      updates.paid_date = paidDate
-    }
-
-    const { data, error } = await (this.supabase
-      .from('invoices') as any)
-      .update(updates)
-      .eq('id', id)
-      .select()
-      .single()
-
-    if (error) throw error
-    return data
+  async updateInvoice(id: string, data: InvoiceUpdate): Promise<Invoice> {
+    const index = mockInvoices.findIndex(inv => inv.id === id);
+    if (index === -1) throw new Error('Invoice not found');
+    
+    mockInvoices[index] = {
+      ...mockInvoices[index],
+      ...data,
+      updated_at: new Date().toISOString()
+    };
+    
+    return mockInvoices[index];
   }
 
   // 인보이스 삭제
-  async deleteInvoice(id: string) {
-    const { error } = await this.supabase
-      .from('invoices')
-      .delete()
-      .eq('id', id)
+  async deleteInvoice(id: string): Promise<void> {
+    const index = mockInvoices.findIndex(inv => inv.id === id);
+    if (index === -1) throw new Error('Invoice not found');
+    
+    mockInvoices.splice(index, 1);
+  }
 
-    if (error) throw error
-    return true
+  // 인보이스 상태 업데이트
+  async updateInvoiceStatus(id: string, status: Invoice['status']): Promise<Invoice> {
+    return this.updateInvoice(id, { status });
   }
 
   // 클라이언트별 인보이스 조회
-  async getInvoicesByClient(clientId: string) {
-    const { data, error } = await this.supabase
-      .from('invoices')
-      .select('*')
-      .eq('client_id', clientId)
-      .order('issue_date', { ascending: false })
-
-    if (error) throw error
-    return data
+  async getClientInvoices(clientId: string): Promise<Invoice[]> {
+    return mockInvoices.filter(inv => inv.client_id === clientId);
   }
 
   // 프로젝트별 인보이스 조회
-  async getInvoicesByProject(projectId: string) {
-    const { data, error } = await this.supabase
-      .from('invoices')
-      .select('*')
-      .eq('project_id', projectId)
-      .order('issue_date', { ascending: false })
-
-    if (error) throw error
-    return data
-  }
-
-  // 연체 인보이스 조회
-  async getOverdueInvoices(userId: string) {
-    const today = new Date().toISOString().split('T')[0]
-
-    const { data, error } = await this.supabase
-      .from('invoices')
-      .select(`
-        *,
-        clients (
-          name,
-          company,
-          email,
-          phone
-        )
-      `)
-      .eq('user_id', userId)
-      .eq('status', 'sent')
-      .lt('due_date', today)
-      .order('due_date', { ascending: true })
-
-    if (error) throw error
-    return data
+  async getProjectInvoices(projectId: string): Promise<Invoice[]> {
+    return mockInvoices.filter(inv => inv.project_id === projectId);
   }
 
   // 인보이스 통계
-  async getInvoiceStats(userId: string, year?: number, month?: number) {
-    let query = this.supabase
-      .from('invoices')
-      .select('*')
-      .eq('user_id', userId)
-
-    if (year) {
-      const startDate = month 
-        ? new Date(year, month - 1, 1).toISOString().split('T')[0]
-        : new Date(year, 0, 1).toISOString().split('T')[0]
-      
-      const endDate = month
-        ? new Date(year, month, 0).toISOString().split('T')[0]
-        : new Date(year, 11, 31).toISOString().split('T')[0]
-
-      query = query.gte('issue_date', startDate).lte('issue_date', endDate)
-    }
-
-    const { data, error } = await query
-
-    if (error) throw error
-
-    const stats = {
-      total: data?.length || 0,
-      totalAmount: 0,
-      paidAmount: 0,
-      pendingAmount: 0,
-      overdueAmount: 0,
-      byStatus: {
-        draft: 0,
-        sent: 0,
-        paid: 0,
-        overdue: 0,
-        cancelled: 0
-      },
-      averageAmount: 0
-    }
-
-    const today = new Date()
-
-    data?.forEach((invoice: any) => {
-      // 총액
-      stats.totalAmount += invoice.total || 0
-
-      // 상태별 금액
-      if (invoice.status === 'paid') {
-        stats.paidAmount += invoice.total || 0
-        stats.byStatus.paid++
-      } else if (invoice.status === 'sent') {
-        if (new Date(invoice.due_date) < today) {
-          stats.overdueAmount += invoice.total || 0
-          stats.byStatus.overdue++
-        } else {
-          stats.pendingAmount += invoice.total || 0
-          stats.byStatus.sent++
-        }
-      } else {
-        (stats.byStatus as any)[invoice.status]++
-      }
-    })
-
-    if (data && data.length > 0) {
-      stats.averageAmount = Math.round(stats.totalAmount / data.length)
-    }
-
-    return stats
+  async getInvoiceStatistics(userId: string) {
+    const invoices = mockInvoices.filter(inv => inv.user_id === 'mock-user');
+    
+    const total = invoices.length;
+    const draft = invoices.filter(inv => inv.status === 'draft').length;
+    const sent = invoices.filter(inv => inv.status === 'sent').length;
+    const paid = invoices.filter(inv => inv.status === 'paid').length;
+    const overdue = invoices.filter(inv => inv.status === 'overdue').length;
+    
+    const totalAmount = invoices.reduce((sum, inv) => sum + (inv.total || 0), 0);
+    const paidAmount = invoices
+      .filter(inv => inv.status === 'paid')
+      .reduce((sum, inv) => sum + (inv.total || 0), 0);
+    const pendingAmount = invoices
+      .filter(inv => inv.status === 'sent' || inv.status === 'overdue')
+      .reduce((sum, inv) => sum + (inv.total || 0), 0);
+    
+    return {
+      total,
+      byStatus: { draft, sent, paid, overdue },
+      amounts: { total: totalAmount, paid: paidAmount, pending: pendingAmount }
+    };
   }
 
   // 다음 인보이스 번호 생성
-  async generateInvoiceNumber(userId: string): Promise<string> {
-    const year = new Date().getFullYear()
+  async getNextInvoiceNumber(): Promise<string> {
+    const year = new Date().getFullYear();
+    const lastInvoice = mockInvoices
+      .filter(inv => inv.invoice_number.startsWith(`INV-${year}`))
+      .sort((a, b) => b.invoice_number.localeCompare(a.invoice_number))[0];
     
-    // 올해 마지막 인보이스 번호 조회
-    const { data, error } = await this.supabase
-      .from('invoices')
-      .select('invoice_number')
-      .eq('user_id', userId)
-      .like('invoice_number', `INV-${year}-%`)
-      .order('invoice_number', { ascending: false })
-      .limit(1)
-
-    if (error) throw error
-
-    let nextNumber = 1
-    if (data && data.length > 0) {
-      const lastNumber = (data[0] as any).invoice_number
-      const match = lastNumber.match(/INV-\d{4}-(\d+)/)
-      if (match) {
-        nextNumber = parseInt(match[1]) + 1
-      }
+    if (lastInvoice) {
+      const lastNumber = parseInt(lastInvoice.invoice_number.split('-').pop() || '0');
+      return `INV-${year}-${String(lastNumber + 1).padStart(3, '0')}`;
     }
-
-    return `INV-${year}-${String(nextNumber).padStart(5, '0')}`
-  }
-
-  // 실시간 구독 설정
-  subscribeToChanges(userId: string, callback: (payload: any) => void) {
-    return this.supabase
-      .channel('invoices_changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'invoices',
-          filter: `user_id=eq.${userId}`
-        },
-        callback
-      )
-      .subscribe()
-  }
-
-  // 월별 수익 추이
-  async getMonthlyRevenueTrend(userId: string, months: number = 12) {
-    const endDate = new Date()
-    const startDate = new Date()
-    startDate.setMonth(startDate.getMonth() - months)
-
-    const { data, error } = await this.supabase
-      .from('invoices')
-      .select('issue_date, total, status')
-      .eq('user_id', userId)
-      .eq('status', 'paid')
-      .gte('issue_date', startDate.toISOString().split('T')[0])
-      .lte('issue_date', endDate.toISOString().split('T')[0])
-      .order('issue_date', { ascending: true })
-
-    if (error) throw error
-
-    // 월별로 그룹화
-    const monthlyData: Record<string, number> = {}
-
-    data?.forEach((invoice: any) => {
-      const month = invoice.issue_date.substring(0, 7) // YYYY-MM
-      monthlyData[month] = (monthlyData[month] || 0) + (invoice.total || 0)
-    })
-
-    // 빈 월 채우기
-    const result = []
-    const current = new Date(startDate)
-    while (current <= endDate) {
-      const monthKey = current.toISOString().substring(0, 7)
-      result.push({
-        month: monthKey,
-        revenue: monthlyData[monthKey] || 0
-      })
-      current.setMonth(current.getMonth() + 1)
-    }
-
-    return result
+    
+    return `INV-${year}-001`;
   }
 }
 
-// 싱글톤 인스턴스
-export const invoicesService = new InvoicesService()
+export const invoicesService = new InvoicesService();

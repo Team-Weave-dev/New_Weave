@@ -4,7 +4,7 @@ import { getSupabaseClientSafe } from '@/lib/supabase/client'
 export interface ChatSession {
   id: string
   user_id: string
-  type: 'general' | 'tax' | 'rag'
+  type: 'general' | 'tax' | 'rag' | 'unified'
   title?: string
   metadata?: any
   created_at: string

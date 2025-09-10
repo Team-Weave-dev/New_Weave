@@ -224,6 +224,7 @@ export function useReactions() {
 
   return {
     addReaction,
-    getReactions
+    getReactions,
+    messageReactions
   };
 }

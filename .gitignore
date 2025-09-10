@@ -40,6 +40,8 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# documentation
+RELEASE_NOTES_v202508.md
 
 #릴리즈노트
 .RELEASE_NOTES.md

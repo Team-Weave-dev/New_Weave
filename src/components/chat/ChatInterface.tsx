@@ -32,11 +32,12 @@ export default function ChatInterface() {
   const [filteredSessions, setFilteredSessions] = useState<ChatSession[]>([]);
   const [showShortcuts, setShowShortcuts] = useState(false);
   const [dbSessionId, setDbSessionId] = useState<string | null>(null);
-  const [chatType, setChatType] = useState<'general' | 'tax' | 'rag'>('rag'); // RAG를 기본값으로 설정
+  // 통합 AI 시스템 사용 - chatType 제거됨
   const [showDocumentPanel, setShowDocumentPanel] = useState(false);
   const [hasUploadedDocs, setHasUploadedDocs] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
   const [isMaximized, setIsMaximized] = useState(false);
+  const [chatType, setChatType] = useState<'general' | 'rag' | 'tax'>('general'); // chatType 추가
   const { toasts, addToast, hideToast } = useToast();
   const { addReaction, getReactions } = useReactions();
   
@@ -53,7 +54,7 @@ export default function ChatInterface() {
       const userId = 'system';
       const newSession = await chatSessionsService.createSession(
         userId,
-        chatType,
+        'unified', // 통합 모드
         undefined
       );
       
@@ -192,12 +193,8 @@ export default function ChatInterface() {
         }
       );
       
-      // 채팅 타입에 따라 다른 API 엔드포인트 사용
-      const apiEndpoint = chatType === 'rag' 
-        ? '/api/ai-assistant/rag-chat'
-        : chatType === 'tax' 
-        ? '/api/ai-assistant/tax-chat'
-        : '/api/ai-assistant/chat';
+      // 통합 API 엔드포인트 사용
+      const apiEndpoint = '/api/ai-assistant/unified';
       
       // API 요청
       const response = await fetch(apiEndpoint, {
@@ -216,7 +213,7 @@ export default function ChatInterface() {
             }))
           ],
           sessionId: session.id,
-          chatType,
+          // 자동 의도 분석 사용
           userContext
         }),
         signal: controller.signal
@@ -407,7 +404,7 @@ export default function ChatInterface() {
         
         // 세션 타입 업데이트
         if (sessionData.type) {
-          setChatType(sessionData.type as 'general' | 'tax' | 'rag');
+          // 통합 모드로 변경됨
         }
       }
     } catch (error) {

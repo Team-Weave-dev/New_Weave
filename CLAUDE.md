@@ -180,6 +180,47 @@ Co-Authored-By: Claude <noreply@anthropic.com>
 4. 💻 **기술 상세** (코드 변경사항)
 5. 🚀 **배포 영향** (긴급도/범위/성능)
 
+## 📌 세무 관리 시스템 Task 진행 규칙
+
+**Task 문서 위치**: `/docs/tax-management-tasks.md`
+
+### 자동 Task 진행 워크플로우
+
+**기본 동작**: 특별한 지시가 없으면 TASK-001부터 순차적으로 작업 진행
+
+1. **Task 시작**: 해당 Task ID와 작업 내용 명시
+2. **작업 수행**: Dependencies 확인 후 구현
+3. **테스트 실행**: Test Strategy에 따른 검증
+4. **Task 완료**: 체크박스 체크 및 상태 업데이트
+5. **진행 보고**: 완료된 Task와 다음 Task 안내
+
+### Task 체크박스 업데이트 규칙
+
+**작업 완료 시 체크박스 체크**:
+```markdown
+- [x] **TASK-001** | 데이터베이스 마이그레이션 실행
+  - **Status**: `completed` ← pending에서 변경
+```
+
+**작업 중일 때 상태 표시**:
+```markdown
+- [ ] **TASK-002** | 샘플 데이터 삽입
+  - **Status**: `in_progress` ← 현재 작업 중
+```
+
+### Task 진행 우선순위
+
+1. **Dependencies 우선**: 선행 작업이 있는 Task는 대기
+2. **Priority 고려**: critical > high > medium > low
+3. **Phase 순서**: Phase 1 → Phase 2 → ... → Phase 6
+
+### 진행 상황 자동 보고
+
+각 Task 완료 시 자동으로:
+- Phase별 진행률 업데이트
+- 완료/진행중/대기 카운트 갱신
+- 다음 작업 가능한 Task 식별
+
 ## 🔄 지속적 개선 프로세스
 
 ### 6단계 이슈 처리 절차

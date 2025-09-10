@@ -6,7 +6,7 @@ import Typography from '@/components/ui/Typography';
 import { MessageSquare, FileSearch, Calculator, Sparkles } from 'lucide-react';
 
 interface ChatWelcomeProps {
-  chatType: 'general' | 'rag' | 'tax';
+  chatType: 'general' | 'rag' | 'tax' | 'unified';
   onExampleClick: (text: string) => void;
 }
 
@@ -29,6 +29,12 @@ export default function ChatWelcome({ chatType, onExampleClick }: ChatWelcomePro
       "사업자 부가세 신고 절차를 알려줘",
       "연말정산 의료비 공제 한도는?",
       "법인세 중간예납 계산 방법은?"
+    ],
+    unified: [
+      "2025년 종합소득세 세율 구간을 알려줘",
+      "프로젝트 진행 현황 보고서 작성해줘",
+      "계약서의 주요 조항을 분석해줘",
+      "팀 업무 효율성 개선 방안을 제안해줘"
     ]
   };
 
@@ -47,6 +53,13 @@ export default function ChatWelcome({ chatType, onExampleClick }: ChatWelcomePro
           title: "세무 상담 모드",
           description: "한국 세법 기준으로 세무 관련 질문에 전문적인 답변을 제공합니다.",
           hint: "복잡한 세무 결정은 반드시 세무사와 상담하세요."
+        };
+      case 'unified':
+        return {
+          icon: <Sparkles className="w-8 h-8 text-weave-primary" />,
+          title: "통합 AI 시스템",
+          description: "세무, 문서 분석, 업무 지원을 자동으로 판단하여 최적의 답변을 제공합니다.",
+          hint: "모든 유형의 질문을 자유롭게 해보세요!"
         };
       default:
         return {

@@ -16,7 +16,7 @@ export interface UserContext {
 }
 
 export interface ChatContext {
-  mode: 'general' | 'rag' | 'tax';
+  mode: 'general' | 'rag' | 'tax' | 'unified';
   userContext?: UserContext;
   sessionHistory?: Array<{
     role: 'user' | 'assistant';
@@ -34,7 +34,7 @@ export class ContextBuilder {
   /**
    * 모드별 시스템 프롬프트 생성
    */
-  static getSystemPrompt(mode: 'general' | 'rag' | 'tax', userContext?: UserContext): string {
+  static getSystemPrompt(mode: 'general' | 'rag' | 'tax' | 'unified', userContext?: UserContext): string {
     const basePrompt = userContext 
       ? `당신은 ${userContext.company || '회사'}의 ${userContext.name || '사용자'}님을 위한 AI 비서입니다.`
       : '당신은 WEAVE 시스템의 AI 업무 비서입니다.';
@@ -59,6 +59,15 @@ export class ContextBuilder {
 - 세무 리스크와 절세 방안을 균형있게 안내합니다
 ⚠️ 중요: 제공된 정보는 참고용이며, 중요한 세무 결정은 반드시 세무 전문가와 상담하시기 바랍니다.`;
 
+      case 'unified':
+        return `${basePrompt}
+        
+통합 AI 시스템으로 모든 유형의 질문에 대응합니다.
+- 자동으로 질문 의도를 분석하여 최적의 답변을 제공합니다
+- 세무, 문서 분석, 일반 업무 등 모든 영역을 지원합니다
+- 컨텍스트 기반 개인화된 응답을 생성합니다
+- 실시간 학습을 통해 지속적으로 개선됩니다`;
+        
       case 'general':
       default:
         return `${basePrompt}

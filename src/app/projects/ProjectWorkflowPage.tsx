@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import AppLayout from '@/components/layout/AppLayout';
 import { DataPageContainer } from '@/components/layout/PageContainer';
@@ -88,8 +88,8 @@ export default function ProjectWorkflowPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
 
-  // 워크플로우 순서대로 탭 정의 (메모이제이션으로 불필요한 재생성 방지)
-  const workflowTabs: WorkflowTab[] = useMemo(() => [
+  // 워크플로우 순서대로 탭 정의
+  const workflowTabs: WorkflowTab[] = [
     {
       id: 'clients',
       label: '클라이언트',
@@ -138,7 +138,7 @@ export default function ProjectWorkflowPage() {
       icon: <Settings className="w-4 h-4" />,
       description: '프로젝트 설정'
     }
-  ], [clients.length, projects.length, reports.length]);
+  ];
 
   // URL 파라미터로 탭 초기화
   useEffect(() => {
@@ -146,7 +146,7 @@ export default function ProjectWorkflowPage() {
     if (tabParam && workflowTabs.find(tab => tab.id === tabParam)) {
       setActiveTab(tabParam);
     }
-  }, [searchParams, workflowTabs]);
+  }, [searchParams]);
 
   // 데이터 로드
   useEffect(() => {
@@ -158,23 +158,10 @@ export default function ProjectWorkflowPage() {
       setLoading(true);
       setError(null);
       
-      // Supabase에서 현재 사용자 가져오기
-      const { createClient } = await import('@/lib/supabase/client');
-      const supabase = createClient();
-      if (!supabase) {
-        throw new Error('Supabase client not initialized');
-      }
-      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      // Mock 사용자 ID 사용 (Supabase 연결 제거)
+      const userId = 'mock-user';
       
-      if (authError || !user) {
-        console.error('Auth error:', authError);
-        setError('로그인이 필요합니다.');
-        return;
-      }
-      
-      const userId = user.id;
-      
-      // 병렬로 데이터 로드
+      // 병렬로 Mock 데이터 로드
       const [clientsData, projectsData, invoicesData] = await Promise.all([
         clientService.getClients(userId),
         projectsService.getProjects(userId),
@@ -192,7 +179,8 @@ export default function ProjectWorkflowPage() {
       
     } catch (err) {
       console.error('Failed to load data:', err);
-      setError('데이터를 불러오는데 실패했습니다.');
+      // Mock 데이터 사용 시 에러는 무시하고 로딩 완료 처리
+      setError(null);
     } finally {
       setLoading(false);
     }

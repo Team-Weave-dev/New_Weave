@@ -16,8 +16,6 @@ import {
 } from 'lucide-react';
 import { Typography } from '@/components/ui';
 import ProfileDropdown from './ProfileDropdown';
-import { createClient } from '@/lib/supabase/client';
-import type { User } from '@supabase/supabase-js';
 
 interface NavItem {
   label: string;
@@ -44,78 +42,30 @@ const mainNavItems: NavItem[] = [
   },
 ];
 
-// 개발자 전용 관리자 메뉴 (제거됨)
-// const adminNavItems: NavItem[] = [];
-
 export default function SimpleHeaderNavigation() {
   const pathname = usePathname();
   const router = useRouter();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  // Mock 사용자 정보 사용
+  const mockUser = {
+    email: 'user@example.com',
+    user_metadata: {
+      full_name: '테스트 사용자'
+    }
+  };
+  const [user] = useState(mockUser);
+  const [isLoading] = useState(false);
 
   const isActive = (href: string) => {
     if (href === '/') return pathname === href;
     return pathname.startsWith(href);
   };
 
-  // 사용자 정보 가져오기
+  // Mock 데이터로 대체 - Supabase 연결 제거
   useEffect(() => {
-    const supabase = createClient();
-    
-    // Mock 모드에서는 supabase가 null일 수 있음
-    if (!supabase) {
-      console.log('Mock mode - skipping auth check');
-      setIsLoading(false);
-      return;
-    }
-    
-    const getUser = async () => {
-      setIsLoading(true);
-      
-      try {
-        const { data: { session }, error } = await supabase.auth.getSession();
-        
-        if (error) {
-          console.error('Session error:', error);
-          router.push('/login');
-          return;
-        }
-        
-        if (!session || !session.user) {
-          console.log('No session found, redirecting to login');
-          router.push('/login');
-          return;
-        }
-        
-        setUser(session.user);
-        setIsLoading(false);
-      } catch (err) {
-        console.error('Auth check error:', err);
-        router.push('/login');
-      }
-    };
-    
-    getUser();
-    
-    // Auth 상태 변경 리스너 (Mock 모드가 아닐 때만)
-    if (!supabase) return;
-    
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log('Auth state changed:', event, session?.user?.email);
-      
-      if (event === 'SIGNED_OUT' || !session) {
-        setUser(null);
-        router.push('/login');
-      } else if (session?.user) {
-        setUser(session.user);
-      }
-    });
-    
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, [router]);
+    // 개발 중에는 인증 체크 없음
+    console.log('Using mock user data');
+  }, []);
 
   // 모바일 메뉴 토글 시 스크롤 방지
   useEffect(() => {
@@ -261,14 +211,11 @@ export default function SimpleHeaderNavigation() {
 
               {/* Mobile Logout Button */}
               <button
-                onClick={async () => {
-                  const supabase = createClient();
-                  if (supabase) {
-                    await supabase.auth.signOut();
-                  }
+                onClick={() => {
+                  // Mock 로그아웃
                   localStorage.clear();
                   sessionStorage.clear();
-                  window.location.href = '/login';
+                  router.push('/home');
                 }}
                 className="w-full flex items-center gap-3 px-4 py-3 mt-4 rounded-lg text-red-600 hover:bg-red-50 transition-colors"
               >

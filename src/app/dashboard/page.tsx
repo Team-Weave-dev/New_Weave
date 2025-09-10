@@ -12,12 +12,10 @@ import DashboardCalendar from '@/components/dashboard/DashboardCalendar';
 import Typography from '@/components/ui/Typography';
 import type { DashboardInsight, QuickAction } from '@/components/dashboard/DashboardLayout';
 import type { CalendarEvent } from '@/components/dashboard/DashboardCalendar';
-import { getSupabaseClientSafe } from '@/lib/supabase/client';
 import { projectsService } from '@/lib/services/supabase/projects.service';
 import { clientService } from '@/lib/services/supabase/clients.service';
 import { invoicesService } from '@/lib/services/supabase/invoices.service';
 import { remindersService } from '@/lib/services/supabase/reminders.service';
-import type { RealtimeChannel } from '@supabase/supabase-js';
 
 // Mock 데이터 - 실제로는 API에서 가져올 데이터
 interface DashboardData {
@@ -53,15 +51,22 @@ export default function Dashboard() {
   const router = useRouter();
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+<<<<<<< HEAD
   const [supabaseClient] = useState(() => getSupabaseClientSafe());
   const [realtimeChannel, setRealtimeChannel] = useState<RealtimeChannel | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
 
   // 데이터 로딩 - 모의 데이터 모드 지원
+=======
+  const [userId, setUserId] = useState<string | null>(null);
+
+  // Mock 데이터 로딩
+>>>>>>> h1
   useEffect(() => {
     const checkAuthAndFetchData = async () => {
       setIsLoading(true);
       
+<<<<<<< HEAD
       // 모의 데이터 모드 확인
       const isUsingMockData = 
         process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true' || 
@@ -93,6 +98,12 @@ export default function Dashboard() {
       
       setUserId(session.user.id);
       await fetchDashboardData(session.user.id);
+=======
+      // Mock 사용자 ID 사용 (Supabase 연결 제거)
+      const mockUserId = 'mock-user';
+      setUserId(mockUserId);
+      await fetchDashboardData(mockUserId);
+>>>>>>> h1
     };
     
     const fetchDashboardData = async (userId: string) => {
@@ -323,6 +334,7 @@ export default function Dashboard() {
     };
 
     checkAuthAndFetchData();
+<<<<<<< HEAD
     
     // 실시간 구독 설정
     const setupRealtimeSubscription = (currentUserId: string) => {
@@ -388,6 +400,9 @@ export default function Dashboard() {
       }
     };
   }, [router, userId, realtimeChannel]);
+=======
+  }, [router]);
+>>>>>>> h1
 
   // 빠른 실행 버튼들
   const quickActions: QuickAction[] = [

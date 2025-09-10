@@ -3,7 +3,7 @@
 import React from 'react';
 import AppLayout from '@/components/layout/AppLayout';
 import { WorkspacePageContainer } from '@/components/layout/PageContainer';
-import ChatInterface from '@/components/chat/ChatInterface';
+import ChatInterface from '@/components/chat/ChatInterfaceV2';
 import Typography from '@/components/ui/Typography';
 import Button from '@/components/ui/Button';
 import { BrainCircuit, ArrowLeft, Cpu } from 'lucide-react';
