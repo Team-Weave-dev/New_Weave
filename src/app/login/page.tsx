@@ -1,6 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+// 동적 렌더링 강제 - Static Generation 방지
+export const dynamic = 'force-dynamic';
+
+import { useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
@@ -10,7 +13,7 @@ import Input from '@/components/ui/Input'
 import Typography from '@/components/ui/Typography'
 import { LogIn, Mail, Lock, AlertCircle, Loader2 } from 'lucide-react'
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const redirect = searchParams.get('redirectTo') || '/dashboard'
@@ -246,5 +249,22 @@ export default function LoginPage() {
         )}
       </div>
     </div>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-bg-primary to-bg-secondary flex items-center justify-center p-4">
+        <div className="w-full max-w-md text-center">
+          <Loader2 className="w-8 h-8 animate-spin text-weave-primary mx-auto mb-4" />
+          <Typography variant="body1" className="text-txt-secondary">
+            로그인 페이지를 불러오는 중...
+          </Typography>
+        </div>
+      </div>
+    }>
+      <LoginForm />
+    </Suspense>
   )
 }
