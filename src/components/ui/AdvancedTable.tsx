@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
+import { DragDropContext, Droppable, Draggable, withDragDrop } from './DynamicDragDrop';
+import type { DropResult } from '@hello-pangea/dnd';
 import { 
   GripVertical,
   SortAsc,

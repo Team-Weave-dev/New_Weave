@@ -12,7 +12,8 @@ import {
   ChevronUp,
   RotateCcw
 } from 'lucide-react';
-import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
+import { DragDropContext, Droppable, Draggable } from './DynamicDragDrop';
+import type { DropResult } from '@hello-pangea/dnd';
 import { Card } from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import Typography from '@/components/ui/Typography';
