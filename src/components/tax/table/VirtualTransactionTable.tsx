@@ -1,7 +1,9 @@
 'use client';
 
 import React, { useState, useMemo, useCallback, CSSProperties } from 'react';
+// @ts-ignore
 import { FixedSizeList as List } from 'react-window';
+// @ts-ignore
 import InfiniteLoader from 'react-window-infinite-loader';
 import { Card } from '@/components/ui/Card';
 import Typography from '@/components/ui/Typography';
@@ -156,7 +158,7 @@ export default function VirtualTransactionTable({
     const isEditing = editingId === transaction.id;
     const isSelected = selectedTransactions.includes(transaction.id);
     const typeColor = getTransactionTypeColor(transaction.transaction_type);
-    const statusColor = getPaymentStatusColor(transaction.payment_status || 'pending');
+    const statusColor = getPaymentStatusColor((transaction.status || 'pending') as 'completed' | 'pending' | 'failed');
 
     return (
       <div 
@@ -398,7 +400,7 @@ export default function VirtualTransactionTable({
           itemCount={itemCount}
           loadMoreItems={loadMoreItems}
         >
-          {({ onItemsRendered, ref }) => (
+          {({ onItemsRendered, ref }: any) => (
             <List
               ref={ref}
               height={height - HEADER_HEIGHT}
@@ -434,7 +436,7 @@ export default function VirtualTransactionTable({
               선택 해제
             </Button>
             <Button
-              variant="danger"
+              variant="destructive"
               size="sm"
               onClick={() => {
                 if (confirm(`${selectedTransactions.length}개 항목을 삭제하시겠습니까?`)) {

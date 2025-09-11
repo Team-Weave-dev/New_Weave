@@ -147,7 +147,7 @@ export default function TaxTestDataPage() {
                 </Typography>
               </div>
               <Button 
-                variant="danger" 
+                variant="destructive" 
                 onClick={handleClearData}
                 disabled={loading}
                 className="w-full"

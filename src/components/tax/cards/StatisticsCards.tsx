@@ -15,7 +15,7 @@ import {
   ArrowUpRight,
   ArrowDownRight
 } from 'lucide-react';
-import { formatFullCurrency, formatCompactKoreanCurrency } from '@/lib/utils/tax-formatters';
+import { formatFullCurrency, formatKoreanCurrency } from '@/lib/utils/tax-formatters';
 
 interface StatisticsCardsProps {
   totalSales: number;
@@ -64,7 +64,7 @@ function StatCard({
   const formatValue = (val: number) => {
     switch (format) {
       case 'compact':
-        return formatCompactKoreanCurrency(val);
+        return formatKoreanCurrency(val);
       case 'number':
         return val.toLocaleString('ko-KR');
       default:

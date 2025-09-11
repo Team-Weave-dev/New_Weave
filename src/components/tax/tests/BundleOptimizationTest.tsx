@@ -14,7 +14,7 @@ import {
   Loader2,
   BarChart3,
   Layers,
-  FileSize,
+  File,
   Activity,
   Download
 } from 'lucide-react';
@@ -255,7 +255,7 @@ export default function BundleOptimizationTest() {
 
           <div className="p-4 bg-purple-50 rounded-lg">
             <div className="flex items-center gap-2 mb-2">
-              <FileSize className="w-5 h-5 text-purple-600" />
+              <File className="w-5 h-5 text-purple-600" />
               <Typography variant="body2" className="text-purple-600">
                 Gzip 압축
               </Typography>

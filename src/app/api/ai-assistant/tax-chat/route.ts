@@ -140,28 +140,29 @@ export async function POST(request: NextRequest) {
                     taxAmount = (calculationResult as any).total;
                   }
                   
-                  await taxService.createTaxRecord({
-                    user_id: 'system', // TODO: 실제 사용자 ID로 교체 필요
-                    year: taxYear,
-                    quarter: null,
-                    business_number: '000-00-00000', // TODO: 실제 사업자번호로 교체 필요
-                    tax_type: getTaxTypeFromCategory(category),
-                    amount: taxAmount,
-                    status: 'calculated',
-                    client_id: null,
-                    filed_date: null,
-                    due_date: null,
-                    metadata: {
-                      calculation_result: JSON.parse(JSON.stringify(calculationResult)),
-                      category: category,
-                      user_type: userType,
-                      income: calculationData.income || 0,
-                      expenses: calculationData.expenses || 0,
-                      tax_year: taxYear,
-                      calculation_data: calculationData,
-                      calculated_at: new Date().toISOString()
-                    }
-                  });
+                  // TODO: tax_records 테이블 구조가 필요합니다
+                  // await taxService.createTaxRecord({
+                  //   user_id: 'system', // TODO: 실제 사용자 ID로 교체 필요
+                  //   year: taxYear,
+                  //   quarter: null,
+                  //   business_number: '000-00-00000', // TODO: 실제 사업자번호로 교체 필요
+                  //   tax_type: getTaxTypeFromCategory(category),
+                  //   amount: taxAmount,
+                  //   status: 'calculated',
+                  //   client_id: undefined,
+                  //   filed_date: undefined,
+                  //   due_date: undefined,
+                  //   metadata: {
+                  //     calculation_result: JSON.parse(JSON.stringify(calculationResult)),
+                  //     category: category,
+                  //     user_type: userType,
+                  //     income: calculationData.income || 0,
+                  //     expenses: calculationData.expenses || 0,
+                  //     tax_year: taxYear,
+                  //     calculation_data: calculationData,
+                  //     calculated_at: new Date().toISOString()
+                  //   }
+                  // });
                 } catch (err) {
                   console.error('Failed to save tax calculation:', err);
                   // 저장 실패해도 계속 진행

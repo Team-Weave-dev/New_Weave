@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/services/supabase/client';
+import { createClient } from '@/lib/supabase/client';
 import type { Transaction } from './tax-transactions.service';
 
 export interface Client {
@@ -157,8 +157,8 @@ export async function matchTransactionToClient(
   let bestReason = '';
 
   // 1. 사업자번호 정확히 일치
-  if (transaction.supplier_business_number) {
-    const normalizedTransactionBN = normalizeBusinessNumber(transaction.supplier_business_number);
+  if (transaction.business_number) {
+    const normalizedTransactionBN = normalizeBusinessNumber(transaction.business_number);
     
     for (const client of clientList) {
       if (client.business_number) {
@@ -319,7 +319,7 @@ export async function autoMatchTransaction(
     const clientMatch = await matchTransactionToClient(transaction);
     
     // 2. 프로젝트 매칭
-    let projectMatch = { project: undefined, confidence: 0, reason: '' };
+    let projectMatch: { project?: Project; confidence: number; reason: string } = { project: undefined, confidence: 0, reason: '' };
     if (clientMatch.client) {
       projectMatch = await matchTransactionToProject(
         transaction, 
@@ -379,12 +379,13 @@ export async function batchAutoMatch(
   for (const transaction of transactions) {
     const clientMatch = await matchTransactionToClient(transaction, clients);
     
-    let projectMatch = { project: undefined, confidence: 0, reason: '' };
+    let projectMatch: { project?: Project; confidence: number; reason: string } = { project: undefined, confidence: 0, reason: '' };
     if (clientMatch.client) {
-      const clientProjects = projects.filter(p => p.client_id === clientMatch.client.id);
+      const client = clientMatch.client;
+      const clientProjects = projects.filter(p => p.client_id === client.id);
       projectMatch = await matchTransactionToProject(
         transaction,
-        clientMatch.client,
+        client,
         clientProjects
       );
     }

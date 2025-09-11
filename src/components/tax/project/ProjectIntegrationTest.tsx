@@ -27,7 +27,7 @@ import {
   getProjectProfitabilityAggregates
 } from '@/lib/services/supabase/project-profitability.service';
 import {
-  fetchTransactionsWithPagination
+  taxTransactionService
 } from '@/lib/services/supabase/tax-transactions.service';
 
 interface TestResult {
@@ -231,9 +231,11 @@ export default function ProjectIntegrationTest() {
   async function testAutoMatching(): Promise<TestResult> {
     try {
       // 테스트용 거래 데이터
-      const response = await fetchTransactionsWithPagination({
-        pageSize: 5
-      });
+      const transactions = await taxTransactionService.getTransactions({});
+      const response = {
+        data: transactions.slice(0, 5),
+        total: transactions.length
+      };
       
       if (response.data.length === 0) {
         return {
@@ -275,9 +277,11 @@ export default function ProjectIntegrationTest() {
 
   async function testBatchMatching(): Promise<TestResult> {
     try {
-      const response = await fetchTransactionsWithPagination({
-        pageSize: 10
-      });
+      const transactions = await taxTransactionService.getTransactions({});
+      const response = {
+        data: transactions.slice(0, 10),
+        total: transactions.length
+      };
       
       if (response.data.length === 0) {
         return {
@@ -317,10 +321,11 @@ export default function ProjectIntegrationTest() {
   async function testProjectLinking(): Promise<TestResult> {
     try {
       // 매칭 결과 중 하나를 선택하여 연결 테스트
-      const response = await fetchTransactionsWithPagination({
-        pageSize: 1,
-        filters: { project_id: null }
-      });
+      const transactions = await taxTransactionService.getTransactions({ projectId: null });
+      const response = {
+        data: transactions.slice(0, 1),
+        total: transactions.length
+      };
       
       if (response.data.length === 0) {
         return {
@@ -452,7 +457,7 @@ export default function ProjectIntegrationTest() {
       const [clients, projects, transactions] = await Promise.all([
         fetchClients(),
         fetchProjects(),
-        fetchTransactionsWithPagination({ pageSize: 20 })
+        taxTransactionService.getTransactions({}).then(txns => ({ data: txns.slice(0, 20), total: txns.length }))
       ]);
       
       const loadTime = Date.now() - startTime;

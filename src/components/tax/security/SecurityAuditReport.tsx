@@ -3,8 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import { Shield, AlertTriangle, CheckCircle, XCircle, Lock, Key, FileText } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
-import { Typography } from '@/components/ui/Typography';
+import Button from '@/components/ui/Button';
+import Typography from '@/components/ui/Typography';
 import { auditLogger, rateLimiter, sessionManager } from '@/lib/utils/security';
 
 /**

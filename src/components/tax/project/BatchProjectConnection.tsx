@@ -253,7 +253,7 @@ export default function BatchProjectConnection({
               </Typography>
               <Button
                 variant="ghost"
-                size="xs"
+                size="sm"
                 onClick={toggleSelectAll}
               >
                 {selectedResults.length === results.filter(r => r.suggestedProject).length 

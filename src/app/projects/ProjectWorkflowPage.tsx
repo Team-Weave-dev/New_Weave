@@ -27,10 +27,9 @@ import {
   XCircle,
   Sparkles
 } from 'lucide-react';
-import { projectsService } from '@/lib/services/supabase/projects.service';
+import { projectsService, type Project } from '@/lib/services/supabase/projects.service';
 import { clientService, type Client } from '@/lib/services/supabase/clients.service';
-import { invoicesService } from '@/lib/services/supabase/invoices.service';
-import type { Database } from '@/lib/supabase/database.types';
+import { invoicesService, type Invoice } from '@/lib/services/supabase/invoices.service';
 import AIDocumentModal from '@/components/ai-assistant/AIDocumentModal';
 
 // 워크플로우 기반 탭 구조
@@ -58,10 +57,6 @@ enum ProjectStage {
   FINAL_INVOICED = 'final_invoiced',
   COMPLETED = 'completed'
 }
-
-// 타입 정의
-type Project = Database['public']['Tables']['projects']['Row'];
-type Invoice = Database['public']['Tables']['invoices']['Row'];
 
 export default function ProjectWorkflowPage() {
   const router = useRouter();
@@ -559,7 +554,7 @@ function ProjectsTab({ projects, clients, searchQuery }: { projects: Project[], 
                 </div>
                 <div className="flex items-center gap-1">
                   <TrendingUp className="w-3 h-3" />
-                  {project.progress || 0}%
+                  {0}%
                 </div>
               </div>
 
@@ -568,7 +563,7 @@ function ProjectsTab({ projects, clients, searchQuery }: { projects: Project[], 
                 <div className="h-1.5 bg-gray-200 rounded-full overflow-hidden">
                   <div 
                     className="h-full bg-weave-primary transition-all duration-300"
-                    style={{ width: `${project.progress || 0}%` }}
+                    style={{ width: `${0}%` }}
                   />
                 </div>
               </div>

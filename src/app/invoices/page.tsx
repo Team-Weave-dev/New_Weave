@@ -8,15 +8,13 @@ import Button from '@/components/ui/Button';
 import Table from '@/components/ui/Table';
 import Select from '@/components/ui/Select';
 import Typography from '@/components/ui/Typography';
-import { invoicesService } from '@/lib/services/supabase/invoices.service';
+import { invoicesService, type Invoice } from '@/lib/services/supabase/invoices.service';
 import { clientService, type Client } from '@/lib/services/supabase/clients.service';
 import { projectsService, type Project } from '@/lib/services/supabase/projects.service';
-import type { Database } from '@/lib/supabase/database.types';
 import { cn } from '@/lib/utils';
 
-// Supabase 타입
-type Invoice = Database['public']['Tables']['invoices']['Row'];
-type InvoiceStatus = Database['public']['Tables']['invoices']['Row']['status'];
+// 타입 정의
+type InvoiceStatus = Invoice['status'];
 
 type InvoiceWithRelations = Invoice & {
   client?: Client | null;

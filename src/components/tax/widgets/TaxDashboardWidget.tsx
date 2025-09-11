@@ -17,7 +17,7 @@ import {
   Loader2
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { fetchMonthlyStatistics } from '@/lib/services/supabase/tax-transactions.service';
+import { taxTransactionService } from '@/lib/services/supabase/tax-transactions.service';
 import { getTaxDeadlines } from '@/lib/services/supabase/tax-notification.service';
 import { format, differenceInDays } from 'date-fns';
 import { ko } from 'date-fns/locale';
@@ -54,14 +54,14 @@ export default function TaxDashboardWidget() {
     try {
       // 통계 데이터 로드
       const now = new Date();
-      const currentMonth = await fetchMonthlyStatistics(
+      const currentMonth = await taxTransactionService.getMonthlyStatistics(
         now.getFullYear(),
         now.getMonth() + 1
       );
       
       const lastMonth = new Date(now);
       lastMonth.setMonth(lastMonth.getMonth() - 1);
-      const previousMonth = await fetchMonthlyStatistics(
+      const previousMonth = await taxTransactionService.getMonthlyStatistics(
         lastMonth.getFullYear(),
         lastMonth.getMonth() + 1
       );
@@ -79,7 +79,7 @@ export default function TaxDashboardWidget() {
         currentMonth: {
           totalSales: currentMonth.totalSales,
           totalPurchases: currentMonth.totalPurchases,
-          netVat: currentMonth.totalSalesVat - currentMonth.totalPurchasesVat,
+          netVat: currentMonth.vatPayable,
           transactionCount: currentMonth.transactionCount
         },
         previousMonth: {
@@ -272,7 +272,7 @@ export function TaxMiniWidget() {
     setLoading(true);
     try {
       const now = new Date();
-      const stats = await fetchMonthlyStatistics(
+      const stats = await taxTransactionService.getMonthlyStatistics(
         now.getFullYear(),
         now.getMonth() + 1
       );
@@ -281,7 +281,7 @@ export function TaxMiniWidget() {
       
       setData({
         netAmount: stats.totalSales - stats.totalPurchases,
-        netVat: stats.totalSalesVat - stats.totalPurchasesVat,
+        netVat: stats.vatPayable,
         nextDeadline: deadlines[0] || null
       });
     } catch (error) {

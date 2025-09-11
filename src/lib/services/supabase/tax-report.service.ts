@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/services/supabase/client';
+import { createClient } from '@/lib/supabase/client';
 import type { Transaction } from './tax-transactions.service';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
@@ -133,7 +133,7 @@ export async function generateMonthlyReport(
     if (!map.has(key)) {
       map.set(key, {
         name: txn.supplier_name,
-        businessNumber: txn.supplier_business_number,
+        businessNumber: txn.business_number,
         amount: 0,
         transactionCount: 0
       });
@@ -273,7 +273,7 @@ export async function generateQuarterlyVATReport(
     .map(txn => ({
       date: txn.transaction_date,
       supplierName: txn.supplier_name || '',
-      businessNumber: txn.supplier_business_number || '',
+      businessNumber: txn.business_number || '',
       supplyAmount: Number(txn.supply_amount) || 0,
       vatAmount: Number(txn.vat_amount) || 0,
       totalAmount: Number(txn.total_amount) || 0,

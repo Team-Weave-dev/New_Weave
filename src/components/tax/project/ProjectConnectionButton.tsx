@@ -102,7 +102,7 @@ export default function ProjectConnectionButton({
         </span>
         <Button
           variant="ghost"
-          size="xs"
+          size="sm"
           onClick={handleDisconnect}
           disabled={loading}
         >
@@ -127,7 +127,7 @@ export default function ProjectConnectionButton({
           <div className="flex items-center gap-2">
             <Button
               variant="primary"
-              size="xs"
+              size="sm"
               onClick={handleConnect}
               disabled={loading || !matchResult.suggestedProject}
             >
@@ -136,7 +136,7 @@ export default function ProjectConnectionButton({
             </Button>
             <Button
               variant="ghost"
-              size="xs"
+              size="sm"
               onClick={() => {
                 setStatus('idle');
                 setMatchResult(null);
@@ -184,7 +184,7 @@ export default function ProjectConnectionButton({
   return (
     <Button
       variant="outline"
-      size="xs"
+      size="sm"
       onClick={handleAutoMatch}
       disabled={loading}
     >

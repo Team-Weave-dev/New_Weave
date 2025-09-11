@@ -48,7 +48,7 @@ function SwipeableCard({
   const cardRef = useRef<HTMLDivElement>(null);
 
   const typeColor = getTransactionTypeColor(transaction.transaction_type);
-  const statusColor = getPaymentStatusColor(transaction.payment_status || 'pending');
+  const statusColor = getPaymentStatusColor((transaction.status || 'pending') as 'pending' | 'completed' | 'failed');
 
   // 터치 시작
   const handleTouchStart = (e: React.TouchEvent) => {
@@ -204,9 +204,9 @@ function SwipeableCard({
                 {transaction.supplier_name}
               </Typography>
             </div>
-            {transaction.supplier_business_number && (
+            {transaction.business_number && (
               <Typography variant="body2" className="text-txt-tertiary text-xs ml-6">
-                사업자번호: {transaction.supplier_business_number}
+                사업자번호: {transaction.business_number}
               </Typography>
             )}
           </div>
@@ -249,19 +249,13 @@ function SwipeableCard({
               <Calendar className="w-3 h-3" />
               <span>{formatKoreanDate(transaction.transaction_date)}</span>
             </div>
-            {transaction.invoice_number && (
-              <div className="flex items-center gap-1 text-txt-tertiary">
-                <Receipt className="w-3 h-3" />
-                <span>{transaction.invoice_number}</span>
-              </div>
-            )}
           </div>
 
           {/* 메모 */}
-          {transaction.notes && (
+          {transaction.description && (
             <div className="mt-3 pt-3 border-t border-border-light">
               <Typography variant="body2" className="text-txt-tertiary text-xs">
-                {transaction.notes}
+                {transaction.description}
               </Typography>
             </div>
           )}
@@ -353,7 +347,7 @@ export default function TransactionCards({
                 해제
               </Button>
               <Button
-                variant="danger"
+                variant="destructive"
                 size="sm"
                 onClick={() => {
                   if (confirm(`${selectedTransactions.length}개 항목을 삭제하시겠습니까?`)) {

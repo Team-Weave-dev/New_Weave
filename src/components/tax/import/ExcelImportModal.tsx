@@ -178,14 +178,14 @@ export default function ExcelImportModal({
     { value: 'transaction_date', label: '거래일' },
     { value: 'transaction_type', label: '거래구분' },
     { value: 'supplier_name', label: '거래처명' },
-    { value: 'supplier_business_number', label: '사업자번호' },
+    { value: 'business_number', label: '사업자번호' },
     { value: 'supply_amount', label: '공급가액' },
     { value: 'vat_amount', label: '부가세' },
     { value: 'total_amount', label: '합계' },
     { value: 'description', label: '설명' },
-    { value: 'document_number', label: '문서번호' },
-    { value: 'payment_status', label: '결제상태' },
-    { value: 'payment_date', label: '결제일' }
+    { value: 'category', label: '카테고리' },
+    { value: 'status', label: '결제상태' },
+    { value: 'project_id', label: '프로젝트' }
   ];
 
   if (!isOpen) return null;
@@ -405,11 +405,11 @@ export default function ExcelImportModal({
                         <td className="px-3 py-2">{txn.transaction_date}</td>
                         <td className="px-3 py-2">
                           <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                            txn.transaction_type === 'sale' 
+                            txn.transaction_type === '매출' 
                               ? 'bg-blue-100 text-blue-700' 
                               : 'bg-red-100 text-red-700'
                           }`}>
-                            {txn.transaction_type === 'sale' ? '매출' : '매입'}
+                            {txn.transaction_type}
                           </span>
                         </td>
                         <td className="px-3 py-2">{txn.supplier_name}</td>

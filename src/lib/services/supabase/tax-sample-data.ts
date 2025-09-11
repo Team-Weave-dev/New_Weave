@@ -39,16 +39,14 @@ export async function insertSampleTaxData() {
         transaction_date: new Date(2025, month - 1, day).toISOString().split('T')[0],
         transaction_type: '매출',
         supplier_name: suppliers[Math.floor(Math.random() * suppliers.length)].name,
-        supplier_business_number: suppliers[Math.floor(Math.random() * suppliers.length)].businessNumber,
+        business_number: suppliers[Math.floor(Math.random() * suppliers.length)].businessNumber,
         supply_amount: supplyAmount,
         vat_amount: vatAmount,
+        withholding_tax_3_3: 0,
+        withholding_tax_6_8: 0,
         total_amount: supplyAmount + vatAmount,
-        item_description: `${month}월 프로젝트 개발 용역`,
-        payment_status: Math.random() > 0.3 ? 'completed' : 'pending',
-        invoice_number: `2025-${month.toString().padStart(2, '0')}-${(i + 1).toString().padStart(3, '0')}`,
-        notes: `${month}월 정기 프로젝트 대금`,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        description: `${month}월 프로젝트 개발 용역 - ${month}월 정기 프로젝트 대금 [2025-${month.toString().padStart(2, '0')}-${(i + 1).toString().padStart(3, '0')}]`,
+        status: Math.random() > 0.3 ? 'paid' : 'pending',
       });
     }
 
@@ -63,16 +61,14 @@ export async function insertSampleTaxData() {
         transaction_date: new Date(2025, month - 1, day).toISOString().split('T')[0],
         transaction_type: '매출',
         supplier_name: suppliers[Math.floor(Math.random() * suppliers.length)].name,
-        supplier_business_number: suppliers[Math.floor(Math.random() * suppliers.length)].businessNumber,
+        business_number: suppliers[Math.floor(Math.random() * suppliers.length)].businessNumber,
         supply_amount: supplyAmount,
         vat_amount: vatAmount,
+        withholding_tax_3_3: 0,
+        withholding_tax_6_8: 0,
         total_amount: supplyAmount + vatAmount,
-        item_description: `유지보수 및 기술지원`,
-        payment_status: Math.random() > 0.2 ? 'completed' : 'pending',
-        invoice_number: `2025-${month.toString().padStart(2, '0')}-M${(i + 1).toString().padStart(3, '0')}`,
-        notes: `월간 유지보수 계약`,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        description: `유지보수 및 기술지원 - 월간 유지보수 계약 [2025-${month.toString().padStart(2, '0')}-M${(i + 1).toString().padStart(3, '0')}]`,
+        status: Math.random() > 0.2 ? 'paid' : 'pending',
       });
     }
   }
@@ -94,16 +90,14 @@ export async function insertSampleTaxData() {
         transaction_date: new Date(2025, month - 1, 5).toISOString().split('T')[0],
         transaction_type: '매입',
         supplier_name: cost.supplier,
-        supplier_business_number: `${month}00-00-0000${index}`,
+        business_number: `${month}00-00-0000${index}`,
         supply_amount: cost.amount,
         vat_amount: vatAmount,
+        withholding_tax_3_3: 0,
+        withholding_tax_6_8: 0,
         total_amount: cost.amount + vatAmount,
-        item_description: cost.name,
-        payment_status: 'completed',
-        invoice_number: `P2025-${month.toString().padStart(2, '0')}-${(index + 1).toString().padStart(3, '0')}`,
-        notes: `${month}월 정기 비용`,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        description: `${cost.name} - ${month}월 정기 비용 [P2025-${month.toString().padStart(2, '0')}-${(index + 1).toString().padStart(3, '0')}]`,
+        status: 'paid',
       });
     });
 
@@ -129,16 +123,14 @@ export async function insertSampleTaxData() {
         transaction_date: new Date(2025, month - 1, day).toISOString().split('T')[0],
         transaction_type: '매입',
         supplier_name: suppliers[Math.floor(Math.random() * suppliers.length)].name,
-        supplier_business_number: suppliers[Math.floor(Math.random() * suppliers.length)].businessNumber,
+        business_number: suppliers[Math.floor(Math.random() * suppliers.length)].businessNumber,
         supply_amount: supplyAmount,
         vat_amount: vatAmount,
+        withholding_tax_3_3: 0,
+        withholding_tax_6_8: 0,
         total_amount: supplyAmount + vatAmount,
-        item_description: itemTypes[Math.floor(Math.random() * itemTypes.length)],
-        payment_status: Math.random() > 0.1 ? 'completed' : 'pending',
-        invoice_number: `P2025-${month.toString().padStart(2, '0')}-V${(i + 1).toString().padStart(3, '0')}`,
-        notes: '',
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        description: `${itemTypes[Math.floor(Math.random() * itemTypes.length)]} [P2025-${month.toString().padStart(2, '0')}-V${(i + 1).toString().padStart(3, '0')}]`,
+        status: Math.random() > 0.1 ? 'paid' : 'pending',
       });
     }
   }

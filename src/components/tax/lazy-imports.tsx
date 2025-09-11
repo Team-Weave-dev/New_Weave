@@ -74,21 +74,23 @@ export const TaxNotificationBadge = dynamic(
 );
 
 // 차트 컴포넌트 (recharts 라이브러리)
-export const TaxAnalyticsChart = dynamic(
-  () => import('./charts/TaxAnalyticsChart'),
-  {
-    loading: LoadingComponent,
-    ssr: false,
-  }
-);
+// TaxAnalyticsChart는 아직 구현되지 않음
+// export const TaxAnalyticsChart = dynamic(
+//   () => import('./charts/TaxAnalyticsChart'),
+//   {
+//     loading: LoadingComponent,
+//     ssr: false,
+//   }
+// );
 
-export const VATTrendChart = dynamic(
-  () => import('./charts/VATTrendChart'),
-  {
-    loading: LoadingComponent,
-    ssr: false,
-  }
-);
+// VATTrendChart는 아직 구현되지 않음
+// export const VATTrendChart = dynamic(
+//   () => import('./charts/VATTrendChart'),
+//   {
+//     loading: LoadingComponent,
+//     ssr: false,
+//   }
+// );
 
 // 테스트 컴포넌트 (개발/테스트 환경에서만 로드)
 export const AdvancedFeaturesTest = dynamic(
@@ -111,7 +113,7 @@ export const QueryOptimizationTest = dynamic(
 export const preloadCriticalComponents = () => {
   // 자주 사용되는 컴포넌트 프리로드
   import('./widgets/TaxDashboardWidget');
-  import('./charts/TaxAnalyticsChart');
+  // import('./charts/TaxAnalyticsChart'); // 아직 구현되지 않음
 };
 
 // 조건부 프리로드 (특정 페이지에서만)

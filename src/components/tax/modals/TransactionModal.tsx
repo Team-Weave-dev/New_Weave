@@ -35,16 +35,15 @@ export default function TransactionModal({
   mode
 }: TransactionModalProps) {
   const [formData, setFormData] = useState<Partial<Transaction>>({
-    transaction_type: 'sales',
+    transaction_type: '매출',
     transaction_date: format(new Date(), 'yyyy-MM-dd'),
     supplier_name: '',
-    supplier_business_number: '',
+    business_number: '',
     supply_amount: 0,
     vat_amount: 0,
     total_amount: 0,
-    payment_status: 'pending',
-    invoice_number: '',
-    notes: ''
+    status: 'pending',
+    description: ''
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -60,16 +59,15 @@ export default function TransactionModal({
     } else {
       // 새 거래 추가 시 초기화
       setFormData({
-        transaction_type: 'sales',
+        transaction_type: '매출',
         transaction_date: format(new Date(), 'yyyy-MM-dd'),
         supplier_name: '',
-        supplier_business_number: '',
+        business_number: '',
         supply_amount: 0,
         vat_amount: 0,
         total_amount: 0,
-        payment_status: 'pending',
-        invoice_number: '',
-        notes: ''
+        status: 'pending',
+        description: ''
       });
     }
   }, [mode, transaction]);
@@ -168,9 +166,9 @@ export default function TransactionModal({
             <div className="flex gap-2">
               <button
                 type="button"
-                onClick={() => setFormData({ ...formData, transaction_type: 'sales' })}
+                onClick={() => setFormData({ ...formData, transaction_type: '매출' })}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  formData.transaction_type === 'sales'
+                  formData.transaction_type === '매출'
                     ? 'bg-blue-600 text-white'
                     : 'bg-bg-secondary text-txt-secondary hover:bg-bg-tertiary'
                 }`}
@@ -179,9 +177,9 @@ export default function TransactionModal({
               </button>
               <button
                 type="button"
-                onClick={() => setFormData({ ...formData, transaction_type: 'purchase' })}
+                onClick={() => setFormData({ ...formData, transaction_type: '매입' })}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  formData.transaction_type === 'purchase'
+                  formData.transaction_type === '매입'
                     ? 'bg-red-600 text-white'
                     : 'bg-bg-secondary text-txt-secondary hover:bg-bg-tertiary'
                 }`}
@@ -247,8 +245,8 @@ export default function TransactionModal({
                 <Hash className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-txt-tertiary" />
                 <input
                   type="text"
-                  value={formData.supplier_business_number}
-                  onChange={(e) => setFormData({ ...formData, supplier_business_number: e.target.value })}
+                  value={formData.business_number}
+                  onChange={(e) => setFormData({ ...formData, business_number: e.target.value })}
                   className="w-full pl-10 pr-3 py-2 bg-white border border-border-light rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-weave-primary focus:border-transparent"
                   placeholder="123-45-67890"
                 />
@@ -317,21 +315,6 @@ export default function TransactionModal({
 
           {/* 추가 정보 */}
           <div className="space-y-4">
-            <div>
-              <Typography variant="body2" className="text-txt-secondary mb-2 text-sm font-medium">
-                계산서 번호
-              </Typography>
-              <div className="relative">
-                <Receipt className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-txt-tertiary" />
-                <input
-                  type="text"
-                  value={formData.invoice_number}
-                  onChange={(e) => setFormData({ ...formData, invoice_number: e.target.value })}
-                  className="w-full pl-10 pr-3 py-2 bg-white border border-border-light rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-weave-primary focus:border-transparent"
-                  placeholder="INV-2025-001"
-                />
-              </div>
-            </div>
 
             <div>
               <Typography variant="body2" className="text-txt-secondary mb-2 text-sm font-medium">
@@ -340,9 +323,9 @@ export default function TransactionModal({
               <div className="flex gap-2">
                 <button
                   type="button"
-                  onClick={() => setFormData({ ...formData, payment_status: 'pending' })}
+                  onClick={() => setFormData({ ...formData, status: 'pending' })}
                   className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                    formData.payment_status === 'pending'
+                    formData.status === 'pending'
                       ? 'bg-yellow-600 text-white'
                       : 'bg-bg-secondary text-txt-secondary hover:bg-bg-tertiary'
                   }`}
@@ -351,9 +334,9 @@ export default function TransactionModal({
                 </button>
                 <button
                   type="button"
-                  onClick={() => setFormData({ ...formData, payment_status: 'paid' })}
+                  onClick={() => setFormData({ ...formData, status: 'paid' })}
                   className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                    formData.payment_status === 'paid'
+                    formData.status === 'paid'
                       ? 'bg-green-600 text-white'
                       : 'bg-bg-secondary text-txt-secondary hover:bg-bg-tertiary'
                   }`}
@@ -362,9 +345,9 @@ export default function TransactionModal({
                 </button>
                 <button
                   type="button"
-                  onClick={() => setFormData({ ...formData, payment_status: 'overdue' })}
+                  onClick={() => setFormData({ ...formData, status: 'overdue' })}
                   className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                    formData.payment_status === 'overdue'
+                    formData.status === 'overdue'
                       ? 'bg-red-600 text-white'
                       : 'bg-bg-secondary text-txt-secondary hover:bg-bg-tertiary'
                   }`}
@@ -381,8 +364,8 @@ export default function TransactionModal({
               <div className="relative">
                 <FileText className="absolute left-3 top-3 w-4 h-4 text-txt-tertiary" />
                 <textarea
-                  value={formData.notes}
-                  onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   className="w-full pl-10 pr-3 py-2 bg-white border border-border-light rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-weave-primary focus:border-transparent resize-none"
                   rows={3}
                   placeholder="추가 메모를 입력하세요"

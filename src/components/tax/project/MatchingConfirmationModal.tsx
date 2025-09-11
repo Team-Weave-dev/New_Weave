@@ -177,11 +177,11 @@ export default function MatchingConfirmationModal({
               <div className="flex justify-between">
                 <span className="text-txt-secondary">구분</span>
                 <span className={`text-txt-primary font-medium ${
-                  matchingResult.transaction.transaction_type === 'sale' 
+                  matchingResult.transaction.transaction_type === '매출' 
                     ? 'text-blue-600' 
                     : 'text-red-600'
                 }`}>
-                  {matchingResult.transaction.transaction_type === 'sale' ? '매출' : '매입'}
+                  {matchingResult.transaction.transaction_type}
                 </span>
               </div>
             </div>
@@ -281,7 +281,7 @@ export default function MatchingConfirmationModal({
                 </Typography>
                 <Button
                   variant="ghost"
-                  size="xs"
+                  size="sm"
                   onClick={() => {
                     setManualMode(false);
                     setSelectedClient(null);

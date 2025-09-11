@@ -74,15 +74,12 @@ export default function NewProjectPage() {
       await projectsService.createProject({
         user_id: 'system', // TODO: 실제 사용자 ID로 교체 필요
         name: formData.name,
-        description: formData.description || null,
+        description: formData.description || undefined,
         client_id: formData.client_id,
-        status: formData.status,
-        priority: formData.priority,
-        budget_estimated: formData.budget || null,
-        budget_spent: 0,
+        status: formData.status as 'planning' | 'in_progress' | 'completed' | 'on_hold',
+        budget_estimated: formData.budget || undefined,
         start_date: formData.start_date,
-        due_date: formData.end_date || null,
-        progress: formData.progress
+        due_date: formData.end_date || undefined
       });
 
       router.push('/projects');

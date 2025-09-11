@@ -1,9 +1,10 @@
 import { getSupabaseClient } from '@/lib/supabase/client'
 import type { Database } from '@/lib/supabase/database.types'
 
-type Document = Database['public']['Tables']['documents']['Row']
-type DocumentInsert = Database['public']['Tables']['documents']['Insert']
-type DocumentUpdate = Database['public']['Tables']['documents']['Update']
+// TODO: Add documents table to database types
+type Document = any
+type DocumentInsert = any
+type DocumentUpdate = any
 
 export class DocumentsService {
   private supabase = getSupabaseClient()

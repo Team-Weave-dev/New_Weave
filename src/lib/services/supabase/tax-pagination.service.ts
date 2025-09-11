@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/services/supabase/client';
+import { createClient } from '@/lib/supabase/client';
 import type { Transaction } from './tax-transactions.service';
 
 export interface PaginationOptions {

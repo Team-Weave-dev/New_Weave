@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/services/supabase/client';
+import { createClient } from '@/lib/supabase/client';
 import { addDays, differenceInDays, format, startOfMonth, endOfMonth } from 'date-fns';
 import { ko } from 'date-fns/locale';
 

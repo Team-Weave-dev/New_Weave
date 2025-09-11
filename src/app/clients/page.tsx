@@ -79,7 +79,7 @@ export default function ClientsPage() {
       const clientsWithStats = await Promise.all(
         clientsData.map(async (client) => {
           try {
-            const projects = await projectsService.getProjectsByClient(client.id);
+            const projects = await projectsService.getClientProjects(client.id);
             const totalRevenue = projects.reduce((sum, p) => sum + (p.budget_estimated || 0), 0);
             
             return {

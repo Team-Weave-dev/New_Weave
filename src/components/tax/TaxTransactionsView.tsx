@@ -33,9 +33,8 @@ import {
   fetchTransactionAggregates
 } from '@/lib/services/supabase/tax-pagination.service';
 import { 
-  createTransaction,
-  updateTransaction,
-  deleteTransaction
+  taxTransactionService,
+  type Transaction
 } from '@/lib/services/supabase/tax-transactions.service';
 import { 
   exportTransactionsToExcel, 
@@ -44,7 +43,6 @@ import {
 
 // 스토어 임포트
 import useTaxStore from '@/lib/stores/taxStore';
-import type { Transaction } from '@/lib/services/supabase/tax-transactions.service';
 
 type ViewMode = 'table' | 'virtual' | 'cards';
 
@@ -122,9 +120,9 @@ export default function TaxTransactionsView() {
   const handleSaveTransaction = async (data: Partial<Transaction>) => {
     try {
       if (modalMode === 'add') {
-        await createTransaction(data);
+        await taxTransactionService.createTransaction(data as any);
       } else if (modalMode === 'edit' && editingTransaction) {
-        await updateTransaction(editingTransaction.id, data);
+        await taxTransactionService.updateTransaction(editingTransaction.id, data);
       }
       
       setModalMode(null);
@@ -141,7 +139,7 @@ export default function TaxTransactionsView() {
     if (!confirm('이 거래를 삭제하시겠습니까?')) return;
     
     try {
-      await deleteTransaction(id);
+      await taxTransactionService.deleteTransaction(id);
       loadTransactions();
     } catch (error) {
       console.error('Error deleting transaction:', error);
@@ -152,7 +150,7 @@ export default function TaxTransactionsView() {
   const handleBatchEdit = async (ids: string[], updates: Partial<Transaction>) => {
     try {
       await Promise.all(
-        ids.map(id => updateTransaction(id, updates))
+        ids.map(id => taxTransactionService.updateTransaction(id, updates))
       );
       clearSelection();
       loadTransactions();
@@ -166,7 +164,7 @@ export default function TaxTransactionsView() {
   const handleBatchDelete = async (ids: string[]) => {
     try {
       await Promise.all(
-        ids.map(id => deleteTransaction(id))
+        ids.map(id => taxTransactionService.deleteTransaction(id))
       );
       clearSelection();
       loadTransactions();

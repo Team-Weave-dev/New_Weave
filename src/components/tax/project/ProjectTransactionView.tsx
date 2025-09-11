@@ -31,7 +31,7 @@ import {
   type ProjectProfitability
 } from '@/lib/services/supabase/project-profitability.service';
 import { 
-  fetchTransactionsWithPagination,
+  taxTransactionService,
   type Transaction
 } from '@/lib/services/supabase/tax-transactions.service';
 import { exportTransactionsToExcel } from '@/lib/utils/tax-export';
@@ -93,11 +93,15 @@ export default function ProjectTransactionView() {
     setLoading(true);
     try {
       // 프로젝트 거래 조회
-      const txResponse = await fetchTransactionsWithPagination({
-        filters: { project_id: projectId },
-        sortField: 'transaction_date',
+      const allTransactions = await taxTransactionService.getProjectTransactions(projectId);
+      const sortedTransactions = allTransactions.sort((a, b) => 
+        new Date(b.transaction_date).getTime() - new Date(a.transaction_date).getTime()
+      );
+      const txResponse = {
+        data: sortedTransactions,
+        total: sortedTransactions.length,
         sortOrder: 'desc'
-      });
+      };
       setTransactions(txResponse.data);
 
       // 수익성 계산

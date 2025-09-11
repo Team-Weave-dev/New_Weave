@@ -1,9 +1,9 @@
 import { getSupabaseClient } from '@/lib/supabase/client'
 import type { Database } from '@/lib/supabase/database.types'
 
-type TaxRecord = Database['public']['Tables']['tax_records']['Row']
-type TaxRecordInsert = Database['public']['Tables']['tax_records']['Insert']
-type TaxRecordUpdate = Database['public']['Tables']['tax_records']['Update']
+type TaxRecord = Database['public']['Tables']['tax_transactions']['Row']
+type TaxRecordInsert = Database['public']['Tables']['tax_transactions']['Insert']
+type TaxRecordUpdate = Database['public']['Tables']['tax_transactions']['Update']
 
 export class TaxService {
   private supabase = getSupabaseClient()
@@ -12,7 +12,7 @@ export class TaxService {
   async createTaxRecord(record: Omit<TaxRecordInsert, 'id' | 'created_at' | 'updated_at'>) {
     const insertData: any = record;
     const { data, error } = await this.supabase
-      .from('tax_records')
+      .from('tax_transactions')
       .insert(insertData)
       .select()
       .single()
@@ -24,7 +24,7 @@ export class TaxService {
   // 세무 기록 목록 조회
   async getTaxRecords(userId: string, year?: number, quarter?: number) {
     let query = this.supabase
-      .from('tax_records')
+      .from('tax_transactions')
       .select(`
         *,
         clients (
@@ -55,7 +55,7 @@ export class TaxService {
   // 특정 세무 기록 조회
   async getTaxRecordById(id: string) {
     const { data, error } = await this.supabase
-      .from('tax_records')
+      .from('tax_transactions')
       .select(`
         *,
         clients (
@@ -76,7 +76,7 @@ export class TaxService {
   // 세무 기록 업데이트
   async updateTaxRecord(id: string, updates: TaxRecordUpdate) {
     const { data, error } = await (this.supabase
-      .from('tax_records') as any)
+      .from('tax_transactions') as any)
       .update(updates)
       .eq('id', id)
       .select()
@@ -89,7 +89,7 @@ export class TaxService {
   // 세무 기록 삭제
   async deleteTaxRecord(id: string) {
     const { error } = await this.supabase
-      .from('tax_records')
+      .from('tax_transactions')
       .delete()
       .eq('id', id)
 
@@ -100,7 +100,7 @@ export class TaxService {
   // 사업자번호별 세무 기록 조회
   async getTaxRecordsByBusinessNumber(businessNumber: string, userId: string) {
     const { data, error } = await this.supabase
-      .from('tax_records')
+      .from('tax_transactions')
       .select('*')
       .eq('user_id', userId)
       .eq('business_number', businessNumber)
@@ -114,7 +114,7 @@ export class TaxService {
   // 클라이언트별 세무 기록 조회
   async getTaxRecordsByClient(clientId: string) {
     const { data, error } = await this.supabase
-      .from('tax_records')
+      .from('tax_transactions')
       .select('*')
       .eq('client_id', clientId)
       .order('year', { ascending: false })
@@ -130,7 +130,7 @@ export class TaxService {
     futureDate.setDate(futureDate.getDate() + days)
 
     const { data, error } = await this.supabase
-      .from('tax_records')
+      .from('tax_transactions')
       .select(`
         *,
         clients (
@@ -152,7 +152,7 @@ export class TaxService {
   // 연도별 세무 통계
   async getTaxStatsByYear(userId: string, year: number) {
     const { data, error } = await this.supabase
-      .from('tax_records')
+      .from('tax_transactions')
       .select('*')
       .eq('user_id', userId)
       .eq('year', year)
@@ -203,7 +203,7 @@ export class TaxService {
     const endDate = new Date(year, month, 0)
 
     const { data, error } = await this.supabase
-      .from('tax_records')
+      .from('tax_transactions')
       .select(`
         *,
         clients (
@@ -228,7 +228,7 @@ export class TaxService {
     }
 
     const { data, error } = await (this.supabase
-      .from('tax_records') as any)
+      .from('tax_transactions') as any)
       .update(updates)
       .eq('id', id)
       .select()
@@ -241,13 +241,13 @@ export class TaxService {
   // 실시간 구독 설정
   subscribeToChanges(userId: string, callback: (payload: any) => void) {
     return this.supabase
-      .channel('tax_records_changes')
+      .channel('tax_transactions_changes')
       .on(
         'postgres_changes',
         {
           event: '*',
           schema: 'public',
-          table: 'tax_records',
+          table: 'tax_transactions',
           filter: `user_id=eq.${userId}`
         },
         callback

@@ -255,7 +255,7 @@ export default function TransactionTable({
               const isEditing = editingId === transaction.id;
               const isSelected = selectedTransactions.includes(transaction.id);
               const typeColor = getTransactionTypeColor(transaction.transaction_type);
-              const statusColor = getPaymentStatusColor(transaction.payment_status || 'pending');
+              const statusColor = getPaymentStatusColor((transaction.status || 'pending') as 'completed' | 'pending' | 'failed');
 
               return (
                 <tr 
@@ -415,7 +415,7 @@ export default function TransactionTable({
               선택 해제
             </Button>
             <Button
-              variant="danger"
+              variant="destructive"
               size="sm"
               onClick={() => {
                 if (confirm(`${selectedTransactions.length}개 항목을 삭제하시겠습니까?`)) {

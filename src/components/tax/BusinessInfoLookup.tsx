@@ -61,27 +61,29 @@ export default function BusinessInfoLookup({
         // Supabase에 세금 레코드 저장
         if (saveToDatabase) {
           try {
-            await taxService.createTaxRecord({
-              user_id: '', // TODO: 실제 사용자 ID 필요
-              business_number: foundInfo.b_no,
-              tax_type: foundInfo.tax_type || '일반과세',
-              year: new Date().getFullYear(),
-              quarter: Math.ceil((new Date().getMonth() + 1) / 3) as 1 | 2 | 3 | 4,
-              amount: 0,
-              status: 'pending',
-              due_date: new Date(new Date().getFullYear(), new Date().getMonth() + 1, 10).toISOString(), // 다음 달 10일
-              metadata: {
-                business_info: JSON.parse(JSON.stringify(foundInfo)),
-                business_number: foundInfo.b_no,
-                tax_type: foundInfo.tax_type,
-                tax_type_code: foundInfo.tax_type_cd,
-                tax_type_change_date: foundInfo.tax_type_change_dt,
-                invoice_apply_date: foundInfo.invoice_apply_dt,
-                business_status: foundInfo.b_stt,
-                business_status_code: foundInfo.b_stt_cd,
-                project_id: projectId || null
-              } as any
-            });
+            // TODO: tax_transactions 테이블 구조에 맞는 데이터 저장 로직 필요
+            // 현재 tax_transactions는 거래 데이터용이며 사업자 정보 저장용이 아님
+            // await taxService.createTaxRecord({
+            //   user_id: '', // TODO: 실제 사용자 ID 필요
+            //   business_number: foundInfo.b_no,
+            //   tax_type: foundInfo.tax_type || '일반과세',
+            //   year: new Date().getFullYear(),
+            //   quarter: Math.ceil((new Date().getMonth() + 1) / 3) as 1 | 2 | 3 | 4,
+            //   amount: 0,
+            //   status: 'pending',
+            //   due_date: new Date(new Date().getFullYear(), new Date().getMonth() + 1, 10).toISOString(), // 다음 달 10일
+            //   metadata: {
+            //     business_info: JSON.parse(JSON.stringify(foundInfo)),
+            //     business_number: foundInfo.b_no,
+            //     tax_type: foundInfo.tax_type,
+            //     tax_type_code: foundInfo.tax_type_cd,
+            //     tax_type_change_date: foundInfo.tax_type_change_dt,
+            //     invoice_apply_date: foundInfo.invoice_apply_dt,
+            //     business_status: foundInfo.b_stt,
+            //     business_status_code: foundInfo.b_stt_cd,
+            //     project_id: projectId || null
+            //   } as any
+            // });
           } catch (err) {
             console.error('Failed to save tax record:', err);
             // 저장 실패해도 계속 진행

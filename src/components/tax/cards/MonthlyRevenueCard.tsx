@@ -157,18 +157,18 @@ export default function MonthlyRevenueCard({
       </div>
 
       {/* 진행률 바 (선택적) */}
-      {projection && projection.monthlyTarget && (
+      {projection && projection.expectedRevenue && (
         <div className="mt-3 pt-3 border-t border-border-light">
           <div className="flex justify-between text-xs mb-1">
             <span className="text-txt-tertiary">목표 달성률</span>
             <span className="text-txt-secondary font-medium">
-              {Math.min(100, (currentRevenue / projection.monthlyTarget * 100)).toFixed(0)}%
+              {Math.min(100, (currentRevenue / projection.expectedRevenue * 100)).toFixed(0)}%
             </span>
           </div>
           <div className="w-full bg-bg-secondary rounded-full h-2">
             <div 
               className="bg-weave-primary h-2 rounded-full transition-all duration-500"
-              style={{ width: `${Math.min(100, (currentRevenue / projection.monthlyTarget * 100))}%` }}
+              style={{ width: `${Math.min(100, (currentRevenue / projection.expectedRevenue * 100))}%` }}
             />
           </div>
         </div>

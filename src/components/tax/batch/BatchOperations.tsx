@@ -55,11 +55,11 @@ export default function BatchOperations({
     );
 
     const salesCount = selected.filter(t => 
-      t.transaction_type === 'sales'
+      t.transaction_type === '매출'
     ).length;
 
     const purchaseCount = selected.filter(t => 
-      t.transaction_type === 'purchase'
+      t.transaction_type === '매입'
     ).length;
 
     return {
@@ -164,8 +164,8 @@ export default function BatchOperations({
               variant="outline"
               size="sm"
               onClick={() => {
-                setBatchEditMode('payment_status');
-                setBatchEditData({ payment_status: 'paid' });
+                setBatchEditMode('status');
+                setBatchEditData({ status: 'paid' });
               }}
               disabled={isProcessing}
             >
@@ -199,7 +199,7 @@ export default function BatchOperations({
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setBatchEditMode('notes')}
+              onClick={() => setBatchEditMode('description')}
               disabled={isProcessing}
             >
               <FileText className="w-4 h-4 mr-2" />
@@ -219,7 +219,7 @@ export default function BatchOperations({
 
             {/* 삭제 */}
             <Button
-              variant="danger"
+              variant="destructive"
               size="sm"
               onClick={handleBatchDelete}
               disabled={isProcessing}
@@ -245,16 +245,16 @@ export default function BatchOperations({
             <Card className="p-4 bg-bg-secondary">
               <div className="space-y-3">
                 {/* 결제 상태 변경 */}
-                {batchEditMode === 'payment_status' && (
+                {batchEditMode === 'status' && (
                   <div>
                     <Typography variant="body2" className="text-txt-secondary mb-2 text-sm font-medium">
                       결제 상태 일괄 변경
                     </Typography>
                     <div className="flex gap-2">
                       <button
-                        onClick={() => setBatchEditData({ payment_status: 'pending' })}
+                        onClick={() => setBatchEditData({ status: 'pending' })}
                         className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                          batchEditData.payment_status === 'pending'
+                          batchEditData.status === 'pending'
                             ? 'bg-yellow-600 text-white'
                             : 'bg-white text-txt-secondary hover:bg-bg-tertiary'
                         }`}
@@ -262,9 +262,9 @@ export default function BatchOperations({
                         대기
                       </button>
                       <button
-                        onClick={() => setBatchEditData({ payment_status: 'paid' })}
+                        onClick={() => setBatchEditData({ status: 'paid' })}
                         className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                          batchEditData.payment_status === 'paid'
+                          batchEditData.status === 'paid'
                             ? 'bg-green-600 text-white'
                             : 'bg-white text-txt-secondary hover:bg-bg-tertiary'
                         }`}
@@ -272,9 +272,9 @@ export default function BatchOperations({
                         완료
                       </button>
                       <button
-                        onClick={() => setBatchEditData({ payment_status: 'overdue' })}
+                        onClick={() => setBatchEditData({ status: 'overdue' })}
                         className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                          batchEditData.payment_status === 'overdue'
+                          batchEditData.status === 'overdue'
                             ? 'bg-red-600 text-white'
                             : 'bg-white text-txt-secondary hover:bg-bg-tertiary'
                         }`}
@@ -301,14 +301,14 @@ export default function BatchOperations({
                 )}
 
                 {/* 메모 추가 */}
-                {batchEditMode === 'notes' && (
+                {batchEditMode === 'description' && (
                   <div>
                     <Typography variant="body2" className="text-txt-secondary mb-2 text-sm font-medium">
                       메모 일괄 추가
                     </Typography>
                     <textarea
-                      value={batchEditData.notes || ''}
-                      onChange={(e) => setBatchEditData({ notes: e.target.value })}
+                      value={batchEditData.description || ''}
+                      onChange={(e) => setBatchEditData({ description: e.target.value })}
                       className="w-full px-3 py-2 bg-white border border-border-light rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-weave-primary focus:border-transparent resize-none"
                       rows={3}
                       placeholder="선택된 모든 거래에 추가될 메모를 입력하세요"
