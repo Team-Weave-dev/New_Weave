@@ -59,9 +59,32 @@ enum ProjectStage {
   COMPLETED = 'completed'
 }
 
-// 타입 정의
-type Project = Database['public']['Tables']['projects']['Row'];
-type Invoice = Database['public']['Tables']['invoices']['Row'];
+// 타입 정의 (임시)
+type Project = {
+  id: string;
+  user_id: string;
+  name: string;
+  description?: string;
+  status: string;
+  client_id?: string;
+  budget_estimated?: number;
+  due_date?: string;
+  created_at: string;
+  updated_at: string;
+  [key: string]: any; // 추가 속성 허용
+};
+
+type Invoice = {
+  id: string;
+  user_id: string;
+  project_id?: string;
+  status: string;
+  total?: number;
+  due_date?: string;
+  created_at: string;
+  updated_at: string;
+  [key: string]: any; // 추가 속성 허용
+};
 
 export default function ProjectWorkflowPage() {
   const router = useRouter();

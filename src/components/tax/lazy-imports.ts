@@ -7,11 +7,16 @@ import dynamic from 'next/dynamic';
 import { ComponentType } from 'react';
 
 // 로딩 컴포넌트
-const LoadingComponent = () => (
-  <div className="flex items-center justify-center p-8">
-    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-weave-primary"></div>
-  </div>
-);
+const LoadingComponent = () => {
+  // React.createElement 사용하여 JSX 없이 컴포넌트 생성
+  const React = require('react');
+  return React.createElement('div', 
+    { className: 'flex items-center justify-center p-8' },
+    React.createElement('div', {
+      className: 'animate-spin rounded-full h-8 w-8 border-b-2 border-weave-primary'
+    })
+  );
+};
 
 // 엑셀 관련 컴포넌트 (무거운 라이브러리 포함)
 export const ExcelImportModal = dynamic(

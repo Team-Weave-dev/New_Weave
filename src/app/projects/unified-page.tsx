@@ -46,22 +46,33 @@ export default function UnifiedProjectsPage() {
     selectedProjectId
   });
 
-  // 초기화 - localStorage와 URL 파라미터 확인
+  // 초기화 - URL 파라미터 우선, 없으면 기본값 list로 강제 리다이렉트
   useEffect(() => {
     if (!isInitialized) {
+      // URL에 view 파라미터가 없으면 기본값 list로 리다이렉트
+      if (!urlViewMode) {
+        console.log('🔄 프로젝트 첫 진입: view=list로 리다이렉트');
+        const params = new URLSearchParams(searchParams.toString());
+        params.set('view', 'list');
+        router.push(`${pathname}?${params.toString()}`, { scroll: false });
+        return; // 리다이렉트 중이므로 초기화 중단
+      }
+      
       // URL 파라미터가 있으면 우선 사용
       if (urlViewMode === 'list' || urlViewMode === 'detail') {
+        console.log('🔄 URL 파라미터로 view 모드 설정:', urlViewMode);
         setViewMode(urlViewMode);
       } else {
-        // localStorage에서 사용자 선호 읽기
-        const savedMode = localStorage.getItem('preferredViewMode') as ViewMode | null;
-        if (savedMode === 'list' || savedMode === 'detail') {
-          setViewMode(savedMode);
-        }
+        // 잘못된 view 파라미터면 list로 강제 변경
+        console.log('🔄 잘못된 view 파라미터, list로 강제 변경:', urlViewMode);
+        const params = new URLSearchParams(searchParams.toString());
+        params.set('view', 'list');
+        router.push(`${pathname}?${params.toString()}`, { scroll: false });
+        return;
       }
       setIsInitialized(true);
     }
-  }, [urlViewMode, isInitialized]);
+  }, [urlViewMode, isInitialized, pathname, router, searchParams]);
 
   // Detail View에서 선택된 프로젝트가 없을 때 첫 번째 프로젝트 자동 선택 (URL 동기화 완료 후에만)
   useEffect(() => {
@@ -76,10 +87,10 @@ export default function UnifiedProjectsPage() {
 
   // 뷰 모드 변경 핸들러
   const handleViewModeChange = useCallback((newMode: ViewMode) => {
+    console.log('🔄 뷰 모드 변경:', newMode);
     setViewMode(newMode);
     
-    // localStorage에 저장
-    localStorage.setItem('preferredViewMode', newMode);
+    // localStorage에는 저장하지 않음 - 항상 첫 진입시 list view로 시작
     
     // URL 업데이트 (통합된 처리로 레이스 컨디션 방지)
     const params = new URLSearchParams(searchParams.toString());

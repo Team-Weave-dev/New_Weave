@@ -3,7 +3,7 @@
 // 동적 렌더링 강제 - Static Generation 방지
 export const dynamic = 'force-dynamic';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import AppLayout from '@/components/layout/AppLayout';
 import { WorkspacePageContainer } from '@/components/layout/PageContainer';
@@ -16,6 +16,8 @@ import { projectsService } from '@/lib/services/supabase/projects.service';
 import { clientService } from '@/lib/services/supabase/clients.service';
 import { invoicesService } from '@/lib/services/supabase/invoices.service';
 import { remindersService } from '@/lib/services/supabase/reminders.service';
+import { supabase } from '@/lib/supabase/client';
+import type { RealtimeChannel } from '@supabase/supabase-js';
 
 // Mock 데이터 - 실제로는 API에서 가져올 데이터
 interface DashboardData {
@@ -51,358 +53,349 @@ export default function Dashboard() {
   const router = useRouter();
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-<<<<<<< HEAD
-  const [supabaseClient] = useState(() => getSupabaseClientSafe());
+  const [supabaseClient] = useState(() => supabase);
   const [realtimeChannel, setRealtimeChannel] = useState<RealtimeChannel | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
 
-  // 데이터 로딩 - 모의 데이터 모드 지원
-=======
-  const [userId, setUserId] = useState<string | null>(null);
+  // Mock 데이터 생성 함수
+  const generateMockData = useCallback((): DashboardData => {
+    return {
+      overdueInvoices: {
+        count: 3,
+        totalAmount: 4500000
+      },
+      upcomingDeadlines: {
+        count: 2,
+        projects: [
+          {
+            id: '1',
+            name: '웹사이트 리뉴얼',
+            dueDate: new Date('2025-09-15'),
+            daysLeft: 4
+          },
+          {
+            id: '2', 
+            name: '모바일 앱 개발',
+            dueDate: new Date('2025-09-20'),
+            daysLeft: 9
+          }
+        ]
+      },
+      monthlyFinancials: {
+        issued: 12500000,
+        paid: 8300000,
+        difference: 4200000,
+        trend: 15.2
+      },
+      topClients: [
+        { id: '1', name: '㈜테크스타트', revenue: 3200000, percentage: 28.5 },
+        { id: '2', name: '디자인컴퍼니', revenue: 2800000, percentage: 24.9 },
+        { id: '3', name: '이커머스플러스', revenue: 1900000, percentage: 16.9 }
+      ],
+      calendarEvents: [
+        {
+          id: 'inv-001',
+          title: '㈜테크스타트 인보이스 발송',
+          date: '2025-09-12',
+          type: 'invoice'
+        },
+        {
+          id: 'pay-001',
+          title: '디자인컴퍼니 결제 완료',
+          date: '2025-09-13',
+          type: 'payment'
+        },
+        {
+          id: 'dead-001',
+          title: '웹사이트 리뉴얼 마감',
+          date: '2025-09-15',
+          type: 'deadline'
+        },
+        {
+          id: 'meet-001',
+          title: '이커머스플러스 프로젝트 미팅',
+          date: '2025-09-16',
+          type: 'meeting'
+        },
+        {
+          id: 'rem-001',
+          title: '월말 정산 리마인더',
+          date: '2025-09-30',
+          type: 'reminder'
+        }
+      ]
+    };
+  }, []);
 
-  // Mock 데이터 로딩
->>>>>>> h1
-  useEffect(() => {
-    const checkAuthAndFetchData = async () => {
-      setIsLoading(true);
+  // 데이터 로딩 함수 - useCallback으로 메모이제이션
+  const fetchDashboardData = useCallback(async (userId: string) => {
+    try {
+      console.log('황경:', {
+        NEXT_PUBLIC_USE_MOCK_DATA: process.env.NEXT_PUBLIC_USE_MOCK_DATA,
+        NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL ? 'set' : 'not set',
+        userId
+      });
       
-<<<<<<< HEAD
-      // 모의 데이터 모드 확인
+      // 현재 개발 단계에서는 Mock 데이터 우선 사용
+      const forceMockMode = true; // 개발용 강제 설정
+      
       const isUsingMockData = 
+        forceMockMode ||
         process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true' || 
         !process.env.NEXT_PUBLIC_SUPABASE_URL;
       
       if (isUsingMockData) {
-        // 모의 데이터 모드: Mock 사용자 ID 사용
-        console.log('Using mock data mode for dashboard');
-        setUserId('mock-user-id');
-        await fetchDashboardData('mock-user-id');
-        return;
-      }
-      
-      // 실제 Supabase 인증 모드
-      if (!supabaseClient) {
-        console.log('Supabase client not available, using mock data');
-        setUserId('mock-user-id');
-        await fetchDashboardData('mock-user-id');
-        return;
-      }
-      
-      const { data: { session }, error } = await supabaseClient.auth.getSession();
-      
-      if (error || !session || !session.user) {
-        console.log('No valid session in dashboard, redirecting to login');
-        router.push('/login');
-        return;
-      }
-      
-      setUserId(session.user.id);
-      await fetchDashboardData(session.user.id);
-=======
-      // Mock 사용자 ID 사용 (Supabase 연결 제거)
-      const mockUserId = 'mock-user';
-      setUserId(mockUserId);
-      await fetchDashboardData(mockUserId);
->>>>>>> h1
-    };
-    
-    const fetchDashboardData = async (userId: string) => {
-      try {
-        // 실제 Supabase 데이터 가져오기
-        const [projects, clients, invoices, reminders] = await Promise.all([
-          projectsService.getProjects(userId),
-          clientService.getClients(userId),
-          invoicesService.getInvoices(userId),
-          remindersService.getUpcomingReminders(userId)
-        ]);
-        
-        // 연체 인보이스 계산
-        const overdueInvoices = invoices.filter(inv => {
-          if (!inv.due_date || inv.status === 'paid') return false;
-          return new Date(inv.due_date) < new Date();
-        });
-        
-        // 다가오는 마감일 계산
-        const upcomingProjects = projects.filter(proj => {
-          if (!proj.due_date || proj.status === 'completed') return false;
-          const daysLeft = Math.ceil((new Date(proj.due_date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
-          return daysLeft > 0 && daysLeft <= 14;
-        });
-        
-        // 월별 재무 정보 계산
-        const thisMonth = new Date().getMonth();
-        const thisYear = new Date().getFullYear();
-        const monthlyInvoices = invoices.filter(inv => {
-          const date = new Date(inv.issue_date || inv.created_at);
-          return date.getMonth() === thisMonth && date.getFullYear() === thisYear;
-        });
-        
-        const issued = monthlyInvoices.reduce((sum, inv) => sum + (inv.total || 0), 0);
-        const paid = monthlyInvoices.filter(inv => inv.status === 'paid').reduce((sum, inv) => sum + (inv.total || 0), 0);
-        
-        // 상위 클라이언트 계산 (프로젝트 기준)
-        const clientRevenue = new Map<string, number>();
-        projects.forEach(proj => {
-          if (proj.client_id) {
-            const current = clientRevenue.get(proj.client_id) || 0;
-            clientRevenue.set(proj.client_id, current + (proj.budget_estimated || 0));
-          }
-        });
-        
-        const topClientsData = Array.from(clientRevenue.entries())
-          .map(([clientId, revenue]) => {
-            const client = clients.find(c => c.id === clientId);
-            return {
-              id: clientId,
-              name: client?.company || '알 수 없음',
-              revenue,
-              percentage: 0
-            };
-          })
-          .sort((a, b) => b.revenue - a.revenue)
-          .slice(0, 3);
-        
-        const totalRevenue = topClientsData.reduce((sum, c) => sum + c.revenue, 0);
-        topClientsData.forEach(client => {
-          client.percentage = totalRevenue > 0 ? (client.revenue / totalRevenue) * 100 : 0;
-        });
-        
-        // 캘린더 이벤트 생성
-        const calendarEvents: CalendarEvent[] = [];
-        
-        // 인보이스 이벤트
-        invoices.forEach(inv => {
-          if (inv.issue_date) {
-            calendarEvents.push({
-              id: `inv-${inv.id}`,
-              title: `${inv.invoice_number} 인보이스`,
-              date: inv.issue_date.slice(0, 10),
-              type: 'invoice'
-            });
-          }
-          if (inv.due_date) {
-            calendarEvents.push({
-              id: `due-${inv.id}`,
-              title: `${inv.invoice_number} 결제 예정`,
-              date: inv.due_date.slice(0, 10),
-              type: 'payment'
-            });
-          }
-        });
-        
-        // 프로젝트 마감일 이벤트
-        projects.forEach(proj => {
-          if (proj.due_date) {
-            calendarEvents.push({
-              id: `proj-${proj.id}`,
-              title: `${proj.name} 마감`,
-              date: proj.due_date.slice(0, 10),
-              type: 'deadline'
-            });
-          }
-        });
-        
-        // 리마인더 이벤트
-        reminders.forEach(rem => {
-          if (rem.due_date) {
-            calendarEvents.push({
-              id: `rem-${rem.id}`,
-              title: rem.title,
-              date: rem.due_date.slice(0, 10),
-              type: 'reminder'
-            });
-          }
-        });
-        
-        const dashboardData: DashboardData = {
-          overdueInvoices: {
-            count: overdueInvoices.length,
-            totalAmount: overdueInvoices.reduce((sum, inv) => sum + (inv.total || 0), 0)
-          },
-          upcomingDeadlines: {
-            count: upcomingProjects.length,
-            projects: upcomingProjects.map(proj => ({
-              id: proj.id,
-              name: proj.name,
-              dueDate: new Date(proj.due_date!),
-              daysLeft: Math.ceil((new Date(proj.due_date!).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))
-            }))
-          },
-          monthlyFinancials: {
-            issued,
-            paid,
-            difference: issued - paid,
-            trend: 0 // TODO: 전달 대비 비교 구현
-          },
-          topClients: topClientsData,
-          calendarEvents
-        };
-        
-        setDashboardData(dashboardData);
+        console.log('📈 Dashboard: Mock 데이터 모드 사용');
+        const mockData = generateMockData();
+        setDashboardData(mockData);
         setIsLoading(false);
-      } catch (error) {
-        console.error('Failed to load dashboard data:', error);
-        setIsLoading(false);
-        // 오류 발생 시 Mock 데이터 사용
-        const mockData: DashboardData = {
+        return;
+      }
+      
+      // 실제 Supabase 데이터 가져오기
+      console.log('📈 Dashboard: Supabase 데이터 로딩 시도');
+      const [projects, clients, invoices, reminders] = await Promise.all([
+        projectsService.getProjects(userId),
+        clientService.getClients(userId),
+        invoicesService.getInvoices(userId),
+        remindersService.getUpcomingReminders(userId)
+      ]);
+      
+      // 데이터 처리 로직 (대부분 기존 코드 유지)
+      const overdueInvoices = invoices.filter(inv => {
+        if (!inv.due_date || inv.status === 'paid') return false;
+        return new Date(inv.due_date) < new Date();
+      });
+      
+      const upcomingProjects = projects.filter(proj => {
+        if (!proj.due_date || proj.status === 'completed') return false;
+        const daysLeft = Math.ceil((new Date(proj.due_date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
+        return daysLeft > 0 && daysLeft <= 14;
+      });
+      
+      const thisMonth = new Date().getMonth();
+      const thisYear = new Date().getFullYear();
+      const monthlyInvoices = invoices.filter(inv => {
+        const date = new Date(inv.issue_date || inv.created_at);
+        return date.getMonth() === thisMonth && date.getFullYear() === thisYear;
+      });
+      
+      const issued = monthlyInvoices.reduce((sum, inv) => sum + (inv.total || 0), 0);
+      const paid = monthlyInvoices.filter(inv => inv.status === 'paid').reduce((sum, inv) => sum + (inv.total || 0), 0);
+      
+      const clientRevenue = new Map<string, number>();
+      projects.forEach(proj => {
+        if (proj.client_id) {
+          const current = clientRevenue.get(proj.client_id) || 0;
+          clientRevenue.set(proj.client_id, current + (proj.budget_estimated || 0));
+        }
+      });
+      
+      const topClientsData = Array.from(clientRevenue.entries())
+        .map(([clientId, revenue]) => {
+          const client = clients.find(c => c.id === clientId);
+          return {
+            id: clientId,
+            name: client?.company || '알 수 없음',
+            revenue,
+            percentage: 0
+          };
+        })
+        .sort((a, b) => b.revenue - a.revenue)
+        .slice(0, 3);
+      
+      const totalRevenue = topClientsData.reduce((sum, c) => sum + c.revenue, 0);
+      topClientsData.forEach(client => {
+        client.percentage = totalRevenue > 0 ? (client.revenue / totalRevenue) * 100 : 0;
+      });
+      
+      const calendarEvents: CalendarEvent[] = [];
+      
+      invoices.forEach(inv => {
+        if (inv.issue_date) {
+          calendarEvents.push({
+            id: `inv-${inv.id}`,
+            title: `${inv.invoice_number} 인보이스`,
+            date: inv.issue_date.slice(0, 10),
+            type: 'invoice'
+          });
+        }
+        if (inv.due_date) {
+          calendarEvents.push({
+            id: `due-${inv.id}`,
+            title: `${inv.invoice_number} 결제 예정`,
+            date: inv.due_date.slice(0, 10),
+            type: 'payment'
+          });
+        }
+      });
+      
+      projects.forEach(proj => {
+        if (proj.due_date) {
+          calendarEvents.push({
+            id: `proj-${proj.id}`,
+            title: `${proj.name} 마감`,
+            date: proj.due_date.slice(0, 10),
+            type: 'deadline'
+          });
+        }
+      });
+      
+      reminders.forEach(rem => {
+        if (rem.due_date) {
+          calendarEvents.push({
+            id: `rem-${rem.id}`,
+            title: rem.title,
+            date: rem.due_date.slice(0, 10),
+            type: 'reminder'
+          });
+        }
+      });
+      
+      const dashboardData: DashboardData = {
         overdueInvoices: {
-          count: 3,
-          totalAmount: 4500000
+          count: overdueInvoices.length,
+          totalAmount: overdueInvoices.reduce((sum, inv) => sum + (inv.total || 0), 0)
         },
         upcomingDeadlines: {
-          count: 2,
-          projects: [
-            {
-              id: '1',
-              name: '웹사이트 리뉴얼',
-              dueDate: new Date('2025-09-01'),
-              daysLeft: 7
-            },
-            {
-              id: '2', 
-              name: '모바일 앱 개발',
-              dueDate: new Date('2025-09-05'),
-              daysLeft: 11
-            }
-          ]
+          count: upcomingProjects.length,
+          projects: upcomingProjects.map(proj => ({
+            id: proj.id,
+            name: proj.name,
+            dueDate: new Date(proj.due_date!),
+            daysLeft: Math.ceil((new Date(proj.due_date!).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))
+          }))
         },
         monthlyFinancials: {
-          issued: 12500000,
-          paid: 8300000,
-          difference: 4200000,
-          trend: 15.2
+          issued,
+          paid,
+          difference: issued - paid,
+          trend: 0
         },
-        topClients: [
-          { id: '1', name: '㈜테크스타트', revenue: 3200000, percentage: 28.5 },
-          { id: '2', name: '디자인컴퍼니', revenue: 2800000, percentage: 24.9 },
-          { id: '3', name: '이커머스플러스', revenue: 1900000, percentage: 16.9 }
-        ],
-        calendarEvents: [
-          {
-            id: 'inv-001',
-            title: '㈜테크스타트 인보이스 발송',
-            date: '2025-08-26',
-            type: 'invoice'
-          },
-          {
-            id: 'pay-001',
-            title: '디자인컴퍼니 결제 완료',
-            date: '2025-08-25',
-            type: 'payment'
-          },
-          {
-            id: 'dead-001',
-            title: '웹사이트 리뉴얼 마감',
-            date: '2025-09-01',
-            type: 'deadline'
-          },
-          {
-            id: 'meet-001',
-            title: '이커머스플러스 프로젝트 미팅',
-            date: '2025-08-28',
-            type: 'meeting'
-          },
-          {
-            id: 'rem-001',
-            title: '월말 정산 리마인더',
-            date: '2025-08-31',
-            type: 'reminder'
-          },
-          {
-            id: 'inv-002',
-            title: '신규 클라이언트 견적서 제출',
-            date: '2025-08-29',
-            type: 'invoice'
-          },
-          {
-            id: 'pay-002',
-            title: '프로젝트 1차 결제 예정',
-            date: '2025-09-03',
-            type: 'payment'
-          },
-          {
-            id: 'dead-002',
-            title: '모바일 앱 개발 마감',
-            date: '2025-09-05',
-            type: 'deadline'
-          }
-        ]
+        topClients: topClientsData,
+        calendarEvents
       };
-
+      
+      console.log('📈 Dashboard: Supabase 데이터 로딩 성공');
+      setDashboardData(dashboardData);
+      setIsLoading(false);
+      
+    } catch (error) {
+      console.error('🚨 Dashboard 데이터 로딩 오류:', error);
+      console.log('📈 Dashboard: 오류 발생, Mock 데이터로 대체');
+      
+      const mockData = generateMockData();
       setDashboardData(mockData);
+      setIsLoading(false);
+    }
+  }, [generateMockData]);
+
+  // 인증 및 데이터 로딩
+  useEffect(() => {
+    const initializeDashboard = async () => {
+      setIsLoading(true);
+      console.log('📈 Dashboard: 초기화 시작');
+      
+      try {
+        // 현재 개발 단계에서는 Mock 데이터 우선
+        const forceMockMode = true;
+        
+        if (forceMockMode) {
+          console.log('📈 Dashboard: 개발 모드 - Mock 데이터 사용');
+          setUserId('mock-user-id');
+          await fetchDashboardData('mock-user-id');
+          return;
+        }
+        
+        // 실제 인증 로직 (추후 활성화)
+        if (!supabaseClient) {
+          console.log('📈 Dashboard: Supabase 클라이언트 없음, Mock 데이터 사용');
+          setUserId('mock-user-id');
+          await fetchDashboardData('mock-user-id');
+          return;
+        }
+        
+        const { data: { session }, error } = await supabaseClient.auth.getSession();
+        
+        if (error || !session || !session.user) {
+          console.log('📈 Dashboard: 인증 세션 없음, Mock 데이터 사용');
+          setUserId('mock-user-id');
+          await fetchDashboardData('mock-user-id');
+          return;
+        }
+        
+        setUserId(session.user.id);
+        await fetchDashboardData(session.user.id);
+        
+      } catch (error) {
+        console.error('🚨 Dashboard 초기화 오류:', error);
+        setUserId('mock-user-id');
+        await fetchDashboardData('mock-user-id');
       }
     };
 
-    checkAuthAndFetchData();
-<<<<<<< HEAD
+    initializeDashboard();
+  }, [fetchDashboardData, supabaseClient]);
+  
+  // 실시간 구독 설정 (추후 활성화)
+  useEffect(() => {
+    if (!userId || !supabaseClient) return;
     
-    // 실시간 구독 설정
-    const setupRealtimeSubscription = (currentUserId: string) => {
-      if (!supabaseClient) return;
-      
-      const channel = supabaseClient
-        .channel('dashboard-updates')
-        .on(
-          'postgres_changes',
-          { event: '*', schema: 'public', table: 'projects' },
-          (payload) => {
-            console.log('Project change received:', payload);
-            fetchDashboardData(currentUserId); // userId 전달
-          }
-        )
-        .on(
-          'postgres_changes',
-          { event: '*', schema: 'public', table: 'clients' },
-          (payload) => {
-            console.log('Client change received:', payload);
-            fetchDashboardData(currentUserId); // userId 전달
-          }
-        )
-        .on(
-          'postgres_changes',
-          { event: '*', schema: 'public', table: 'invoices' },
-          (payload) => {
-            console.log('Invoice change received:', payload);
-            fetchDashboardData(currentUserId); // userId 전달
-          }
-        )
-        .on(
-          'postgres_changes',
-          { event: '*', schema: 'public', table: 'reminders' },
-          (payload) => {
-            console.log('Reminder change received:', payload);
-            fetchDashboardData(currentUserId); // userId 전달
-          }
-        )
-        .subscribe((status) => {
-          if (status === 'SUBSCRIBED') {
-            console.log('Dashboard realtime subscription active');
-          }
-        });
-      
-      setRealtimeChannel(channel);
-    };
+    // 현재 개발 단계에서는 실시간 구독 비활성화
+    const enableRealtime = false;
     
-    // 모의 데이터 모드에서는 실시간 구독 사용 안 함
-    const isUsingMockData = 
-      process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true' || 
-      !process.env.NEXT_PUBLIC_SUPABASE_URL;
-      
-    if (userId && !isUsingMockData) {
-      setupRealtimeSubscription(userId);
-    }
+    if (!enableRealtime) return;
+    
+    const channel = supabaseClient
+      .channel('dashboard-updates')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'projects' },
+        (payload) => {
+          console.log('Project change received:', payload);
+          fetchDashboardData(userId);
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'clients' },
+        (payload) => {
+          console.log('Client change received:', payload);
+          fetchDashboardData(userId);
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'invoices' },
+        (payload) => {
+          console.log('Invoice change received:', payload);
+          fetchDashboardData(userId);
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'reminders' },
+        (payload) => {
+          console.log('Reminder change received:', payload);
+          fetchDashboardData(userId);
+        }
+      )
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          console.log('Dashboard realtime subscription active');
+        }
+      });
+    
+    setRealtimeChannel(channel);
     
     // Cleanup 함수
     return () => {
-      if (realtimeChannel) {
+      if (channel) {
         console.log('Unsubscribing from dashboard realtime updates');
-        supabaseClient?.removeChannel(realtimeChannel);
+        supabaseClient.removeChannel(channel);
       }
     };
-  }, [router, userId, realtimeChannel]);
-=======
-  }, [router]);
->>>>>>> h1
+  }, [userId, supabaseClient, fetchDashboardData]);
 
   // 빠른 실행 버튼들
   const quickActions: QuickAction[] = [
