@@ -1,22 +1,31 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, Suspense } from 'react'
 import { useDashboardStore } from '@/lib/stores/useDashboardStore'
 import { GridLayout, GridItem } from './GridLayout'
 import { WidgetWrapper } from './WidgetWrapper'
 import { EditModeToolbar } from './EditModeToolbar'
 import { DndProvider } from './dnd/DndProvider'
 import { SortableWidget } from './dnd/SortableWidget'
+import { WidgetLibrary } from './WidgetLibrary'
+import { WidgetConfigPanel } from './WidgetConfigPanel'
+import { WidgetSkeleton } from './WidgetSkeleton'
+import { WidgetErrorBoundary } from './WidgetErrorBoundary'
 import { cn } from '@/lib/utils'
 import { Loader2 } from 'lucide-react'
 import { useDashboardKeyboardNavigation } from '@/hooks/useDashboardKeyboardNavigation'
+import type { WidgetType, WidgetMetadata } from '@/types/dashboard'
 import {
   ProjectSummaryWidget,
+  TaxDeadlineWidget,
   RevenueChartWidget,
   TodoListWidget,
+  TaskTrackerWidget,
+  KPIWidget,
+  TaxCalculatorWidget,
   CalendarWidget,
   RecentActivityWidget,
-} from './widgets'
+} from './widgets/LazyWidgets'
 
 interface DashboardContainerProps {
   className?: string
@@ -40,6 +49,8 @@ export function DashboardContainer({
 
   const [isLoading, setIsLoading] = useState(true)
   const [isInitialized, setIsInitialized] = useState(false)
+  const [isWidgetLibraryOpen, setIsWidgetLibraryOpen] = useState(false)
+  const [configPanelWidgetId, setConfigPanelWidgetId] = useState<string | null>(null)
   
   // 키보드 네비게이션 훅 사용
   useDashboardKeyboardNavigation()
@@ -69,44 +80,116 @@ export function DashboardContainer({
     }
   }, [isInitialized, loadFromLocalStorage])
 
-  // 위젯 타입에 따른 컴포넌트 렌더링
+  // 위젯 타입에 따른 컴포넌트 렌더링 (Lazy Loading with Suspense)
   const renderWidgetContent = (widget: any) => {
-    switch (widget.type) {
-      case '프로젝트 요약':
-        return <ProjectSummaryWidget />
-      case '매출 차트':
-        return <RevenueChartWidget />
-      case '할 일 목록':
-        return <TodoListWidget />
-      case '캘린더':
-        return <CalendarWidget />
-      case '최근 활동':
-        return <RecentActivityWidget />
+    const widgetProps = {
+      id: widget.id,
+      type: widget.type,
+      config: widget.config,
+      isEditMode: isEditMode
+    }
+
+    // Suspense와 ErrorBoundary로 감싸서 lazy loading 처리
+    const renderWithSuspense = (Component: React.ComponentType<any>) => (
+      <WidgetErrorBoundary widgetId={widget.id} widgetType={widget.type}>
+        <Suspense fallback={<WidgetSkeleton />}>
+          <Component {...widgetProps} />
+        </Suspense>
+      </WidgetErrorBoundary>
+    )
+
+    // 새로운 위젯 시스템 (WidgetType)
+    switch (widget.type as WidgetType) {
+      case 'project-summary':
+        return renderWithSuspense(ProjectSummaryWidget)
+      case 'revenue-chart':
+        return renderWithSuspense(RevenueChartWidget)
+      case 'task-tracker':
+        return renderWithSuspense(TaskTrackerWidget)
+      case 'kpi-metrics':
+        return renderWithSuspense(KPIWidget)
+      case 'tax-deadline':
+        return renderWithSuspense(TaxDeadlineWidget)
+      case 'tax-calculator':
+        return renderWithSuspense(TaxCalculatorWidget)
       default:
-        // 기본 위젯 (임시)
-        return (
-          <div className="p-4">
-            <h3 className="text-lg font-semibold mb-2">
-              {widget.type}
-            </h3>
-            <p className="text-gray-600 dark:text-gray-400">
-              위젯 ID: {widget.id}
-            </p>
-            <p className="text-sm text-gray-500 dark:text-gray-500 mt-2">
-              위치: {widget.position.x}, {widget.position.y}
-            </p>
-            <p className="text-sm text-gray-500 dark:text-gray-500">
-              크기: {widget.position.width}x{widget.position.height}
-            </p>
-          </div>
-        )
+        // 기존 위젯 시스템 (호환성 유지)
+        switch (widget.type) {
+          case '프로젝트 요약':
+            return renderWithSuspense(ProjectSummaryWidget)
+          case '매출 차트':
+            return renderWithSuspense(RevenueChartWidget)
+          case '할 일 목록':
+            return (
+              <WidgetErrorBoundary widgetId={widget.id} widgetType={widget.type}>
+                <Suspense fallback={<WidgetSkeleton />}>
+                  <TodoListWidget />
+                </Suspense>
+              </WidgetErrorBoundary>
+            )
+          case '캘린더':
+            return (
+              <WidgetErrorBoundary widgetId={widget.id} widgetType={widget.type}>
+                <Suspense fallback={<WidgetSkeleton />}>
+                  <CalendarWidget />
+                </Suspense>
+              </WidgetErrorBoundary>
+            )
+          case '최근 활동':
+            return (
+              <WidgetErrorBoundary widgetId={widget.id} widgetType={widget.type}>
+                <Suspense fallback={<WidgetSkeleton />}>
+                  <RecentActivityWidget />
+                </Suspense>
+              </WidgetErrorBoundary>
+            )
+          default:
+            // 기본 위젯 (임시)
+            return (
+              <div className="p-4">
+                <h3 className="text-lg font-semibold mb-2">
+                  {widget.type}
+                </h3>
+                <p className="text-gray-600 dark:text-gray-400">
+                  위젯 ID: {widget.id}
+                </p>
+                <p className="text-sm text-gray-500 dark:text-gray-500 mt-2">
+                  위치: {widget.position.x}, {widget.position.y}
+                </p>
+                <p className="text-sm text-gray-500 dark:text-gray-500">
+                  크기: {widget.position.width}x{widget.position.height}
+                </p>
+              </div>
+            )
+        }
     }
   }
 
-  // 위젯 추가 핸들러 (임시 - 추후 위젯 라이브러리로 대체)
+  // 위젯 추가 핸들러
   const handleAddWidget = () => {
-    console.log('위젯 추가 모달 열기')
-    // TODO: 위젯 라이브러리 모달 구현
+    setIsWidgetLibraryOpen(true)
+  }
+
+  // 위젯 라이브러리에서 위젯 추가
+  const handleWidgetAdd = (type: WidgetType, metadata: WidgetMetadata) => {
+    const { addWidget } = useDashboardStore.getState()
+    
+    // 새 위젯 생성 및 추가
+    const newWidget = {
+      id: `widget-${Date.now()}`,
+      type: type,
+      position: {
+        x: 0,
+        y: 0,
+        width: metadata.defaultSize.width,
+        height: metadata.defaultSize.height
+      },
+      config: {},
+      locked: false
+    }
+    
+    addWidget(newWidget)
+    console.log('위젯 추가됨:', type, metadata.name)
   }
 
   // 레이아웃 저장 핸들러
@@ -185,6 +268,7 @@ export function DashboardContainer({
                     id={widget.id}
                     title={widget.type}
                     locked={widget.locked}
+                    onConfigure={() => setConfigPanelWidgetId(widget.id)}
                   >
                     {renderWidgetContent(widget)}
                   </WidgetWrapper>
@@ -211,6 +295,22 @@ export function DashboardContainer({
           </GridLayout>
         </DndProvider>
       </div>
+
+      {/* 위젯 라이브러리 사이드바 */}
+      <WidgetLibrary
+        isOpen={isWidgetLibraryOpen}
+        onClose={() => setIsWidgetLibraryOpen(false)}
+        onAddWidget={handleWidgetAdd}
+      />
+
+      {/* 위젯 설정 패널 */}
+      {configPanelWidgetId && (
+        <WidgetConfigPanel
+          widgetId={configPanelWidgetId}
+          isOpen={!!configPanelWidgetId}
+          onClose={() => setConfigPanelWidgetId(null)}
+        />
+      )}
     </div>
   )
 }

@@ -33,3 +33,40 @@ export interface DashboardTemplate {
   widgets: Omit<Widget, 'id'>[]
   category: 'project' | 'tax' | 'custom'
 }
+
+// 위젯 타입 정의
+export type WidgetType = 
+  | 'project-summary'
+  | 'tax-deadline'
+  | 'revenue-chart'
+  | 'task-tracker'
+  | 'kpi-metrics'
+  | 'tax-calculator'
+  | 'custom'
+
+// 위젯 카테고리
+export type WidgetCategory = 'project' | 'tax' | 'analytics' | 'productivity' | 'custom'
+
+// 위젯 메타데이터
+export interface WidgetMetadata {
+  name: string
+  description: string
+  icon?: string
+  defaultSize: { width: number; height: number }
+  minSize?: { width: number; height: number }
+  maxSize?: { width: number; height: number }
+  tags?: string[]
+  configurable?: boolean
+  version?: string
+}
+
+// 위젯 Props 인터페이스
+export interface WidgetProps {
+  id: string
+  type: WidgetType
+  config?: any
+  isEditMode: boolean
+  onConfigChange?: (config: any) => void
+  onRemove?: () => void
+  className?: string
+}

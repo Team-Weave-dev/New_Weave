@@ -21,6 +21,7 @@ interface DashboardStore {
   // Widget Actions
   addWidget: (widget: Omit<Widget, 'id'>) => void
   updateWidget: (widgetId: string, updates: Partial<Widget>) => void
+  updateWidgetConfig: (widgetId: string, config: Record<string, any>) => void
   removeWidget: (widgetId: string) => void
   moveWidget: (widgetId: string, newPosition: WidgetPosition) => void
   lockWidget: (widgetId: string, locked: boolean) => void
@@ -148,6 +149,24 @@ export const useDashboardStore = create<DashboardStore>()(
               widgets: state.currentLayout.widgets.map((widget) =>
                 widget.id === widgetId
                   ? { ...widget, ...updates }
+                  : widget
+              ),
+              updatedAt: new Date(),
+            },
+          }
+        })
+      },
+      
+      updateWidgetConfig: (widgetId, config) => {
+        set((state) => {
+          if (!state.currentLayout) return state
+          
+          return {
+            currentLayout: {
+              ...state.currentLayout,
+              widgets: state.currentLayout.widgets.map((widget) =>
+                widget.id === widgetId
+                  ? { ...widget, config }
                   : widget
               ),
               updatedAt: new Date(),
