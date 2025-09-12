@@ -1,0 +1,5 @@
+export { ProjectSummaryWidget } from './ProjectSummaryWidget'
+export { RevenueChartWidget } from './RevenueChartWidget'
+export { TodoListWidget } from './TodoListWidget'
+export { CalendarWidget } from './CalendarWidget'
+export { RecentActivityWidget } from './RecentActivityWidget'

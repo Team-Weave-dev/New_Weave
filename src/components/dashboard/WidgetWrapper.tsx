@@ -75,10 +75,10 @@ export function WidgetWrapper({
   return (
     <div
       className={cn(
-        'relative h-full w-full overflow-hidden rounded-lg border bg-white dark:bg-gray-800 transition-all duration-200',
+        'relative h-full w-full overflow-hidden rounded-lg border bg-white transition-all duration-200',
         {
           'border-blue-500 shadow-lg': isSelected && isEditMode,
-          'border-gray-200 dark:border-gray-700': !isSelected || !isEditMode,
+          'border-gray-200': !isSelected || !isEditMode,
           'opacity-50': isDragging,
           'hover:shadow-md': isEditMode && !locked,
           'cursor-move': isEditMode && !locked,
@@ -105,18 +105,18 @@ export function WidgetWrapper({
 
       {/* 헤더 (편집 모드에서만 표시) */}
       {isEditMode && (isHovered || isSelected) && (
-        <div className="absolute top-0 left-0 right-0 z-20 flex items-center justify-between bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm p-2 border-b border-gray-200 dark:border-gray-700">
+        <div className="absolute top-0 left-0 right-0 z-20 flex items-center justify-between bg-white/90 backdrop-blur-sm p-2 border-b border-gray-200">
           <div className="flex items-center gap-2">
             {/* 드래그 핸들 */}
             {!locked && (
-              <div className="cursor-move p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded">
+              <div className="cursor-move p-1 hover:bg-gray-100 rounded">
                 <Move className="h-4 w-4 text-gray-500" />
               </div>
             )}
             
             {/* 위젯 제목 */}
             {title && (
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+              <span className="text-sm font-medium text-gray-700">
                 {title}
               </span>
             )}

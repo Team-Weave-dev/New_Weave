@@ -2,8 +2,10 @@
 
 import React, { ReactNode } from 'react'
 import { cn } from '@/lib/utils'
+import { GridSize } from '@/types/dashboard'
 
-export type GridSize = '3x3' | '4x4'
+// Re-export for backward compatibility
+export type { GridSize }
 
 interface GridLayoutProps {
   children: ReactNode
@@ -20,7 +22,17 @@ export function GridLayout({
   padding = 16,
   className
 }: GridLayoutProps) {
-  const gridCols = gridSize === '3x3' ? 3 : 4
+  const getGridCols = (size: GridSize) => {
+    const sizeMap = {
+      '2x2': 2,
+      '3x3': 3,
+      '4x4': 4,
+      '5x5': 5,
+    }
+    return sizeMap[size] || 3
+  }
+  
+  const gridCols = getGridCols(gridSize)
   
   const gridStyles = {
     '--grid-cols': gridCols,
@@ -28,11 +40,21 @@ export function GridLayout({
     '--grid-padding': `${padding}px`,
   } as React.CSSProperties
 
+  const getGridClassName = (size: GridSize) => {
+    const classMap = {
+      '2x2': 'grid-cols-2',
+      '3x3': 'grid-cols-3',
+      '4x4': 'grid-cols-4',
+      '5x5': 'grid-cols-5',
+    }
+    return classMap[size] || 'grid-cols-3'
+  }
+
   return (
     <div
       className={cn(
         'grid w-full h-full',
-        gridSize === '3x3' ? 'grid-cols-3' : 'grid-cols-4',
+        getGridClassName(gridSize),
         className
       )}
       style={{

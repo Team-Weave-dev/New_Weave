@@ -134,10 +134,10 @@
 
 ## 🎯 Phase 2: 드래그 앤 드롭 시스템 (Week 2)
 
-### [ ] **P2-01**: @dnd-kit 라이브러리 통합
+### [x] **P2-01**: @dnd-kit 라이브러리 통합
 - **Title**: 드래그 앤 드롭 라이브러리 통합
 - **Description**: @dnd-kit을 프로젝트에 통합하고 기본 설정 구현
-- **Status**: `TODO`
+- **Status**: `DONE`
 - **Dependencies**: P1-02, P1-04
 - **Priority**: `P0 (Critical)`
 - **Details**:
@@ -148,10 +148,10 @@
   - 드래그 이벤트 시뮬레이션
   - 드롭 타겟 감지 테스트
 
-### [ ] **P2-02**: 충돌 감지 알고리즘 구현
+### [x] **P2-02**: 충돌 감지 알고리즘 구현
 - **Title**: 위젯 충돌 감지 시스템
 - **Description**: 그리드 상에서 위젯 간 충돌을 감지하는 알고리즘 구현
-- **Status**: `TODO`
+- **Status**: `DONE`
 - **Dependencies**: P1-02
 - **Priority**: `P0 (Critical)`
 - **Details**:
@@ -163,10 +163,10 @@
   - 단위 테스트로 다양한 충돌 시나리오 검증
   - 경계 케이스 테스트
 
-### [ ] **P2-03**: 드래그 프리뷰 컴포넌트
+### [x] **P2-03**: 드래그 프리뷰 컴포넌트
 - **Title**: 드래그 중 표시되는 프리뷰 구현
 - **Description**: 위젯을 드래그할 때 표시되는 시각적 프리뷰 컴포넌트
-- **Status**: `TODO`
+- **Status**: `DONE`
 - **Dependencies**: P2-01
 - **Priority**: `P1 (High)`
 - **Details**:
@@ -177,10 +177,10 @@
   - 프리뷰 렌더링 테스트
   - 스타일 적용 테스트
 
-### [ ] **P2-04**: 위젯 이동 로직 구현
+### [x] **P2-04**: 위젯 이동 로직 구현
 - **Title**: 위젯 위치 변경 핵심 로직
 - **Description**: 드래그 앤 드롭으로 위젯 위치를 변경하는 로직 구현
-- **Status**: `TODO`
+- **Status**: `DONE`
 - **Dependencies**: P2-01, P2-02
 - **Priority**: `P0 (Critical)`
 - **Details**:
@@ -192,10 +192,10 @@
   - 위치 변경 정확성 테스트
   - 상태 업데이트 검증
 
-### [ ] **P2-05**: 자동 리플로우 시스템
+### [x] **P2-05**: 자동 리플로우 시스템
 - **Title**: 위젯 자동 재배치 알고리즘
 - **Description**: 충돌 시 다른 위젯을 자동으로 재배치하는 시스템
-- **Status**: `TODO`
+- **Status**: `DONE`
 - **Dependencies**: P2-02
 - **Priority**: `P2 (Medium)`
 - **Details**:
@@ -206,10 +206,10 @@
   - 리플로우 시나리오 테스트
   - 성능 테스트
 
-### [ ] **P2-06**: 드래그 앤 드롭 접근성
+### [x] **P2-06**: 드래그 앤 드롭 접근성
 - **Title**: 키보드 네비게이션 지원
 - **Description**: 드래그 앤 드롭을 키보드로 제어할 수 있는 접근성 기능
-- **Status**: `TODO`
+- **Status**: `DONE`
 - **Dependencies**: P2-01, P2-04
 - **Priority**: `P2 (Medium)`
 - **Details**:
