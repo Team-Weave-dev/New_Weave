@@ -1,7 +1,7 @@
 'use client'
 
-import React, { useState, useMemo } from 'react'
-import { X, Search, Plus, Grid3x3, Briefcase, Calculator, TrendingUp, CheckSquare, Package } from 'lucide-react'
+import React, { useState, useMemo, useEffect } from 'react'
+import { X, Search, Plus, Grid3x3, Briefcase, Calculator, TrendingUp, CheckSquare, Package, Folder, Calendar, BarChart3, Box } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
 import { cn } from '@/lib/utils'
 import { WidgetRegistry } from '@/lib/dashboard/WidgetRegistry'
@@ -32,101 +32,66 @@ const categoryLabels: Record<WidgetCategory, string> = {
   custom: '커스텀'
 }
 
-// 임시 위젯 데이터 (실제 위젯이 구현되면 레지스트리에서 가져옴)
-const mockWidgets = [
-  {
-    type: 'project-summary' as WidgetType,
-    metadata: {
-      name: '프로젝트 요약',
-      description: '진행 중인 프로젝트 현황을 한눈에 확인',
-      icon: 'folder',
-      defaultSize: { width: 2, height: 2 },
-      minSize: { width: 1, height: 1 },
-      maxSize: { width: 4, height: 4 },
-      tags: ['프로젝트', '요약', '현황']
-    },
-    category: 'project' as WidgetCategory
-  },
-  {
-    type: 'tax-deadline' as WidgetType,
-    metadata: {
-      name: '세무 캘린더',
-      description: '세무 관련 마감일과 일정을 표시',
-      icon: 'calendar',
-      defaultSize: { width: 2, height: 2 },
-      minSize: { width: 2, height: 2 },
-      maxSize: { width: 4, height: 4 },
-      tags: ['세무', '캘린더', '마감일']
-    },
-    category: 'tax' as WidgetCategory
-  },
-  {
-    type: 'revenue-chart' as WidgetType,
-    metadata: {
-      name: '수익 차트',
-      description: '월별/분기별 수익을 차트로 표시',
-      icon: 'chart',
-      defaultSize: { width: 2, height: 2 },
-      minSize: { width: 2, height: 1 },
-      maxSize: { width: 4, height: 3 },
-      tags: ['수익', '차트', '분석']
-    },
-    category: 'analytics' as WidgetCategory
-  },
-  {
-    type: 'task-tracker' as WidgetType,
-    metadata: {
-      name: '작업 추적기',
-      description: '프로젝트별 작업을 추적하고 관리',
-      icon: 'tasks',
-      defaultSize: { width: 2, height: 3 },
-      minSize: { width: 1, height: 2 },
-      maxSize: { width: 3, height: 4 },
-      tags: ['작업', '할일', '추적']
-    },
-    category: 'productivity' as WidgetCategory
-  },
-  {
-    type: 'kpi-metrics' as WidgetType,
-    metadata: {
-      name: 'KPI 메트릭',
-      description: '핵심 성과 지표를 한눈에 확인',
-      icon: 'gauge',
-      defaultSize: { width: 3, height: 1 },
-      minSize: { width: 2, height: 1 },
-      maxSize: { width: 4, height: 2 },
-      tags: ['KPI', '지표', '성과']
-    },
-    category: 'analytics' as WidgetCategory
-  },
-  {
-    type: 'tax-calculator' as WidgetType,
-    metadata: {
-      name: '세금 계산기',
-      description: '부가세, 소득세 등을 간편하게 계산',
-      icon: 'calculator',
-      defaultSize: { width: 2, height: 2 },
-      minSize: { width: 1, height: 1 },
-      maxSize: { width: 3, height: 3 },
-      tags: ['세금', '계산기', '부가세']
-    },
-    category: 'tax' as WidgetCategory
-  }
-]
+// 위젯 아이콘 매핑
+const widgetIcons: Record<string, React.ReactNode> = {
+  folder: <Folder className="w-8 h-8" />,
+  calendar: <Calendar className="w-8 h-8" />,
+  chart: <TrendingUp className="w-8 h-8" />,
+  'chart-bar': <BarChart3 className="w-8 h-8" />,
+  tasks: <CheckSquare className="w-8 h-8" />,
+  calculator: <Calculator className="w-8 h-8" />,
+  box: <Box className="w-8 h-8" />
+}
 
-export const WidgetLibrary: React.FC<WidgetLibraryProps> = ({
-  isOpen,
-  onClose,
-  onAddWidget
-}) => {
+export function WidgetLibrary({ isOpen, onClose, onAddWidget }: WidgetLibraryProps) {
   const [selectedCategory, setSelectedCategory] = useState<WidgetCategory | 'all'>('all')
   const [searchQuery, setSearchQuery] = useState('')
-  const { currentLayout } = useDashboardStore()
-  const currentWidgets = currentLayout?.widgets || []
+  const [availableWidgets, setAvailableWidgets] = useState<Array<{
+    type: WidgetType
+    metadata: WidgetMetadata
+    category: WidgetCategory
+  }>>([])
 
-  // 카테고리별 위젯 필터링
+  // WidgetRegistry에서 위젯 데이터 가져오기
+  useEffect(() => {
+    const loadWidgets = () => {
+      const widgets: typeof availableWidgets = []
+      
+      // 모든 카테고리 순회
+      const categories = WidgetRegistry.getCategories()
+      categories.forEach(category => {
+        const categoryWidgets = WidgetRegistry.getWidgetsByCategory(category)
+        categoryWidgets.forEach(widget => {
+          // WidgetType 찾기 - Registry의 모든 위젯을 순회하여 매칭
+          const allStats = WidgetRegistry.getStatistics()
+          
+          // 간단한 방법: metadata의 name으로 type 추론
+          let widgetType: WidgetType = 'custom'
+          
+          if (widget.metadata.name === '프로젝트 요약') widgetType = 'project-summary'
+          else if (widget.metadata.name === '세무 캘린더') widgetType = 'tax-deadline'
+          else if (widget.metadata.name === '수익 차트') widgetType = 'revenue-chart'
+          else if (widget.metadata.name === '작업 추적기') widgetType = 'task-tracker'
+          else if (widget.metadata.name === 'KPI 지표') widgetType = 'kpi-metrics'
+          else if (widget.metadata.name === '세금 계산기') widgetType = 'tax-calculator'
+          
+          widgets.push({
+            type: widgetType,
+            metadata: widget.metadata,
+            category: widget.category
+          })
+        })
+      })
+      
+      setAvailableWidgets(widgets)
+    }
+    
+    loadWidgets()
+  }, [])
+
+  // 필터링된 위젯 목록
   const filteredWidgets = useMemo(() => {
-    let widgets = mockWidgets
+    let widgets = availableWidgets
 
     // 카테고리 필터
     if (selectedCategory !== 'all') {
@@ -136,21 +101,20 @@ export const WidgetLibrary: React.FC<WidgetLibraryProps> = ({
     // 검색 필터
     if (searchQuery) {
       const query = searchQuery.toLowerCase()
-      widgets = widgets.filter(w => {
-        return (
-          w.metadata.name.toLowerCase().includes(query) ||
-          w.metadata.description.toLowerCase().includes(query) ||
-          w.metadata.tags?.some(tag => tag.toLowerCase().includes(query))
-        )
-      })
+      widgets = widgets.filter(w => 
+        w.metadata.name.toLowerCase().includes(query) ||
+        w.metadata.description.toLowerCase().includes(query) ||
+        w.metadata.tags?.some(tag => tag.toLowerCase().includes(query))
+      )
     }
 
     return widgets
-  }, [selectedCategory, searchQuery])
+  }, [availableWidgets, selectedCategory, searchQuery])
 
-  // 위젯이 이미 대시보드에 있는지 확인
-  const isWidgetAdded = (type: WidgetType) => {
-    return currentWidgets.some(w => w.type === type)
+  // 현재 레이아웃에 이미 있는 위젯 체크
+  const currentLayout = useDashboardStore(state => state.currentLayout)
+  const isWidgetInLayout = (type: WidgetType) => {
+    return currentLayout?.widgets.some(w => w.type === type) || false
   }
 
   if (!isOpen) return null
@@ -218,116 +182,79 @@ export const WidgetLibrary: React.FC<WidgetLibraryProps> = ({
       {/* 위젯 목록 */}
       <div className="flex-1 overflow-y-auto p-4">
         {filteredWidgets.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full text-center">
-            <Package className="w-12 h-12 text-txt-tertiary mb-3" />
-            <p className="text-gray-600 dark:text-gray-400">
-              {searchQuery ? '검색 결과가 없습니다' : '이 카테고리에 위젯이 없습니다'}
-            </p>
+          <div className="text-center py-8 text-txt-secondary">
+            {searchQuery ? '검색 결과가 없습니다.' : '위젯이 없습니다.'}
           </div>
         ) : (
           <div className="space-y-3">
-            {filteredWidgets.map((widget) => (
-              <WidgetCard
-                key={widget.type}
-                type={widget.type}
-                metadata={widget.metadata}
-                category={widget.category}
-                isAdded={isWidgetAdded(widget.type)}
-                onAdd={() => onAddWidget(widget.type, widget.metadata)}
-              />
-            ))}
+            {filteredWidgets.map((widget) => {
+              const isAdded = isWidgetInLayout(widget.type)
+              
+              return (
+                <Card
+                  key={widget.type}
+                  className={cn(
+                    "p-4 cursor-pointer transition-all",
+                    isAdded 
+                      ? "bg-gray-100 dark:bg-gray-800 opacity-60" 
+                      : "hover:shadow-lg hover:border-blue-300 dark:hover:border-blue-700"
+                  )}
+                  onClick={() => !isAdded && onAddWidget(widget.type, widget.metadata)}
+                >
+                  <div className="flex items-start gap-4">
+                    <div className="p-3 bg-gray-100 dark:bg-gray-800 rounded-lg">
+                      {widgetIcons[widget.metadata.icon || 'box'] || <Box className="w-8 h-8" />}
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="font-medium text-txt-primary mb-1">
+                        {widget.metadata.name}
+                      </h4>
+                      <p className="text-sm text-txt-secondary mb-2">
+                        {widget.metadata.description}
+                      </p>
+                      <div className="flex items-center justify-between">
+                        <div className="flex gap-1">
+                          {widget.metadata.tags?.slice(0, 2).map(tag => (
+                            <span 
+                              key={tag}
+                              className="px-2 py-0.5 text-xs bg-gray-200 dark:bg-gray-700 rounded"
+                            >
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
+                        <button
+                          className={cn(
+                            "px-3 py-1 text-sm rounded transition-colors flex items-center gap-1",
+                            isAdded
+                              ? "bg-gray-300 dark:bg-gray-600 text-gray-500 cursor-not-allowed"
+                              : "bg-blue-500 text-white hover:bg-blue-600"
+                          )}
+                          disabled={isAdded}
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            if (!isAdded) {
+                              onAddWidget(widget.type, widget.metadata)
+                            }
+                          }}
+                        >
+                          <Plus className="w-3 h-3" />
+                          {isAdded ? '추가됨' : '추가'}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </Card>
+              )
+            })}
           </div>
         )}
       </div>
 
       {/* 푸터 */}
-      <div className="p-4 border-t border-border-primary bg-bg-secondary">
-        <p className="text-xs text-gray-500 dark:text-gray-500 text-center">
-          위젯을 드래그하거나 + 버튼을 클릭하여 추가하세요
-        </p>
+      <div className="p-4 border-t border-border-primary text-center text-sm text-txt-secondary">
+        {availableWidgets.length}개 위젯 사용 가능
       </div>
     </div>
   )
 }
-
-// 위젯 카드 컴포넌트
-interface WidgetCardProps {
-  type: WidgetType
-  metadata: WidgetMetadata
-  category: WidgetCategory
-  isAdded: boolean
-  onAdd: () => void
-}
-
-const WidgetCard: React.FC<WidgetCardProps> = ({
-  type,
-  metadata,
-  category,
-  isAdded,
-  onAdd
-}) => {
-  return (
-    <Card
-      className={cn(
-        "p-4 cursor-pointer transition-all",
-        "hover:shadow-md hover:border-border-hover",
-        isAdded && "opacity-60"
-      )}
-    >
-      <div className="flex items-start justify-between">
-        <div className="flex-1">
-          <div className="flex items-center gap-2 mb-2">
-            {categoryIcons[category]}
-            <h4 className="text-sm font-medium">
-              {metadata.name}
-            </h4>
-          </div>
-          <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
-            {metadata.description}
-          </p>
-          {metadata.tags && (
-            <div className="flex flex-wrap gap-1">
-              {metadata.tags.map((tag) => (
-                <span
-                  key={tag}
-                  className="px-2 py-1 text-xs bg-bg-tertiary text-txt-secondary rounded"
-                >
-                  {tag}
-                </span>
-              ))}
-            </div>
-          )}
-        </div>
-        <button
-          onClick={onAdd}
-          disabled={isAdded}
-          className={cn(
-            "ml-4 px-3 py-1 rounded text-sm font-medium transition-colors",
-            isAdded 
-              ? "bg-gray-100 dark:bg-gray-800 cursor-not-allowed opacity-50" 
-              : "bg-blue-500 text-white hover:bg-blue-600"
-          )}
-        >
-          {isAdded ? (
-            <CheckSquare className="w-4 h-4" />
-          ) : (
-            <Plus className="w-4 h-4" />
-          )}
-        </button>
-      </div>
-      
-      {/* 크기 정보 */}
-      <div className="mt-3 pt-3 border-t border-border-primary flex items-center gap-4 text-xs text-txt-tertiary">
-        <span>기본 크기: {metadata.defaultSize.width}×{metadata.defaultSize.height}</span>
-        {metadata.minSize && (
-          <span>최소: {metadata.minSize.width}×{metadata.minSize.height}</span>
-        )}
-        {metadata.maxSize && (
-          <span>최대: {metadata.maxSize.width}×{metadata.maxSize.height}</span>
-        )}
-      </div>
-    </Card>
-  )
-}
-
-export default WidgetLibrary

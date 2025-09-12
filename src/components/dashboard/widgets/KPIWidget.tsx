@@ -17,7 +17,7 @@ import {
   XCircle,
   Activity
 } from 'lucide-react'
-import { Card } from '@/components/ui/Card'
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card'
 import Typography from '@/components/ui/Typography'
 import type { WidgetProps } from '@/types/dashboard'
 import { cn } from '@/lib/utils'
@@ -222,29 +222,29 @@ export function KPIWidget({
   const getColorClasses = (color: KPIMetric['color']) => {
     const colors = {
       blue: {
-        bg: 'bg-blue-50 dark:bg-blue-900/20',
-        icon: 'text-blue-600 dark:text-blue-400',
-        text: 'text-blue-900 dark:text-blue-100'
+        bg: 'bg-[var(--color-accent-blue)]/10',
+        icon: 'text-[var(--color-accent-blue)]',
+        text: 'text-[var(--color-text-primary)]'
       },
       green: {
-        bg: 'bg-green-50 dark:bg-green-900/20',
-        icon: 'text-green-600 dark:text-green-400',
-        text: 'text-green-900 dark:text-green-100'
+        bg: 'bg-[var(--color-status-success)]/10',
+        icon: 'text-[var(--color-status-success)]',
+        text: 'text-[var(--color-text-primary)]'
       },
       purple: {
-        bg: 'bg-purple-50 dark:bg-purple-900/20',
-        icon: 'text-purple-600 dark:text-purple-400',
-        text: 'text-purple-900 dark:text-purple-100'
+        bg: 'bg-[var(--color-accent-purple)]/10',
+        icon: 'text-[var(--color-accent-purple)]',
+        text: 'text-[var(--color-text-primary)]'
       },
       orange: {
-        bg: 'bg-orange-50 dark:bg-orange-900/20',
-        icon: 'text-orange-600 dark:text-orange-400',
-        text: 'text-orange-900 dark:text-orange-100'
+        bg: 'bg-[var(--color-accent-orange)]/10',
+        icon: 'text-[var(--color-accent-orange)]',
+        text: 'text-[var(--color-text-primary)]'
       },
       red: {
-        bg: 'bg-red-50 dark:bg-red-900/20',
-        icon: 'text-red-600 dark:text-red-400',
-        text: 'text-red-900 dark:text-red-100'
+        bg: 'bg-[var(--color-status-error)]/10',
+        icon: 'text-[var(--color-status-error)]',
+        text: 'text-[var(--color-text-primary)]'
       }
     }
     return colors[color]
@@ -256,29 +256,29 @@ export function KPIWidget({
       return <Minus className="w-4 h-4 text-gray-500" />
     }
     if (trend === 'up') {
-      return <ArrowUp className="w-4 h-4 text-green-600" />
+      return <ArrowUp className="w-4 h-4 text-[var(--color-status-success)]" />
     }
-    return <ArrowDown className="w-4 h-4 text-red-600" />
+    return <ArrowDown className="w-4 h-4 text-[var(--color-status-error)]" />
   }
 
   // 상태 아이콘 가져오기
   const getStatusIcon = (status: KPIMetric['status']) => {
     switch (status) {
       case 'good':
-        return <CheckCircle2 className="w-4 h-4 text-green-600" />
+        return <CheckCircle2 className="w-4 h-4 text-[var(--color-status-success)]" />
       case 'warning':
-        return <AlertCircle className="w-4 h-4 text-yellow-600" />
+        return <AlertCircle className="w-4 h-4 text-[var(--color-status-warning)]" />
       case 'danger':
-        return <XCircle className="w-4 h-4 text-red-600" />
+        return <XCircle className="w-4 h-4 text-[var(--color-status-error)]" />
     }
   }
 
   // 진행률 바 색상
   const getProgressColor = (achievement: number) => {
-    if (achievement >= 100) return 'bg-green-500'
-    if (achievement >= 80) return 'bg-blue-500'
-    if (achievement >= 60) return 'bg-yellow-500'
-    return 'bg-red-500'
+    if (achievement >= 100) return 'bg-[var(--color-status-success)]'
+    if (achievement >= 80) return 'bg-[var(--color-status-info)]'
+    if (achievement >= 60) return 'bg-[var(--color-status-warning)]'
+    return 'bg-[var(--color-status-error)]'
   }
 
   // 요약 통계
@@ -334,23 +334,23 @@ export function KPIWidget({
   return (
     <Card className={cn("h-full p-4 flex flex-col", className)}>
       {/* 헤더 */}
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2">
-          <BarChart3 className="w-5 h-5 text-blue-600" />
-          <Typography variant="h3" className="text-gray-900">
-            KPI 대시보드
-          </Typography>
+      <CardHeader className="pb-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <BarChart3 className="w-5 h-5 text-[var(--color-brand-primary-start)]" />
+            <CardTitle>KPI 대시보드</CardTitle>
+          </div>
+          <select
+            value={period}
+            onChange={(e) => setPeriod(e.target.value as PeriodType)}
+            className="text-sm border border-gray-300 dark:border-gray-700 rounded px-2 py-1"
+          >
+            <option value="month">월간</option>
+            <option value="quarter">분기</option>
+            <option value="year">연간</option>
+          </select>
         </div>
-        <select
-          value={period}
-          onChange={(e) => setPeriod(e.target.value as PeriodType)}
-          className="text-sm border border-gray-300 dark:border-gray-700 rounded px-2 py-1"
-        >
-          <option value="month">월간</option>
-          <option value="quarter">분기</option>
-          <option value="year">연간</option>
-        </select>
-      </div>
+      </CardHeader>
 
       {/* 요약 통계 */}
       <div className="grid grid-cols-4 gap-2 mb-4">

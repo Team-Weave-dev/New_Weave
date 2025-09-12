@@ -15,17 +15,9 @@ import { cn } from '@/lib/utils'
 import { Loader2 } from 'lucide-react'
 import { useDashboardKeyboardNavigation } from '@/hooks/useDashboardKeyboardNavigation'
 import type { WidgetType, WidgetMetadata } from '@/types/dashboard'
-import {
-  ProjectSummaryWidget,
-  TaxDeadlineWidget,
-  RevenueChartWidget,
-  TodoListWidget,
-  TaskTrackerWidget,
-  KPIWidget,
-  TaxCalculatorWidget,
-  CalendarWidget,
-  RecentActivityWidget,
-} from './widgets/LazyWidgets'
+import { initializeWidgetRegistry } from '@/lib/dashboard/initializeWidgets'
+import { WidgetRegistry } from '@/lib/dashboard/WidgetRegistry'
+// Lazy loaded widgets are now handled by WidgetRegistry
 
 interface DashboardContainerProps {
   className?: string
@@ -51,9 +43,18 @@ export function DashboardContainer({
   const [isInitialized, setIsInitialized] = useState(false)
   const [isWidgetLibraryOpen, setIsWidgetLibraryOpen] = useState(false)
   const [configPanelWidgetId, setConfigPanelWidgetId] = useState<string | null>(null)
+  const [isRegistryInitialized, setIsRegistryInitialized] = useState(false)
   
   // 키보드 네비게이션 훅 사용
   useDashboardKeyboardNavigation()
+
+  // WidgetRegistry 초기화
+  useEffect(() => {
+    if (!isRegistryInitialized) {
+      initializeWidgetRegistry();
+      setIsRegistryInitialized(true);
+    }
+  }, [isRegistryInitialized]);
 
   // 초기 레이아웃 로드
   useEffect(() => {
@@ -98,71 +99,30 @@ export function DashboardContainer({
       </WidgetErrorBoundary>
     )
 
-    // 새로운 위젯 시스템 (WidgetType)
-    switch (widget.type as WidgetType) {
-      case 'project-summary':
-        return renderWithSuspense(ProjectSummaryWidget)
-      case 'revenue-chart':
-        return renderWithSuspense(RevenueChartWidget)
-      case 'task-tracker':
-        return renderWithSuspense(TaskTrackerWidget)
-      case 'kpi-metrics':
-        return renderWithSuspense(KPIWidget)
-      case 'tax-deadline':
-        return renderWithSuspense(TaxDeadlineWidget)
-      case 'tax-calculator':
-        return renderWithSuspense(TaxCalculatorWidget)
-      default:
-        // 기존 위젯 시스템 (호환성 유지)
-        switch (widget.type) {
-          case '프로젝트 요약':
-            return renderWithSuspense(ProjectSummaryWidget)
-          case '매출 차트':
-            return renderWithSuspense(RevenueChartWidget)
-          case '할 일 목록':
-            return (
-              <WidgetErrorBoundary widgetId={widget.id} widgetType={widget.type}>
-                <Suspense fallback={<WidgetSkeleton />}>
-                  <TodoListWidget />
-                </Suspense>
-              </WidgetErrorBoundary>
-            )
-          case '캘린더':
-            return (
-              <WidgetErrorBoundary widgetId={widget.id} widgetType={widget.type}>
-                <Suspense fallback={<WidgetSkeleton />}>
-                  <CalendarWidget />
-                </Suspense>
-              </WidgetErrorBoundary>
-            )
-          case '최근 활동':
-            return (
-              <WidgetErrorBoundary widgetId={widget.id} widgetType={widget.type}>
-                <Suspense fallback={<WidgetSkeleton />}>
-                  <RecentActivityWidget />
-                </Suspense>
-              </WidgetErrorBoundary>
-            )
-          default:
-            // 기본 위젯 (임시)
-            return (
-              <div className="p-4">
-                <h3 className="text-lg font-semibold mb-2">
-                  {widget.type}
-                </h3>
-                <p className="text-gray-600 dark:text-gray-400">
-                  위젯 ID: {widget.id}
-                </p>
-                <p className="text-sm text-gray-500 dark:text-gray-500 mt-2">
-                  위치: {widget.position.x}, {widget.position.y}
-                </p>
-                <p className="text-sm text-gray-500 dark:text-gray-500">
-                  크기: {widget.position.width}x{widget.position.height}
-                </p>
-              </div>
-            )
-        }
+    // WidgetRegistry에서 컴포넌트 가져오기
+    const registeredComponent = WidgetRegistry.getComponent(widget.type as WidgetType);
+    
+    if (registeredComponent) {
+      return renderWithSuspense(registeredComponent as React.ComponentType<any>);
     }
+    
+    // 위젯을 찾을 수 없는 경우 폴백
+    console.warn(`Widget type "${widget.type}" not found in registry`);
+    return (
+      <WidgetErrorBoundary widgetId={widget.id} widgetType={widget.type}>
+        <div className="p-4 bg-gray-50 rounded-lg">
+          <h3 className="text-lg font-semibold mb-2 text-gray-700">
+            위젯을 불러올 수 없습니다
+          </h3>
+          <p className="text-sm text-gray-600">
+            위젯 타입: {widget.type}
+          </p>
+          <p className="text-xs text-gray-500 mt-2">
+            위젯 ID: {widget.id}
+          </p>
+        </div>
+      </WidgetErrorBoundary>
+    )
   }
 
   // 위젯 추가 핸들러

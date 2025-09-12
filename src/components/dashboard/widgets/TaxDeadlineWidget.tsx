@@ -19,11 +19,11 @@ interface TaxDeadline {
 
 // 세무 타입별 색상
 const taxTypeColors = {
-  vat: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
-  income: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
-  corporate: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300',
-  withholding: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300',
-  other: 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300'
+  vat: 'bg-[var(--color-accent-blue)]/10 text-[var(--color-accent-blue)]',
+  income: 'bg-[var(--color-status-success)]/10 text-[var(--color-status-success)]',
+  corporate: 'bg-[var(--color-accent-purple)]/10 text-[var(--color-accent-purple)]',
+  withholding: 'bg-[var(--color-accent-orange)]/10 text-[var(--color-accent-orange)]',
+  other: 'bg-[var(--color-primary-surfaceSecondary)] text-[var(--color-text-secondary)]'
 }
 
 // 세무 타입 레이블
@@ -203,8 +203,8 @@ export function TaxDeadlineWidget({
       {/* 헤더 */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <Calendar className="w-5 h-5 text-blue-600" />
-          <Typography variant="h3" className="text-gray-900">
+          <Calendar className="w-5 h-5 text-[var(--color-accent-blue)]" />
+          <Typography variant="h3" className="text-[var(--color-text-primary)]">
             세무 캘린더
           </Typography>
         </div>
@@ -234,7 +234,7 @@ export function TaxDeadlineWidget({
           className={cn(
             "flex-1 py-1 px-2 rounded text-sm",
             viewMode === 'month' 
-              ? "bg-blue-500 text-white" 
+              ? "bg-[var(--color-accent-blue)] text-white" 
               : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400"
           )}
         >
@@ -245,7 +245,7 @@ export function TaxDeadlineWidget({
           className={cn(
             "flex-1 py-1 px-2 rounded text-sm",
             viewMode === 'list' 
-              ? "bg-blue-500 text-white" 
+              ? "bg-[var(--color-accent-blue)] text-white" 
               : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400"
           )}
         >
@@ -262,8 +262,8 @@ export function TaxDeadlineWidget({
               <div key={day} className="text-center">
                 <Typography variant="caption" className={cn(
                   "text-gray-500",
-                  day === '일' && "text-red-500",
-                  day === '토' && "text-blue-500"
+                  day === '일' && "text-[var(--color-status-error)]",
+                  day === '토' && "text-[var(--color-accent-blue)]"
                 )}>
                   {day}
                 </Typography>
@@ -288,23 +288,23 @@ export function TaxDeadlineWidget({
                     isCurrentMonth 
                       ? "bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700" 
                       : "bg-gray-50 dark:bg-gray-950 border-gray-100 dark:border-gray-800",
-                    isToday && "ring-2 ring-blue-500",
-                    dayDeadlines.length > 0 && "bg-red-50 dark:bg-red-900/20"
+                    isToday && "ring-2 ring-[var(--color-accent-blue)]",
+                    dayDeadlines.length > 0 && "bg-[var(--color-status-error)]/10"
                   )}
                 >
                   <Typography 
                     variant="caption" 
                     className={cn(
                       isCurrentMonth ? "text-gray-900 dark:text-gray-100" : "text-gray-400",
-                      day.getDay() === 0 && "text-red-500",
-                      day.getDay() === 6 && "text-blue-500"
+                      day.getDay() === 0 && "text-[var(--color-status-error)]",
+                      day.getDay() === 6 && "text-[var(--color-accent-blue)]"
                     )}
                   >
                     {day.getDate()}
                   </Typography>
                   {dayDeadlines.length > 0 && (
                     <div className="absolute bottom-0 left-0 right-0 px-1">
-                      <div className="w-full h-1 bg-red-500 rounded-full" />
+                      <div className="w-full h-1 bg-[var(--color-status-error)] rounded-full" />
                     </div>
                   )}
                 </div>
@@ -333,8 +333,8 @@ export function TaxDeadlineWidget({
                     key={deadline.id}
                     className={cn(
                       "p-3 rounded-lg border",
-                      isOverdue && "border-red-500 bg-red-50 dark:bg-red-900/20",
-                      isUrgent && "border-orange-500 bg-orange-50 dark:bg-orange-900/20",
+                      isOverdue && "border-[var(--color-status-error)] bg-[var(--color-status-error)]/10",
+                      isUrgent && "border-[var(--color-status-warning)] bg-[var(--color-status-warning)]/10",
                       !isOverdue && !isUrgent && "border-gray-200 dark:border-gray-700"
                     )}
                   >
@@ -366,13 +366,13 @@ export function TaxDeadlineWidget({
                             variant="caption" 
                             className={cn(
                               "block",
-                              isUrgent ? "text-orange-600 font-medium" : "text-gray-500"
+                              isUrgent ? "text-[var(--color-status-warning)] font-medium" : "text-gray-500"
                             )}
                           >
                             D-{daysUntil}
                           </Typography>
                         ) : (
-                          <Typography variant="caption" className="block text-red-600 font-medium">
+                          <Typography variant="caption" className="block text-[var(--color-status-error)] font-medium">
                             {Math.abs(daysUntil)}일 지남
                           </Typography>
                         )}
@@ -390,7 +390,7 @@ export function TaxDeadlineWidget({
       {!isEditMode && deadlines.length > 0 && (
         <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
           <div className="flex items-center gap-2">
-            <AlertCircle className="w-4 h-4 text-orange-500" />
+            <AlertCircle className="w-4 h-4 text-[var(--color-status-warning)]" />
             <Typography variant="caption" className="text-gray-600 dark:text-gray-400">
               다가오는 일정: {deadlines.filter(d => {
                 const days = getDaysUntil(d.date)

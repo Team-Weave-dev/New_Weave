@@ -231,8 +231,8 @@ export function TaxCalculatorWidget({
       {/* 헤더 */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <Calculator className="w-5 h-5 text-blue-600" />
-          <Typography variant="h3" className="text-gray-900">
+          <Calculator className="w-5 h-5 text-[var(--color-accent-blue)]" />
+          <Typography variant="h3" className="text-[var(--color-text-primary)]">
             세무 계산기
           </Typography>
         </div>
@@ -255,7 +255,7 @@ export function TaxCalculatorWidget({
             className={cn(
               "px-3 py-2 text-sm rounded-lg border transition-colors",
               selectedTaxType === 'vat'
-                ? "bg-blue-500 text-white border-blue-500"
+                ? "bg-[var(--color-accent-blue)] text-white border-[var(--color-accent-blue)]"
                 : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-700"
             )}
           >
@@ -266,7 +266,7 @@ export function TaxCalculatorWidget({
             className={cn(
               "px-3 py-2 text-sm rounded-lg border transition-colors",
               selectedTaxType === 'income'
-                ? "bg-blue-500 text-white border-blue-500"
+                ? "bg-[var(--color-accent-blue)] text-white border-[var(--color-accent-blue)]"
                 : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-700"
             )}
           >
@@ -277,7 +277,7 @@ export function TaxCalculatorWidget({
             className={cn(
               "px-3 py-2 text-sm rounded-lg border transition-colors",
               selectedTaxType === 'corporate'
-                ? "bg-blue-500 text-white border-blue-500"
+                ? "bg-[var(--color-accent-blue)] text-white border-[var(--color-accent-blue)]"
                 : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-700"
             )}
           >
@@ -288,7 +288,7 @@ export function TaxCalculatorWidget({
             className={cn(
               "px-3 py-2 text-sm rounded-lg border transition-colors",
               selectedTaxType === 'capital-gains'
-                ? "bg-blue-500 text-white border-blue-500"
+                ? "bg-[var(--color-accent-blue)] text-white border-[var(--color-accent-blue)]"
                 : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-700"
             )}
           >
@@ -309,7 +309,7 @@ export function TaxCalculatorWidget({
               className={cn(
                 "flex-1 px-3 py-1.5 text-sm rounded border transition-colors",
                 vatMode === 'exclude'
-                  ? "bg-blue-100 text-blue-700 border-blue-300"
+                  ? "bg-[var(--color-accent-blue)]/10 text-[var(--color-accent-blue)] border-[var(--color-accent-blue)]/30"
                   : "bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 border-gray-300 dark:border-gray-700"
               )}
             >
@@ -320,7 +320,7 @@ export function TaxCalculatorWidget({
               className={cn(
                 "flex-1 px-3 py-1.5 text-sm rounded border transition-colors",
                 vatMode === 'include'
-                  ? "bg-blue-100 text-blue-700 border-blue-300"
+                  ? "bg-[var(--color-accent-blue)]/10 text-[var(--color-accent-blue)] border-[var(--color-accent-blue)]/30"
                   : "bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 border-gray-300 dark:border-gray-700"
               )}
             >
@@ -354,20 +354,20 @@ export function TaxCalculatorWidget({
       {calculation && (
         <div className="flex-1 space-y-3">
           {/* 주요 결과 */}
-          <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+          <div className="p-3 bg-[var(--color-accent-blue)]/10 rounded-lg">
             <div className="flex items-center justify-between mb-2">
-              <Typography variant="caption" className="text-blue-600 dark:text-blue-400">
+              <Typography variant="caption" className="text-[var(--color-accent-blue)]">
                 세금
               </Typography>
-              <Typography variant="h3" className="text-blue-900 dark:text-blue-100">
+              <Typography variant="h3" className="text-[var(--color-text-primary)]">
                 {formatCurrency(calculation.taxAmount)}
               </Typography>
             </div>
             <div className="flex items-center justify-between">
-              <Typography variant="caption" className="text-blue-600 dark:text-blue-400">
+              <Typography variant="caption" className="text-[var(--color-accent-blue)]">
                 {selectedTaxType === 'vat' ? '합계' : '세후 금액'}
               </Typography>
-              <Typography variant="h4" className="text-blue-900 dark:text-blue-100">
+              <Typography variant="h4" className="text-[var(--color-text-primary)]">
                 {formatCurrency(calculation.totalAmount)}
               </Typography>
             </div>

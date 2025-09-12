@@ -5,10 +5,19 @@ import { useRouter } from 'next/navigation';
 import AppLayout from '@/components/layout/AppLayout';
 import { WorkspacePageContainer } from '@/components/layout/PageContainer';
 import { DashboardContainer } from '@/components/dashboard/DashboardContainer';
+import { OnboardingModal } from '@/components/dashboard/OnboardingModal';
+import { TemplateManager } from '@/components/dashboard/TemplateManager';
 import Typography from '@/components/ui/Typography';
 import Button from '@/components/ui/Button';
 import { useDashboardStore } from '@/lib/stores/useDashboardStore';
 import { getSupabaseClientSafe } from '@/lib/supabase/client';
+import { 
+  shouldShowOnboarding, 
+  isDashboardEmpty,
+  getVisitStatistics,
+  firstTimeUserService 
+} from '@/lib/dashboard/firstTimeUserService';
+import { templateService } from '@/lib/dashboard/templateService';
 import { 
   LayoutGrid, 
   Plus, 
@@ -33,6 +42,8 @@ export default function DashboardPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [supabaseClient] = useState(() => getSupabaseClientSafe());
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [showTemplateManager, setShowTemplateManager] = useState(false);
   
   const {
     currentLayout,
@@ -44,33 +55,54 @@ export default function DashboardPage() {
     reflowWidgets,
   } = useDashboardStore();
 
-  // 초기 레이아웃 설정
+  // 첫 사용자 체크 및 온보딩 표시
   useEffect(() => {
+    const checkFirstVisit = () => {
+      // 사용자 데이터 업데이트 (방문 횟수 등)
+      const userData = firstTimeUserService.getUserData();
+      console.log('사용자 방문 데이터:', userData);
+      
+      // 온보딩 표시 여부 결정
+      if (shouldShowOnboarding()) {
+        setShowOnboarding(true);
+      } else {
+        // 대시보드가 비어있으면 기본 레이아웃 초기화
+        if (isDashboardEmpty()) {
+          initializeDefaultLayout();
+        }
+      }
+      
+      // 방문 통계 로그 (개발 환경에서만)
+      if (process.env.NODE_ENV === 'development') {
+        const stats = getVisitStatistics();
+        console.log('방문 통계:', stats);
+      }
+    };
+    
+    checkFirstVisit();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // 의존성 배열을 비워서 처음 마운트 시에만 실행
+  
+  // 기본 레이아웃 초기화 함수 (미니멀 템플릿 사용)
+  const initializeDefaultLayout = async () => {
     // 이미 레이아웃과 위젯이 있으면 초기화 스킵
     if (currentLayout && currentLayout.widgets.length > 0) {
       return;
     }
     
-    // 레이아웃이 없는 경우에만 생성
+    // 레이아웃이 없는 경우 미니멀 템플릿 적용
     if (!currentLayout) {
       const defaultLayout = createLayout('내 대시보드', '3x3');
       setCurrentLayout(defaultLayout);
       
-      // 레이아웃 생성 직후 샘플 위젯 추가
-      const sampleWidgets = [
-        { type: '프로젝트 요약', position: { x: 0, y: 0, width: 1, height: 1 } },
-        { type: '매출 차트', position: { x: 1, y: 0, width: 2, height: 1 } },
-        { type: '할 일 목록', position: { x: 0, y: 1, width: 1, height: 2 } },
-        { type: '캘린더', position: { x: 1, y: 1, width: 1, height: 1 } },
-        { type: '최근 활동', position: { x: 2, y: 1, width: 1, height: 2 } },
-      ];
-      
-      sampleWidgets.forEach(widget => {
-        addWidget(widget);
+      // 미니멀 템플릿 적용 (신규 사용자를 위한 간단한 시작)
+      await templateService.applyTemplate('minimal', {
+        preserveExisting: false,
+        merge: false,
+        backup: false
       });
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // 의존성 배열을 비워서 처음 마운트 시에만 실행
+  };
 
   // 인증 체크
   useEffect(() => {
@@ -86,6 +118,18 @@ export default function DashboardPage() {
     
     checkAuth();
   }, [router, supabaseClient]);
+  
+  // 온보딩 완료 핸들러
+  const handleOnboardingComplete = (templateId?: string) => {
+    setShowOnboarding(false);
+    
+    if (!templateId) {
+      // 템플릿을 선택하지 않은 경우 기본 레이아웃 초기화
+      initializeDefaultLayout();
+    }
+    
+    // firstTimeUserService에서 이미 처리됨 (completeOnboarding 또는 skipOnboarding)
+  };
 
   return (
     <AppLayout>
@@ -111,6 +155,17 @@ export default function DashboardPage() {
             
             {/* 우측 액션 버튼 그룹 */}
             <div className="flex items-center gap-3 flex-shrink-0">
+              {/* 템플릿 관리 버튼 */}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowTemplateManager(true)}
+                className="flex items-center gap-2"
+              >
+                <Sparkles className="h-4 w-4" />
+                템플릿
+              </Button>
+              
               {/* 그리드 크기 선택 */}
               <div className="relative">
                 <Button
@@ -135,21 +190,7 @@ export default function DashboardPage() {
                 {isEditMode ? '편집 완료' : '대시보드 편집'}
               </Button>
               
-              {/* 위젯 추가 버튼 */}
-              {isEditMode && (
-                <Button
-                  variant="primary"
-                  size="sm"
-                  onClick={() => {
-                    // 위젯 라이브러리 모달 열기
-                    console.log('위젯 추가 모달 열기');
-                  }}
-                  className="flex items-center gap-2"
-                >
-                  <Plus className="h-4 w-4" />
-                  위젯 추가
-                </Button>
-              )}
+              {/* 위젯 추가 버튼 - DashboardContainer의 EditModeToolbar 사용하도록 제거 */}
             </div>
           </div>
 
@@ -194,8 +235,21 @@ export default function DashboardPage() {
 
         {/* 대시보드 위젯 컨테이너 */}
         <div className="bg-white rounded-lg border border-gray-200 min-h-[600px]">
-          <DashboardContainer showToolbar={false} />
+          <DashboardContainer showToolbar={true} />
         </div>
+        
+        {/* 온보딩 모달 */}
+        <OnboardingModal
+          isOpen={showOnboarding}
+          onClose={() => setShowOnboarding(false)}
+          onComplete={handleOnboardingComplete}
+        />
+        
+        {/* 템플릿 관리 모달 */}
+        <TemplateManager
+          isOpen={showTemplateManager}
+          onClose={() => setShowTemplateManager(false)}
+        />
       </WorkspacePageContainer>
     </AppLayout>
   );

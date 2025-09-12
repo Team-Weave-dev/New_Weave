@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react'
 import { Briefcase, TrendingUp, Clock, CheckCircle } from 'lucide-react'
-import { Card } from '@/components/ui/Card'
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card'
 import Typography from '@/components/ui/Typography'
 import type { WidgetProps } from '@/types/dashboard'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
@@ -182,10 +182,10 @@ export function ProjectSummaryWidget({
   // 상태별 색상
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'completed': return 'text-green-600 bg-green-100 dark:bg-green-900/30'
-      case 'in_progress': return 'text-blue-600 bg-blue-100 dark:bg-blue-900/30'
-      case 'on_hold': return 'text-yellow-600 bg-yellow-100 dark:bg-yellow-900/30'
-      default: return 'text-gray-600 bg-gray-100 dark:bg-gray-900/30'
+      case 'completed': return 'text-[var(--color-status-success)] bg-[var(--color-status-success)]/10'
+      case 'in_progress': return 'text-[var(--color-status-info)] bg-[var(--color-status-info)]/10'
+      case 'on_hold': return 'text-[var(--color-status-warning)] bg-[var(--color-status-warning)]/10'
+      default: return 'text-[var(--color-text-secondary)] bg-[var(--color-primary-surfaceSecondary)]'
     }
   }
 
@@ -201,43 +201,43 @@ export function ProjectSummaryWidget({
   return (
     <Card className={cn("h-full p-4 flex flex-col", className)}>
       {/* 헤더 */}
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2">
-          <Briefcase className="w-5 h-5 text-blue-600" />
-          <Typography variant="h3" className="text-gray-900">
-            프로젝트 현황
+      <CardHeader className="pb-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Briefcase className="w-5 h-5 text-[var(--color-brand-primary-start)]" />
+            <CardTitle>프로젝트 현황</CardTitle>
+          </div>
+          <Typography variant="caption" color="secondary">
+            총 {data.total}개
           </Typography>
         </div>
-        <Typography variant="caption" className="text-gray-500">
-          총 {data.total}개
-        </Typography>
-      </div>
+      </CardHeader>
 
       {/* 통계 카드 */}
       <div className="grid grid-cols-2 gap-3 mb-4">
-        <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3">
+        <Card variant="elevated" className="p-3 bg-[var(--color-status-info)]/10">
           <div className="flex items-center justify-between">
-            <Clock className="w-4 h-4 text-blue-600" />
-            <Typography variant="caption" className="text-blue-600">
+            <Clock className="w-4 h-4 text-[var(--color-status-info)]" />
+            <Typography variant="caption" className="text-[var(--color-status-info)]">
               진행중
             </Typography>
           </div>
-          <Typography variant="h2" className="text-blue-900 dark:text-blue-100 mt-1">
+          <Typography variant="h2" className="mt-1">
             {data.inProgress}
           </Typography>
-        </div>
+        </Card>
 
-        <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-3">
+        <Card variant="elevated" className="p-3 bg-[var(--color-status-success)]/10">
           <div className="flex items-center justify-between">
-            <CheckCircle className="w-4 h-4 text-green-600" />
-            <Typography variant="caption" className="text-green-600">
+            <CheckCircle className="w-4 h-4 text-[var(--color-status-success)]" />
+            <Typography variant="caption" className="text-[var(--color-status-success)]">
               완료
             </Typography>
           </div>
-          <Typography variant="h2" className="text-green-900 dark:text-green-100 mt-1">
+          <Typography variant="h2" className="mt-1">
             {data.completed}
           </Typography>
-        </div>
+        </Card>
       </div>
 
       {/* 평균 진행률 */}
