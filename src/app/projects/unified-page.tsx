@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, Suspense } from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import AppLayout from '@/components/layout/AppLayout';
 import { DataPageContainer } from '@/components/layout/PageContainer';
@@ -10,15 +10,15 @@ import { ProjectMasterDetailPage } from '@/components/projects/ProjectMasterDeta
 import { ProjectCreateModal } from '@/components/projects/ProjectCreateModal';
 import Typography from '@/components/ui/Typography';
 import Button from '@/components/ui/Button';
-import { Briefcase, Plus, Upload, Eye, Play, CheckCircle } from 'lucide-react';
+import { Briefcase, Plus, Upload, Eye, Play, CheckCircle, Loader2 } from 'lucide-react';
 import type { ProjectTableRow } from '@/lib/types/project-table.types';
 import { useProjectTable } from '@/lib/hooks/useProjectTable';
 
 /**
- * 통합 프로젝트 페이지
- * List View와 Detail View를 전환 가능한 단일 페이지
+ * 통합 프로젝트 페이지 컨텐츠
+ * useSearchParams를 사용하는 실제 컨텐츠
  */
-export default function UnifiedProjectsPage() {
+function UnifiedProjectsContent() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -430,5 +430,25 @@ export default function UnifiedProjectsPage() {
         />
       </DataPageContainer>
     </AppLayout>
+  );
+}
+
+/**
+ * 통합 프로젝트 페이지
+ * Suspense boundary로 감싸진 메인 컴포넌트
+ */
+export default function UnifiedProjectsPage() {
+  return (
+    <Suspense fallback={
+      <AppLayout>
+        <DataPageContainer>
+          <div className="flex items-center justify-center h-64">
+            <Loader2 className="w-8 h-8 animate-spin text-weave-primary" />
+          </div>
+        </DataPageContainer>
+      </AppLayout>
+    }>
+      <UnifiedProjectsContent />
+    </Suspense>
   );
 }

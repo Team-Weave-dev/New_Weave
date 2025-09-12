@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
@@ -10,7 +10,7 @@ import Input from '@/components/ui/Input'
 import Typography from '@/components/ui/Typography'
 import { LogIn, Mail, Lock, AlertCircle, Loader2 } from 'lucide-react'
 
-export default function LoginPage() {
+function LoginContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const redirect = searchParams.get('redirectTo') || '/dashboard'
@@ -86,20 +86,19 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-bg-primary to-bg-secondary flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        {/* 로고 영역 */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-weave-primary rounded-full mb-4">
-            <LogIn className="w-8 h-8 text-white" />
-          </div>
-          <Typography variant="h1" className="text-3xl font-bold text-txt-primary mb-2">
-            WEAVE 로그인
-          </Typography>
-          <Typography variant="body1" className="text-txt-secondary">
-            비즈니스 관리 플랫폼에 오신 것을 환영합니다
-          </Typography>
+    <>
+      {/* 로고 영역 */}
+      <div className="text-center mb-8">
+        <div className="inline-flex items-center justify-center w-16 h-16 bg-weave-primary rounded-full mb-4">
+          <LogIn className="w-8 h-8 text-white" />
         </div>
+        <Typography variant="h1" className="text-3xl font-bold text-txt-primary mb-2">
+          WEAVE 로그인
+        </Typography>
+        <Typography variant="body1" className="text-txt-secondary">
+          비즈니스 관리 플랫폼에 오신 것을 환영합니다
+        </Typography>
+      </div>
 
         <Card className="p-8">
           <form onSubmit={handleLogin} className="space-y-6">
@@ -234,16 +233,31 @@ export default function LoginPage() {
           </form>
         </Card>
 
-        {/* 테스트 계정 안내 (개발용) */}
-        {process.env.NODE_ENV === 'development' && (
-          <Card className="mt-4 p-4 bg-bg-secondary">
-            <Typography variant="body2" className="text-txt-secondary text-center">
-              <strong>테스트 계정:</strong><br />
-              Email: test@example.com<br />
-              Password: test123456
-            </Typography>
-          </Card>
-        )}
+      {/* 테스트 계정 안내 (개발용) */}
+      {process.env.NODE_ENV === 'development' && (
+        <Card className="mt-4 p-4 bg-bg-secondary">
+          <Typography variant="body2" className="text-txt-secondary text-center">
+            <strong>테스트 계정:</strong><br />
+            Email: test@example.com<br />
+            Password: test123456
+          </Typography>
+        </Card>
+      )}
+    </>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-bg-primary to-bg-secondary flex items-center justify-center p-4">
+      <div className="w-full max-w-md">
+        <Suspense fallback={
+          <div className="text-center">
+            <Loader2 className="w-8 h-8 animate-spin mx-auto text-weave-primary" />
+          </div>
+        }>
+          <LoginContent />
+        </Suspense>
       </div>
     </div>
   )
