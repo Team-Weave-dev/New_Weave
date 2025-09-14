@@ -1,0 +1,50 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e3]:
+    - generic [ref=e4]:
+      - img [ref=e6]
+      - heading "WEAVE 로그인" [level=1] [ref=e9]
+      - generic [ref=e10]: 비즈니스 관리 플랫폼에 오신 것을 환영합니다
+    - article [ref=e11]:
+      - generic [ref=e12]:
+        - generic [ref=e13]:
+          - generic [ref=e14]: 이메일
+          - generic [ref=e15]:
+            - img [ref=e16]
+            - textbox "이메일" [ref=e20]
+        - generic [ref=e21]:
+          - generic [ref=e22]: 비밀번호
+          - generic [ref=e23]:
+            - img [ref=e24]
+            - textbox "비밀번호" [ref=e28]
+        - link "비밀번호를 잊으셨나요?" [ref=e30] [cursor=pointer]:
+          - /url: /forgot-password
+        - button "로그인" [disabled] [ref=e31]
+        - generic [ref=e36]: 또는
+        - button "Google로 로그인" [ref=e37] [cursor=pointer]:
+          - img [ref=e38] [cursor=pointer]
+          - text: Google로 로그인
+        - generic [ref=e44]:
+          - text: 계정이 없으신가요?
+          - link "회원가입" [ref=e45] [cursor=pointer]:
+            - /url: /signup
+    - article [ref=e46]:
+      - generic [ref=e47]:
+        - strong [ref=e48]: "테스트 계정:"
+        - text: "Email: test@example.com"
+        - text: "Password: test123456"
+  - article [ref=e50]:
+    - generic [ref=e51]:
+      - generic [ref=e52]:
+        - generic [ref=e53]: "LCP:"
+        - generic [ref=e54]: 2080ms
+      - generic [ref=e55]:
+        - generic [ref=e56]: "FID:"
+        - generic [ref=e57]: ...
+      - generic [ref=e58]:
+        - generic [ref=e59]: "CLS:"
+        - generic [ref=e60]: "0.004"
+  - alert [ref=e63]
+```

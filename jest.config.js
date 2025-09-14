@@ -1,10 +1,14 @@
-module.exports = {
+export default {
   preset: 'ts-jest',
   testEnvironment: 'jsdom',
   roots: ['<rootDir>/src'],
   testMatch: [
     '**/__tests__/**/*.+(ts|tsx|js)',
     '**/?(*.)+(spec|test).+(ts|tsx|js)'
+  ],
+  testPathIgnorePatterns: [
+    '/node_modules/',
+    '/src/__tests__/setup.ts'
   ],
   transform: {
     '^.+\\.(ts|tsx)$': ['ts-jest', {
@@ -24,7 +28,7 @@ module.exports = {
     '!src/**/*.stories.{ts,tsx}',
     '!src/**/__tests__/**',
   ],
-  coverageThresholds: {
+  coverageThreshold: {
     global: {
       branches: 70,
       functions: 70,
