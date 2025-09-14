@@ -5,7 +5,7 @@ import { Briefcase, TrendingUp, Clock, CheckCircle } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card'
 import Typography from '@/components/ui/Typography'
 import type { WidgetProps } from '@/types/dashboard'
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+import { getSupabaseClientSafe } from '@/lib/supabase/client'
 import { cn } from '@/lib/utils'
 
 interface ProjectSummary {
@@ -34,7 +34,7 @@ export function ProjectSummaryWidget({
   const [data, setData] = useState<ProjectSummary | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const supabase = createClientComponentClient()
+  const supabase = getSupabaseClientSafe()
 
   useEffect(() => {
     const fetchProjectData = async () => {
@@ -43,6 +43,10 @@ export function ProjectSummaryWidget({
         setError(null)
 
         // 프로젝트 데이터 가져오기
+        if (!supabase) {
+          throw new Error('Supabase client not available')
+        }
+        
         const { data: projects, error: projectError } = await supabase
           .from('projects')
           .select('*')
@@ -50,21 +54,21 @@ export function ProjectSummaryWidget({
 
         if (projectError) throw projectError
 
-        if (projects) {
+        if (projects && projects.length > 0) {
           // 프로젝트 통계 계산
           const total = projects.length
-          const inProgress = projects.filter(p => p.status === 'in_progress').length
-          const completed = projects.filter(p => p.status === 'completed').length
-          const onHold = projects.filter(p => p.status === 'on_hold').length
+          const inProgress = projects.filter((p: any) => p.status === 'in_progress').length
+          const completed = projects.filter((p: any) => p.status === 'completed').length
+          const onHold = projects.filter((p: any) => p.status === 'on_hold').length
           
           // 전체 수익 계산 (임시 값)
-          const totalRevenue = projects.reduce((sum, p) => sum + (p.revenue || 0), 0)
+          const totalRevenue = projects.reduce((sum: number, p: any) => sum + (p.revenue || 0), 0)
           
           // 평균 진행률 계산
-          const averageProgress = projects.reduce((sum, p) => sum + (p.progress || 0), 0) / total || 0
+          const averageProgress = projects.reduce((sum: number, p: any) => sum + (p.progress || 0), 0) / total || 0
 
           // 최근 프로젝트 5개
-          const recentProjects = projects.slice(0, 5).map(p => ({
+          const recentProjects = projects.slice(0, 5).map((p: any) => ({
             id: p.id,
             name: p.name || '제목 없음',
             status: p.status || 'pending',

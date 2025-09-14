@@ -21,7 +21,7 @@ import Typography from '@/components/ui/Typography'
 import Button from '@/components/ui/Button'
 import type { WidgetProps } from '@/types/dashboard'
 import { cn } from '@/lib/utils'
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+import { getSupabaseClientSafe } from '@/lib/supabase/client'
 
 interface Task {
   id: string
@@ -55,7 +55,7 @@ export function TaskTrackerWidget({
   const [sortBy, setSortBy] = useState<SortOption>('priority')
   const [filterBy, setFilterBy] = useState<FilterOption>('all')
   const [selectedProject, setSelectedProject] = useState<string>('all')
-  const supabase = createClientComponentClient()
+  const supabase = getSupabaseClientSafe()
 
   // 초기 데이터 로드
   useEffect(() => {

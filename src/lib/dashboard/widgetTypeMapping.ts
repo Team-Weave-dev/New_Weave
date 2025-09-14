@@ -3,54 +3,85 @@
  * 한글 위젯 이름과 영문 위젯 타입 간의 매핑을 관리
  */
 
-// 실제 구현된 위젯 타입
+// 실제 구현된 위젯 타입 (kebab-case)
 export type WidgetType = 
-  | 'ProjectSummary'
-  | 'TaskTracker'
-  | 'TaxDeadline'
-  | 'TaxCalculator'
-  | 'RevenueChart'
-  | 'KPIMetrics';
+  | 'project-summary'
+  | 'task-tracker'
+  | 'tax-deadline'
+  | 'tax-calculator'
+  | 'revenue-chart'
+  | 'kpi-metrics'
+  | 'todo-list'
+  | 'calendar'
+  | 'recent-activity'
+  | 'custom';
 
 // 한글 이름 -> 영문 타입 매핑
 const WIDGET_TYPE_MAP: Record<string, WidgetType> = {
   // 프로젝트 관련
-  '프로젝트 요약': 'ProjectSummary',
-  '작업 추적기': 'TaskTracker',
+  '프로젝트 요약': 'project-summary',
+  '작업 추적기': 'task-tracker',
   
   // 세무 관련
-  '세무 캘린더': 'TaxDeadline',
-  '세금 계산기': 'TaxCalculator',
+  '세무 캘린더': 'tax-deadline',
+  '세금 계산기': 'tax-calculator',
   
   // 분석 관련
-  '매출 차트': 'RevenueChart',
-  '수익 차트': 'RevenueChart', // 별칭
-  'KPI 지표': 'KPIMetrics',
+  '매출 차트': 'revenue-chart',
+  '수익 차트': 'revenue-chart', // 별칭
+  'KPI 지표': 'kpi-metrics',
   
-  // 일반 (실제 위젯으로 매핑)
-  '캘린더': 'TaxDeadline',
-  '할 일 목록': 'TaskTracker',
-  '할 일': 'TaskTracker', // 별칭
-  '최근 활동': 'TaskTracker',
+  // 생산성 관련
+  '캘린더': 'calendar',
+  '할 일 목록': 'todo-list',
+  '할 일': 'todo-list', // 별칭
+  '최근 활동': 'recent-activity',
+  
+  // 커스텀
+  '커스텀': 'custom',
+  '사용자 정의': 'custom', // 별칭
 };
 
 // 영문 타입 -> 한글 이름 역매핑
 const REVERSE_TYPE_MAP: Record<WidgetType, string> = {
-  'ProjectSummary': '프로젝트 요약',
-  'TaskTracker': '작업 추적기',
-  'TaxDeadline': '세무 캘린더',
-  'TaxCalculator': '세금 계산기',
-  'RevenueChart': '매출 차트',
-  'KPIMetrics': 'KPI 지표',
+  'project-summary': '프로젝트 요약',
+  'task-tracker': '작업 추적기',
+  'tax-deadline': '세무 캘린더',
+  'tax-calculator': '세금 계산기',
+  'revenue-chart': '매출 차트',
+  'kpi-metrics': 'KPI 지표',
+  'todo-list': '할 일 목록',
+  'calendar': '캘린더',
+  'recent-activity': '최근 활동',
+  'custom': '커스텀',
 } as const;
+
+// PascalCase -> kebab-case 변환을 위한 매핑 (하위 호환성)
+const PASCAL_TO_KEBAB_MAP: Record<string, WidgetType> = {
+  'ProjectSummary': 'project-summary',
+  'TaskTracker': 'task-tracker',
+  'TaxDeadline': 'tax-deadline',
+  'TaxCalculator': 'tax-calculator',
+  'RevenueChart': 'revenue-chart',
+  'KPIMetrics': 'kpi-metrics',
+  'TodoList': 'todo-list',
+  'Calendar': 'calendar',
+  'RecentActivity': 'recent-activity',
+  'Custom': 'custom',
+};
 
 /**
  * 한글 위젯 이름을 영문 타입으로 변환
  */
 export function normalizeWidgetType(nameOrType: string): WidgetType | string {
-  // 이미 영문 타입인 경우 그대로 반환
+  // 이미 kebab-case 타입인 경우 그대로 반환
   if (isValidWidgetType(nameOrType)) {
     return nameOrType as WidgetType;
+  }
+  
+  // PascalCase를 kebab-case로 변환 (하위 호환성)
+  if (nameOrType in PASCAL_TO_KEBAB_MAP) {
+    return PASCAL_TO_KEBAB_MAP[nameOrType];
   }
   
   // 한글 이름인 경우 매핑
@@ -81,12 +112,16 @@ export function getWidgetDisplayName(type: WidgetType | string): string {
  */
 export function isValidWidgetType(type: string): boolean {
   const validTypes: WidgetType[] = [
-    'ProjectSummary',
-    'TaskTracker', 
-    'TaxDeadline',
-    'TaxCalculator',
-    'RevenueChart',
-    'KPIMetrics',
+    'project-summary',
+    'task-tracker', 
+    'tax-deadline',
+    'tax-calculator',
+    'revenue-chart',
+    'kpi-metrics',
+    'todo-list',
+    'calendar',
+    'recent-activity',
+    'custom',
   ];
   
   return validTypes.includes(type as WidgetType);

@@ -21,7 +21,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card'
 import Typography from '@/components/ui/Typography'
 import type { WidgetProps } from '@/types/dashboard'
 import { cn } from '@/lib/utils'
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+import { getSupabaseClientSafe } from '@/lib/supabase/client'
 
 interface KPIMetric {
   id: string
@@ -49,7 +49,7 @@ export function KPIWidget({
   const [metrics, setMetrics] = useState<KPIMetric[]>([])
   const [loading, setLoading] = useState(true)
   const [period, setPeriod] = useState<PeriodType>('month')
-  const supabase = createClientComponentClient()
+  const supabase = getSupabaseClientSafe()
 
   // 초기 데이터 로드
   useEffect(() => {
