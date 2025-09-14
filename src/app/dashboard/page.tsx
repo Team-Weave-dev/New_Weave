@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import AppLayout from '@/components/layout/AppLayout';
 import { WorkspacePageContainer } from '@/components/layout/PageContainer';
-import { DashboardContainer } from '@/components/dashboard/DashboardContainer';
+import { DashboardContainerWrapper } from '@/components/dashboard/DashboardContainerWrapper';
 import { OnboardingModal } from '@/components/dashboard/OnboardingModal';
 import { TemplateManager } from '@/components/dashboard/TemplateManager';
 import Typography from '@/components/ui/Typography';
@@ -235,7 +235,7 @@ export default function DashboardPage() {
 
         {/* 대시보드 위젯 컨테이너 */}
         <div className="bg-white rounded-lg border border-gray-200 min-h-[600px]">
-          <DashboardContainer showToolbar={true} />
+          <DashboardContainerWrapper showToolbar={true} />
         </div>
         
         {/* 온보딩 모달 */}

@@ -25,6 +25,7 @@ interface DashboardStore {
   updateWidgetConfig: (widgetId: string, config: Record<string, any>) => void
   removeWidget: (widgetId: string) => void
   moveWidget: (widgetId: string, newPosition: WidgetPosition) => void
+  resizeWidget: (widgetId: string, newSize: { width: number; height: number }) => void
   lockWidget: (widgetId: string, locked: boolean) => void
   reflowWidgets: () => void
   swapWidgets: (widgetId1: string, widgetId2: string) => void
@@ -207,6 +208,43 @@ export const useDashboardStore = create<DashboardStore>()(
                 widget.id === widgetId
                   ? { ...widget, position: newPosition }
                   : widget
+              ),
+              updatedAt: new Date(),
+            },
+          }
+        })
+      },
+      
+      resizeWidget: (widgetId, newSize) => {
+        set((state) => {
+          if (!state.currentLayout) return state
+          
+          const widget = state.currentLayout.widgets.find(w => w.id === widgetId)
+          if (!widget) return state
+          
+          // 그리드 크기 가져오기
+          const gridColumns = state.currentLayout.gridSize === '2x2' ? 2 :
+                             state.currentLayout.gridSize === '3x3' ? 3 :
+                             state.currentLayout.gridSize === '4x4' ? 4 : 5
+          
+          // 최소/최대 크기 제약
+          const constrainedWidth = Math.max(1, Math.min(newSize.width, gridColumns - widget.position.x))
+          const constrainedHeight = Math.max(1, Math.min(newSize.height, gridColumns - widget.position.y))
+          
+          return {
+            currentLayout: {
+              ...state.currentLayout,
+              widgets: state.currentLayout.widgets.map((w) =>
+                w.id === widgetId
+                  ? { 
+                      ...w, 
+                      position: { 
+                        ...w.position, 
+                        width: constrainedWidth, 
+                        height: constrainedHeight 
+                      } 
+                    }
+                  : w
               ),
               updatedAt: new Date(),
             },

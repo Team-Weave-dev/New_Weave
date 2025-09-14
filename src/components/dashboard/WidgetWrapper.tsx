@@ -1,6 +1,6 @@
 'use client'
 
-import React, { ReactNode, useState } from 'react'
+import React, { ReactNode, useState, useCallback } from 'react'
 import { cn } from '@/lib/utils'
 import { useDashboardStore } from '@/lib/stores/useDashboardStore'
 import { 
@@ -13,9 +13,12 @@ import {
   Minimize2 
 } from 'lucide-react'
 import Button from '@/components/ui/Button'
+import { ResizeHandle } from './ResizeHandle'
+import { WidgetRegistry } from '@/lib/dashboard/WidgetRegistry'
 
 interface WidgetWrapperProps {
   id: string
+  type?: string
   children: ReactNode
   title?: string
   description?: string
@@ -24,10 +27,12 @@ interface WidgetWrapperProps {
   onRemove?: () => void
   onConfigure?: () => void
   isDragging?: boolean
+  position?: { width: number; height: number }
 }
 
 export function WidgetWrapper({
   id,
+  type,
   children,
   title,
   description,
@@ -36,19 +41,38 @@ export function WidgetWrapper({
   onRemove,
   onConfigure,
   isDragging = false,
+  position,
 }: WidgetWrapperProps) {
   const { 
     isEditMode, 
     selectedWidgetId, 
     selectWidget,
     removeWidget,
-    lockWidget 
+    lockWidget,
+    resizeWidget,
+    currentLayout
   } = useDashboardStore()
   
   const [isHovered, setIsHovered] = useState(false)
   const [isFullscreen, setIsFullscreen] = useState(false)
+  const [isResizing, setIsResizing] = useState(false)
+  const [tempSize, setTempSize] = useState<{ width: number; height: number } | null>(null)
   
   const isSelected = selectedWidgetId === id
+  
+  // 위젯 메타데이터 가져오기
+  const widgetMetadata = type ? WidgetRegistry.getMetadata(type as any) : null
+  const minSize = widgetMetadata?.minSize || { width: 1, height: 1 }
+  const maxSize = widgetMetadata?.maxSize || { width: 4, height: 4 }
+  
+  // 그리드 컬럼 수 계산
+  const gridColumns = currentLayout?.gridSize === '2x2' ? 2 :
+                     currentLayout?.gridSize === '3x3' ? 3 :
+                     currentLayout?.gridSize === '4x4' ? 4 : 5
+  
+  // 현재 위젯 크기
+  const currentWidget = currentLayout?.widgets.find(w => w.id === id)
+  const currentSize = currentWidget?.position || { width: 1, height: 1 }
 
   const handleRemove = () => {
     if (onRemove) {
@@ -71,6 +95,56 @@ export function WidgetWrapper({
   const handleFullscreenToggle = () => {
     setIsFullscreen(!isFullscreen)
   }
+
+  // 리사이즈 핸들러
+  const handleResize = useCallback((position: string) => (deltaX: number, deltaY: number) => {
+    if (!currentWidget) return
+    
+    const gridCellWidth = 100 / gridColumns // 그리드 셀 너비 (퍼센트)
+    const gridCellHeight = 100 / gridColumns // 그리드 셀 높이 (퍼센트)
+    
+    // 픽셀을 그리드 단위로 변환
+    const deltaGridX = Math.round(deltaX / (window.innerWidth * gridCellWidth / 100))
+    const deltaGridY = Math.round(deltaY / (window.innerHeight * gridCellHeight / 100))
+    
+    if (deltaGridX === 0 && deltaGridY === 0) return
+    
+    let newWidth = currentSize.width
+    let newHeight = currentSize.height
+    
+    // 위치에 따라 크기 조정
+    if (position.includes('right')) {
+      newWidth = Math.max(minSize.width, Math.min(currentSize.width + deltaGridX, maxSize.width))
+    }
+    if (position.includes('left')) {
+      newWidth = Math.max(minSize.width, Math.min(currentSize.width + deltaGridX, maxSize.width))
+    }
+    if (position.includes('bottom')) {
+      newHeight = Math.max(minSize.height, Math.min(currentSize.height + deltaGridY, maxSize.height))
+    }
+    if (position.includes('top')) {
+      newHeight = Math.max(minSize.height, Math.min(currentSize.height + deltaGridY, maxSize.height))
+    }
+    
+    // 그리드 경계 체크
+    const maxAllowedWidth = gridColumns - currentWidget.position.x
+    const maxAllowedHeight = gridColumns - currentWidget.position.y
+    newWidth = Math.min(newWidth, maxAllowedWidth)
+    newHeight = Math.min(newHeight, maxAllowedHeight)
+    
+    setTempSize({ width: newWidth, height: newHeight })
+    setIsResizing(true)
+  }, [currentWidget, currentSize, gridColumns, minSize, maxSize])
+
+  const handleResizeEnd = useCallback(() => {
+    if (tempSize && currentWidget) {
+      resizeWidget(id, tempSize)
+    }
+    setTempSize(null)
+    setIsResizing(false)
+  }, [id, tempSize, currentWidget, resizeWidget])
+
+  const displaySize = tempSize || currentSize
 
   return (
     <div
@@ -218,6 +292,37 @@ export function WidgetWrapper({
       {locked && !isEditMode && (
         <div className="absolute top-2 right-2">
           <Lock className="h-3 w-3 text-gray-400" />
+        </div>
+      )}
+
+      {/* 리사이즈 핸들 (편집 모드에서만 표시) */}
+      {isEditMode && isSelected && !locked && !isFullscreen && (
+        <>
+          <ResizeHandle
+            position="right"
+            onResize={handleResize('right')}
+            onResizeEnd={handleResizeEnd}
+            disabled={locked}
+          />
+          <ResizeHandle
+            position="bottom"
+            onResize={handleResize('bottom')}
+            onResizeEnd={handleResizeEnd}
+            disabled={locked}
+          />
+          <ResizeHandle
+            position="bottom-right"
+            onResize={handleResize('bottom-right')}
+            onResizeEnd={handleResizeEnd}
+            disabled={locked}
+          />
+        </>
+      )}
+
+      {/* 크기 조정 중 프리뷰 */}
+      {isResizing && tempSize && (
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-40 bg-black/75 text-white px-2 py-1 rounded text-xs">
+          {displaySize.width} × {displaySize.height}
         </div>
       )}
     </div>

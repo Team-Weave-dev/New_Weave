@@ -557,10 +557,10 @@
 
 ## 🎯 Phase 6: 고급 기능 (Week 6)
 
-### [ ] **P6-01**: 위젯 크기 조정 기능
+### [x] **P6-01**: 위젯 크기 조정 기능
 - **Title**: 드래그로 위젯 크기 변경
 - **Description**: 위젯의 모서리를 드래그하여 크기를 조정하는 기능
-- **Status**: `TODO`
+- **Status**: `DONE`
 - **Dependencies**: P2-01, P2-02
 - **Priority**: `P2 (Medium)`
 - **Details**:
@@ -571,10 +571,10 @@
   - 리사이즈 이벤트 테스트
   - 제약 조건 테스트
 
-### [ ] **P6-02**: 키보드 단축키
+### [x] **P6-02**: 키보드 단축키
 - **Title**: 대시보드 제어 단축키
 - **Description**: 키보드로 대시보드를 제어할 수 있는 단축키 시스템
-- **Status**: `TODO`
+- **Status**: `DONE`
 - **Dependencies**: P1-05
 - **Priority**: `P3 (Low)`
 - **Details**:
@@ -586,10 +586,10 @@
   - 키보드 이벤트 테스트
   - 단축키 충돌 테스트
 
-### [ ] **P6-03**: 위젯 잠금 기능
+### [x] **P6-03**: 위젯 잠금 기능
 - **Title**: 특정 위젯 이동/삭제 방지
 - **Description**: 중요한 위젯을 잠궈서 실수로 변경되지 않도록 하는 기능
-- **Status**: `TODO`
+- **Status**: `DONE`
 - **Dependencies**: P1-04
 - **Priority**: `P3 (Low)`
 - **Details**:
@@ -600,10 +600,10 @@
   - 잠금 상태 테스트
   - 이동/삭제 차단 테스트
 
-### [ ] **P6-04**: 위젯 애니메이션
+### [x] **P6-04**: 위젯 애니메이션
 - **Title**: 부드러운 전환 애니메이션
 - **Description**: 위젯 이동, 추가, 삭제 시 애니메이션 효과
-- **Status**: `TODO`
+- **Status**: `DONE`
 - **Dependencies**: P2-04
 - **Priority**: `P3 (Low)`
 - **Details**:
@@ -614,10 +614,10 @@
   - 애니메이션 트리거 테스트
   - 성능 영향 측정
 
-### [ ] **P6-05**: 다중 레이아웃 지원
+### [x] **P6-05**: 다중 레이아웃 지원
 - **Title**: 여러 대시보드 레이아웃 관리
 - **Description**: 사용자가 여러 레이아웃을 저장하고 전환할 수 있는 기능
-- **Status**: `TODO`
+- **Status**: `DONE`
 - **Dependencies**: P5-02
 - **Priority**: `P3 (Low)`
 - **Details**:
@@ -628,10 +628,10 @@
   - 레이아웃 CRUD 테스트
   - 전환 기능 테스트
 
-### [ ] **P6-06**: 위젯 내보내기/가져오기
+### [x] **P6-06**: 위젯 내보내기/가져오기
 - **Title**: 레이아웃 설정 내보내기 및 가져오기
 - **Description**: 레이아웃을 JSON으로 내보내고 가져올 수 있는 기능
-- **Status**: `TODO`
+- **Status**: `DONE`
 - **Dependencies**: P5-02
 - **Priority**: `P3 (Low)`
 - **Details**:
@@ -642,10 +642,10 @@
   - 직렬화 테스트
   - 가져오기 검증 테스트
 
-### [ ] **P6-07**: 위젯 공유 기능
+### [x] **P6-07**: 위젯 공유 기능
 - **Title**: 대시보드 레이아웃 공유
 - **Description**: 다른 사용자와 레이아웃을 공유할 수 있는 기능
-- **Status**: `TODO`
+- **Status**: `DONE`
 - **Dependencies**: P5-01, P5-02
 - **Priority**: `P3 (Low)`
 - **Details**:

@@ -1,7 +1,9 @@
 'use client'
 
 import React, { useEffect, useState, Suspense } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { useDashboardStore } from '@/lib/stores/useDashboardStore'
+import { extractLayoutFromShareLink } from '@/lib/dashboard/layoutSharing'
 import { GridLayout, GridItem } from './GridLayout'
 import { WidgetWrapper } from './WidgetWrapper'
 import { EditModeToolbar } from './EditModeToolbar'
@@ -11,6 +13,8 @@ import { WidgetLibrary } from './WidgetLibrary'
 import { WidgetConfigPanel } from './WidgetConfigPanel'
 import { WidgetSkeleton } from './WidgetSkeleton'
 import { WidgetErrorBoundary } from './WidgetErrorBoundary'
+import { KeyboardShortcutHelp } from './KeyboardShortcutHelp'
+import { AnimatedWidget, LayoutTransition } from './AnimatedWidget'
 import { cn } from '@/lib/utils'
 import { Loader2 } from 'lucide-react'
 import { useDashboardKeyboardNavigation } from '@/hooks/useDashboardKeyboardNavigation'
@@ -45,6 +49,9 @@ export function DashboardContainer({
   const [isWidgetLibraryOpen, setIsWidgetLibraryOpen] = useState(false)
   const [configPanelWidgetId, setConfigPanelWidgetId] = useState<string | null>(null)
   const [isRegistryInitialized, setIsRegistryInitialized] = useState(false)
+  const [isShortcutHelpOpen, setIsShortcutHelpOpen] = useState(false)
+  
+  const searchParams = useSearchParams()
   
   // 키보드 네비게이션 훅 사용
   useDashboardKeyboardNavigation()
@@ -54,14 +61,49 @@ export function DashboardContainer({
     initializeWidgetRegistry();
   }, []);
 
+  // 키보드 단축키 도움말 표시 (? 키)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === '?' && e.shiftKey) {
+        e.preventDefault()
+        setIsShortcutHelpOpen(true)
+      }
+    }
+    
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [])
+
   // 초기 레이아웃 로드
   useEffect(() => {
     const initializeLayout = async () => {
       setIsLoading(true)
       
       try {
-        // localStorage에서 저장된 레이아웃 로드
-        loadFromLocalStorage()
+        // 공유 링크 확인
+        const shareParam = searchParams?.get('share')
+        if (shareParam) {
+          const currentUrl = window.location.href
+          const sharedLayout = extractLayoutFromShareLink(currentUrl)
+          
+          if (sharedLayout) {
+            // 공유된 레이아웃 가져오기
+            const { createLayout, setCurrentLayout, updateLayout } = useDashboardStore.getState()
+            const newLayout = createLayout(sharedLayout.name, sharedLayout.gridSize)
+            updateLayout(newLayout.id, { widgets: sharedLayout.widgets })
+            setCurrentLayout(newLayout)
+            
+            // URL에서 share 파라미터 제거
+            const url = new URL(window.location.href)
+            url.searchParams.delete('share')
+            window.history.replaceState({}, '', url.toString())
+            
+            alert('공유된 레이아웃을 성공적으로 가져왔습니다.')
+          }
+        } else {
+          // localStorage에서 저장된 레이아웃 로드
+          loadFromLocalStorage()
+        }
         
         // 로드 후에도 레이아웃이 없거나 위젯이 없으면 처리하지 않음
         // (page.tsx에서 처리)
@@ -77,7 +119,7 @@ export function DashboardContainer({
     if (!isInitialized) {
       initializeLayout()
     }
-  }, [isInitialized, loadFromLocalStorage])
+  }, [isInitialized, loadFromLocalStorage, searchParams])
 
   // 위젯 타입에 따른 컴포넌트 렌더링 (Lazy Loading with Suspense)
   const renderWidgetContent = (widget: any) => {
@@ -206,36 +248,40 @@ export function DashboardContainer({
       {/* 대시보드 그리드 */}
       <div className="flex-1 overflow-auto bg-white">
         <DndProvider>
-          <GridLayout
-            gridSize={currentLayout.gridSize}
-            className="h-full"
-            gap={isEditMode ? 20 : 16}
-            padding={isEditMode ? 20 : 16}
-          >
-            {currentLayout.widgets.map((widget) => (
-              <GridItem
-                key={widget.id}
-                colSpan={widget.position.width}
-                rowSpan={widget.position.height}
-                className={cn({
-                  'hover:shadow-lg transition-shadow': isEditMode && !widget.locked,
-                })}
-              >
-                <SortableWidget
+          <LayoutTransition>
+            <GridLayout
+              gridSize={currentLayout.gridSize}
+              className="h-full"
+              gap={isEditMode ? 20 : 16}
+              padding={isEditMode ? 20 : 16}
+            >
+              {currentLayout.widgets.map((widget) => (
+                <AnimatedWidget
+                  key={widget.id}
                   id={widget.id}
-                  disabled={!isEditMode || widget.locked}
+                  position={widget.position}
+                  isEditMode={isEditMode}
+                  className={cn({
+                    'hover:shadow-lg transition-shadow': isEditMode && !widget.locked,
+                  })}
                 >
-                  <WidgetWrapper
+                  <SortableWidget
                     id={widget.id}
-                    title={widget.type}
-                    locked={widget.locked}
-                    onConfigure={() => setConfigPanelWidgetId(widget.id)}
+                    disabled={!isEditMode || widget.locked}
                   >
-                    {renderWidgetContent(widget)}
-                  </WidgetWrapper>
-                </SortableWidget>
-              </GridItem>
-            ))}
+                    <WidgetWrapper
+                      id={widget.id}
+                      type={widget.type}
+                      title={widget.type}
+                      locked={widget.locked}
+                      position={widget.position}
+                      onConfigure={() => setConfigPanelWidgetId(widget.id)}
+                    >
+                      {renderWidgetContent(widget)}
+                    </WidgetWrapper>
+                  </SortableWidget>
+                </AnimatedWidget>
+              ))}
 
             {/* 빈 그리드 셀 (편집 모드에서만) */}
             {isEditMode && currentLayout.widgets.length === 0 && (
@@ -254,6 +300,7 @@ export function DashboardContainer({
               </div>
             )}
           </GridLayout>
+          </LayoutTransition>
         </DndProvider>
       </div>
 
@@ -272,6 +319,12 @@ export function DashboardContainer({
           onClose={() => setConfigPanelWidgetId(null)}
         />
       )}
+
+      {/* 키보드 단축키 도움말 */}
+      <KeyboardShortcutHelp
+        isOpen={isShortcutHelpOpen}
+        onClose={() => setIsShortcutHelpOpen(false)}
+      />
     </div>
   )
 }

@@ -16,8 +16,13 @@ import {
   Upload,
   Eye,
   EyeOff,
+  Layers,
+  Share2,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { LayoutManager } from './LayoutManager'
+import { ShareLayoutModal } from './ShareLayoutModal'
+import { downloadLayout, readLayoutFromFile } from '@/lib/dashboard/layoutExportImport'
 
 interface EditModeToolbarProps {
   className?: string
@@ -42,6 +47,8 @@ export function EditModeToolbar({
   } = useDashboardStore()
 
   const [isSaving, setIsSaving] = useState(false)
+  const [isLayoutManagerOpen, setIsLayoutManagerOpen] = useState(false)
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false)
 
   const handleToggleEditMode = () => {
     setEditMode(!isEditMode)
@@ -77,6 +84,37 @@ export function EditModeToolbar({
     if (window.confirm('대시보드를 초기 상태로 재설정하시겠습니까?')) {
       reset()
     }
+  }
+
+  const handleExportLayout = () => {
+    if (currentLayout) {
+      downloadLayout(currentLayout)
+    }
+  }
+
+  const handleImportLayout = async () => {
+    const input = document.createElement('input')
+    input.type = 'file'
+    input.accept = '.json'
+    
+    input.onchange = async (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0]
+      if (file) {
+        const layout = await readLayoutFromFile(file)
+        if (layout) {
+          const { createLayout, setCurrentLayout, updateLayout } = useDashboardStore.getState()
+          const newLayout = createLayout(layout.name, layout.gridSize)
+          updateLayout(newLayout.id, { widgets: layout.widgets })
+          setCurrentLayout(newLayout)
+          saveToLocalStorage()
+          alert('레이아웃을 성공적으로 가져왔습니다.')
+        } else {
+          alert('레이아웃 파일을 읽을 수 없습니다.')
+        }
+      }
+    }
+    
+    input.click()
   }
 
   return (
@@ -151,6 +189,16 @@ export function EditModeToolbar({
             {/* 레이아웃 관리 */}
             <div className="flex items-center gap-1 border-l pl-4 ml-2">
               <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsLayoutManagerOpen(true)}
+                className="gap-2"
+                title="레이아웃 관리"
+              >
+                <Layers className="h-4 w-4" />
+                레이아웃
+              </Button>
+              <Button
                 variant="ghost"
                 size="sm"
                 onClick={handleReset}
@@ -162,6 +210,7 @@ export function EditModeToolbar({
               <Button
                 variant="ghost"
                 size="sm"
+                onClick={handleExportLayout}
                 className="gap-2"
                 title="레이아웃 내보내기"
               >
@@ -170,10 +219,20 @@ export function EditModeToolbar({
               <Button
                 variant="ghost"
                 size="sm"
+                onClick={handleImportLayout}
                 className="gap-2"
                 title="레이아웃 가져오기"
               >
                 <Upload className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsShareModalOpen(true)}
+                className="gap-2"
+                title="레이아웃 공유"
+              >
+                <Share2 className="h-4 w-4" />
               </Button>
             </div>
           </>
@@ -223,6 +282,18 @@ export function EditModeToolbar({
           </div>
         </div>
       )}
+
+      {/* 레이아웃 매니저 모달 */}
+      <LayoutManager
+        isOpen={isLayoutManagerOpen}
+        onClose={() => setIsLayoutManagerOpen(false)}
+      />
+
+      {/* 레이아웃 공유 모달 */}
+      <ShareLayoutModal
+        isOpen={isShareModalOpen}
+        onClose={() => setIsShareModalOpen(false)}
+      />
     </div>
   )
 }
