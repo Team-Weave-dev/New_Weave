@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { GridSize, WidgetPosition, Widget, DashboardLayout } from '@/types/dashboard'
+import { migrateWidgetTypes } from '@/lib/dashboard/widgetTypeMapping'
 
 // Re-export types for backward compatibility
 export type { GridSize, WidgetPosition, Widget, DashboardLayout }
@@ -380,6 +381,10 @@ export const useDashboardStore = create<DashboardStore>()(
         if (saved) {
           try {
             const layout = JSON.parse(saved)
+            // 위젯 타입 마이그레이션 (한글 -> 영문)
+            if (layout.widgets) {
+              layout.widgets = migrateWidgetTypes(layout.widgets)
+            }
             set({ currentLayout: layout })
           } catch (error) {
             console.error('Failed to load layout from localStorage:', error)

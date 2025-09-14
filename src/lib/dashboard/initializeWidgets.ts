@@ -2,6 +2,9 @@ import { lazy } from 'react';
 import { WidgetRegistry } from './WidgetRegistry';
 import type { WidgetType, WidgetMetadata } from '@/types/dashboard';
 
+// 초기화 상태 추적
+let isInitialized = false;
+
 // 위젯 메타데이터 정의
 const widgetMetadata: Record<WidgetType, WidgetMetadata> = {
   'project-summary': {
@@ -71,6 +74,13 @@ const widgetMetadata: Record<WidgetType, WidgetMetadata> = {
 
 // 위젯 레지스트리 초기화 함수
 export function initializeWidgetRegistry() {
+  // 이미 초기화된 경우 스킵
+  if (isInitialized) {
+    console.log('Widget Registry already initialized, skipping...');
+    return WidgetRegistry.getStatistics();
+  }
+  
+  isInitialized = true;
   console.log('Initializing Widget Registry...');
 
   // 프로젝트 관련 위젯

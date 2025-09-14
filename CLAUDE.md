@@ -40,18 +40,50 @@ npm run lint       # 코드 품질 검사
 npm run type-check # TypeScript 타입 검사
 ```
 
-## 🏗️ 프로젝트 구조
+## 🏗️ 프로젝트 아키텍처
+
+### 기술 스택
+- **Framework**: Next.js 14 (App Router)
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS + CSS Variables
+- **State Management**: Zustand
+- **Database**: Supabase (PostgreSQL)
+- **AI Integration**: OpenAI API
+- **UI Components**: 중앙화된 디자인 시스템
 
 ### 핵심 디렉토리
 ```
 src/
-├── app/           # Next.js App Router
+├── app/                    # Next.js App Router
+│   ├── api/               # API Routes
+│   ├── dashboard/         # 대시보드 페이지
+│   └── (auth)/           # 인증 관련 페이지
 ├── components/
-│   ├── ui/        # 재사용 가능한 UI 컴포넌트
-│   ├── dashboard/ # 대시보드 위젯 시스템 (개발 중)
-│   └── layout/    # 레이아웃 컴포넌트
-└── lib/           # 유틸리티 및 서비스
+│   ├── ui/               # 중앙화된 기본 UI 컴포넌트
+│   │   ├── Button.tsx
+│   │   ├── Card.tsx
+│   │   ├── Typography.tsx
+│   │   └── ...
+│   ├── dashboard/        # 대시보드 위젯 시스템
+│   │   ├── widgets/      # 개별 위젯 컴포넌트
+│   │   ├── templates/    # 템플릿 시스템
+│   │   └── ...
+│   └── layout/           # 레이아웃 컴포넌트
+├── lib/
+│   ├── dashboard/        # 대시보드 서비스
+│   ├── stores/          # Zustand 스토어
+│   └── theme/           # 테마 및 디자인 토큰
+└── styles/              # 글로벌 스타일
 ```
+
+### 아키텍처 패턴
+1. **컴포넌트 아키텍처**: Atomic Design 원칙 적용
+2. **상태 관리**: Zustand를 통한 중앙화된 상태 관리
+3. **데이터 흐름**: 
+   - Client → API Routes → Supabase (복잡한 로직)
+   - Client → Supabase RLS (단순 CRUD)
+4. **위젯 시스템**: Registry Pattern + Lazy Loading
+5. **디자인 시스템**: CSS Variables + Tailwind 유틸리티
 
 ## 📝 릴리즈노트 작성 규칙
 
@@ -64,13 +96,61 @@ src/
 - **배포 버전**: `V{Major}.{Minor}.{Patch}_{YYMMDD}` (일반 작업)
 - **개발 버전**: `V{Major}.{Minor}.{Patch}_{YYMMDD}_REV{순차번호}` (사용자 요청 시)
 
-## 🎨 코딩 컨벤션
+## 🎨 WEAVE 시스템 디자인 정책
+
+### 🎯 핵심 원칙
+
+#### 1. 중앙화 (Centralization)
+- **단일 진실의 원천(Single Source of Truth)**
+- **재사용 가능한 컴포넌트 우선**
+- **중복 코드 제거**
+
+#### 2. 시스템화 (Systematization)
+- **일관된 패턴 적용**
+- **예측 가능한 구조**
+- **명확한 책임 분리**
+
+#### 3. 표준 준수 (Standards Compliance)
+- **기존 UI 컴포넌트 사용 필수**
+- **글로벌 CSS 변수 활용**
+- **Tailwind 디자인 시스템 준수**
 
 ### UI 컴포넌트 규칙
 - **기존 컴포넌트 우선 사용**: `src/components/ui/` 확인
 - **Typography 사용**: HTML 태그 대신 Typography 컴포넌트
 - **CSS 변수 활용**: 하드코딩 색상 금지
 - **PageContainer 필수**: 모든 페이지에 적용
+
+### 디자인 시스템 구현 가이드
+1. **컴포넌트 계층**:
+   - `src/components/ui/`: 기본 UI 컴포넌트 (Button, Card, Typography 등)
+   - `src/components/`: 도메인별 컴포넌트
+   - 새 컴포넌트 생성 전 기존 컴포넌트 확인 필수
+
+2. **색상 시스템**:
+   ```css
+   /* CSS 변수 사용 예시 */
+   --color-brand-primary-start
+   --color-brand-primary-end
+   --color-status-success
+   --color-status-error
+   --color-status-warning
+   --color-status-info
+   --color-text-primary
+   --color-text-secondary
+   ```
+   - 하드코딩 색상 사용 금지
+   - Tailwind 클래스: `text-[var(--color-name)]`, `bg-[var(--color-name)]`
+
+3. **Typography 시스템**:
+   - HTML 태그 직접 사용 금지
+   - Typography 컴포넌트 사용: `<Typography variant="h1">`, `<Typography variant="body1">`
+   - variant: h1-h6, body1, body2, caption
+
+4. **레이아웃 패턴**:
+   - PageContainer로 페이지 감싸기
+   - Card 컴포넌트로 섹션 구성
+   - 일관된 spacing 사용 (Tailwind 유틸리티)
 
 ### 커밋 규칙
 ```

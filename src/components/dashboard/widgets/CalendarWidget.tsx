@@ -51,31 +51,31 @@ export function CalendarWidget({ className }: CalendarWidgetProps) {
   const getEventColor = (type: CalendarEvent['type']) => {
     switch (type) {
       case 'meeting':
-        return 'bg-blue-100 text-blue-700'
+        return 'bg-[var(--color-status-info)]/10 text-[var(--color-status-info)]'
       case 'deadline':
-        return 'bg-red-100 text-red-700'
+        return 'bg-[var(--color-status-error)]/10 text-[var(--color-status-error)]'
       case 'event':
-        return 'bg-green-100 text-green-700'
+        return 'bg-[var(--color-status-success)]/10 text-[var(--color-status-success)]'
       default:
-        return 'bg-gray-100 text-gray-700'
+        return 'bg-[var(--color-primary-surfaceHover)] text-[var(--color-text-secondary)]'
     }
   }
 
   return (
-    <div className={`h-full bg-white p-4 ${className || ''}`}>
+    <div className={`h-full bg-[var(--color-primary-surface)] p-4 ${className || ''}`}>
       <div className="flex items-center gap-2 mb-4">
-        <Calendar className="h-5 w-5 text-purple-600" />
-        <Typography variant="h3" className="text-gray-900">
+        <Calendar className="h-5 w-5 text-[var(--color-status-progress)]" />
+        <Typography variant="h3" className="text-[var(--color-text-primary)]">
           오늘 일정
         </Typography>
       </div>
 
       {/* 오늘 날짜 */}
-      <div className="mb-4 p-3 bg-purple-50 rounded-lg">
-        <Typography variant="h2" className="text-purple-700">
+      <div className="mb-4 p-3 bg-[var(--color-status-progress)]/10 rounded-lg">
+        <Typography variant="h2" className="text-[var(--color-status-progress)]">
           {today.getDate()}
         </Typography>
-        <Typography variant="body2" className="text-purple-600">
+        <Typography variant="body2" className="text-[var(--color-status-progress)]/80">
           {todayStr}
         </Typography>
       </div>
@@ -86,18 +86,18 @@ export function CalendarWidget({ className }: CalendarWidgetProps) {
           todayEvents.map((event) => (
             <div
               key={event.id}
-              className="flex items-start gap-3 p-3 rounded-lg border border-gray-200 hover:shadow-sm transition-shadow"
+              className="flex items-start gap-3 p-3 rounded-lg border border-[var(--color-primary-borderSecondary)] hover:shadow-sm transition-shadow"
             >
               <div className="flex-shrink-0">
                 <div className="flex items-center gap-1">
-                  <Clock className="w-3 h-3 text-gray-500" />
-                  <Typography variant="body2" className="font-medium text-gray-600">
+                  <Clock className="w-3 h-3 text-[var(--color-text-tertiary)]" />
+                  <Typography variant="body2" className="font-medium text-[var(--color-text-secondary)]">
                     {event.time}
                   </Typography>
                 </div>
               </div>
               <div className="flex-1 min-w-0">
-                <Typography variant="body1" className="text-gray-900">
+                <Typography variant="body1" className="text-[var(--color-text-primary)]">
                   {event.title}
                 </Typography>
                 {event.location && (

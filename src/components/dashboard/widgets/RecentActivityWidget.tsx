@@ -63,25 +63,25 @@ export function RecentActivityWidget({ className }: RecentActivityWidgetProps) {
   const getActivityIcon = (type: ActivityItem['type']) => {
     switch (type) {
       case 'project':
-        return <FileText className="w-4 h-4 text-blue-500" />
+        return <FileText className="w-4 h-4 text-[var(--color-status-info)]" />
       case 'client':
-        return <Users className="w-4 h-4 text-green-500" />
+        return <Users className="w-4 h-4 text-[var(--color-status-success)]" />
       case 'invoice':
-        return <DollarSign className="w-4 h-4 text-purple-500" />
+        return <DollarSign className="w-4 h-4 text-[var(--color-status-progress)]" />
       case 'message':
-        return <MessageSquare className="w-4 h-4 text-orange-500" />
+        return <MessageSquare className="w-4 h-4 text-[var(--color-status-warning)]" />
       case 'notification':
-        return <Bell className="w-4 h-4 text-red-500" />
+        return <Bell className="w-4 h-4 text-[var(--color-status-error)]" />
       default:
-        return <Activity className="w-4 h-4 text-gray-500" />
+        return <Activity className="w-4 h-4 text-[var(--color-text-tertiary)]" />
     }
   }
 
   return (
-    <div className={`h-full bg-white p-4 ${className || ''}`}>
+    <div className={`h-full bg-[var(--color-primary-surface)] p-4 ${className || ''}`}>
       <div className="flex items-center gap-2 mb-4">
-        <Activity className="h-5 w-5 text-orange-600" />
-        <Typography variant="h3" className="text-gray-900">
+        <Activity className="h-5 w-5 text-[var(--color-status-warning)]" />
+        <Typography variant="h3" className="text-[var(--color-text-primary)]">
           최근 활동
         </Typography>
       </div>
@@ -90,7 +90,7 @@ export function RecentActivityWidget({ className }: RecentActivityWidgetProps) {
         {activities.map((activity, index) => (
           <div
             key={activity.id}
-            className="flex items-start gap-3 p-3 hover:bg-gray-50 rounded-lg transition-colors cursor-pointer"
+            className="flex items-start gap-3 p-3 hover:bg-[var(--color-primary-surfaceHover)] rounded-lg transition-colors cursor-pointer"
           >
             {/* 아이콘 */}
             <div className="flex-shrink-0 mt-1">

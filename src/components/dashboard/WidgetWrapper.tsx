@@ -182,9 +182,9 @@ export function WidgetWrapper({
                   e.stopPropagation()
                   handleRemove()
                 }}
-                className="h-6 w-6 p-0 hover:bg-red-100 dark:hover:bg-red-900/20"
+                className="h-6 w-6 p-0 hover:bg-[var(--color-status-error)]/10"
               >
-                <X className="h-3 w-3 text-red-600" />
+                <X className="h-3 w-3 text-[var(--color-status-error)]" />
               </Button>
             )}
           </div>

@@ -17,8 +17,17 @@ import { useDashboardKeyboardNavigation } from '@/hooks/useDashboardKeyboardNavi
 import type { WidgetType, WidgetMetadata } from '@/types/dashboard'
 import { initializeWidgetRegistry } from '@/lib/dashboard/initializeWidgets'
 import { WidgetRegistry } from '@/lib/dashboard/WidgetRegistry'
-import { normalizeWidgetType } from '@/lib/dashboard/widgetTypeMapping'
-// Lazy loaded widgets are now handled by WidgetRegistry
+import {
+  ProjectSummaryWidget,
+  TaxDeadlineWidget,
+  RevenueChartWidget,
+  TodoListWidget,
+  TaskTrackerWidget,
+  KPIWidget,
+  TaxCalculatorWidget,
+  CalendarWidget,
+  RecentActivityWidget,
+} from './widgets/LazyWidgets'
 
 interface DashboardContainerProps {
   className?: string
@@ -44,15 +53,9 @@ export function DashboardContainer({
   const [isInitialized, setIsInitialized] = useState(false)
   const [isWidgetLibraryOpen, setIsWidgetLibraryOpen] = useState(false)
   const [configPanelWidgetId, setConfigPanelWidgetId] = useState<string | null>(null)
-  const [isRegistryInitialized, setIsRegistryInitialized] = useState(false)
   
   // 키보드 네비게이션 훅 사용
   useDashboardKeyboardNavigation()
-
-  // WidgetRegistry 초기화 (한 번만 실행)
-  useEffect(() => {
-    initializeWidgetRegistry();
-  }, []);
 
   // 초기 레이아웃 로드
   useEffect(() => {
@@ -97,33 +100,71 @@ export function DashboardContainer({
       </WidgetErrorBoundary>
     )
 
-    // 위젯 타입 정규화 (한글 -> 영문 변환)
-    const normalizedType = normalizeWidgetType(widget.type) as WidgetType;
-    
-    // WidgetRegistry에서 컴포넌트 가져오기
-    const registeredComponent = WidgetRegistry.getComponent(normalizedType);
-    
-    if (registeredComponent) {
-      return renderWithSuspense(registeredComponent as React.ComponentType<any>);
+    // 새로운 위젯 시스템 (WidgetType)
+    switch (widget.type as WidgetType) {
+      case 'project-summary':
+        return renderWithSuspense(ProjectSummaryWidget)
+      case 'revenue-chart':
+        return renderWithSuspense(RevenueChartWidget)
+      case 'task-tracker':
+        return renderWithSuspense(TaskTrackerWidget)
+      case 'kpi-metrics':
+        return renderWithSuspense(KPIWidget)
+      case 'tax-deadline':
+        return renderWithSuspense(TaxDeadlineWidget)
+      case 'tax-calculator':
+        return renderWithSuspense(TaxCalculatorWidget)
+      default:
+        // 기존 위젯 시스템 (호환성 유지)
+        switch (widget.type) {
+          case '프로젝트 요약':
+            return renderWithSuspense(ProjectSummaryWidget)
+          case '매출 차트':
+            return renderWithSuspense(RevenueChartWidget)
+          case '할 일 목록':
+            return (
+              <WidgetErrorBoundary widgetId={widget.id} widgetType={widget.type}>
+                <Suspense fallback={<WidgetSkeleton />}>
+                  <TodoListWidget />
+                </Suspense>
+              </WidgetErrorBoundary>
+            )
+          case '캘린더':
+            return (
+              <WidgetErrorBoundary widgetId={widget.id} widgetType={widget.type}>
+                <Suspense fallback={<WidgetSkeleton />}>
+                  <CalendarWidget />
+                </Suspense>
+              </WidgetErrorBoundary>
+            )
+          case '최근 활동':
+            return (
+              <WidgetErrorBoundary widgetId={widget.id} widgetType={widget.type}>
+                <Suspense fallback={<WidgetSkeleton />}>
+                  <RecentActivityWidget />
+                </Suspense>
+              </WidgetErrorBoundary>
+            )
+          default:
+            // 기본 위젯 (임시)
+            return (
+              <div className="p-4">
+                <h3 className="text-lg font-semibold mb-2">
+                  {widget.type}
+                </h3>
+                <p className="text-gray-600 dark:text-gray-400">
+                  위젯 ID: {widget.id}
+                </p>
+                <p className="text-sm text-gray-500 dark:text-gray-500 mt-2">
+                  위치: {widget.position.x}, {widget.position.y}
+                </p>
+                <p className="text-sm text-gray-500 dark:text-gray-500">
+                  크기: {widget.position.width}x{widget.position.height}
+                </p>
+              </div>
+            )
+        }
     }
-    
-    // 위젯을 찾을 수 없는 경우 폴백
-    console.warn(`Widget type "${widget.type}" (normalized: "${normalizedType}") not found in registry`);
-    return (
-      <WidgetErrorBoundary widgetId={widget.id} widgetType={widget.type}>
-        <div className="p-4 bg-[var(--color-primary-surface)] rounded-lg border border-[var(--color-primary-borderSecondary)]">
-          <h3 className="text-lg font-semibold mb-2 text-[var(--color-text-primary)]">
-            위젯을 불러올 수 없습니다
-          </h3>
-          <p className="text-sm text-[var(--color-text-secondary)]">
-            위젯 타입: {widget.type}
-          </p>
-          <p className="text-xs text-[var(--color-text-tertiary)] mt-2">
-            위젯 ID: {widget.id}
-          </p>
-        </div>
-      </WidgetErrorBoundary>
-    )
   }
 
   // 위젯 추가 핸들러
@@ -169,7 +210,7 @@ export function DashboardContainer({
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-full">
-        <Loader2 className="h-8 w-8 animate-spin text-[var(--color-text-secondary)]" />
+        <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
       </div>
     )
   }
@@ -178,13 +219,13 @@ export function DashboardContainer({
   if (!currentLayout) {
     return (
       <div className="flex flex-col items-center justify-center h-full gap-4">
-        <p className="text-[var(--color-text-secondary)]">대시보드 레이아웃이 없습니다.</p>
+        <p className="text-gray-500">대시보드 레이아웃이 없습니다.</p>
         <button
           onClick={() => {
             const newLayout = createLayout('새 대시보드', '3x3')
             setCurrentLayout(newLayout)
           }}
-          className="px-4 py-2 bg-gradient-to-r from-[var(--color-brand-secondary-start)] to-[var(--color-brand-secondary-end)] text-white rounded-lg hover:shadow-lg transition-all"
+          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
         >
           대시보드 만들기
         </button>

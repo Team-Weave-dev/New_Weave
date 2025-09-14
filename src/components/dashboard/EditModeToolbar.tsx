@@ -82,7 +82,7 @@ export function EditModeToolbar({
   return (
     <div
       className={cn(
-        'flex items-center justify-between gap-4 p-4 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700',
+        'flex items-center justify-between gap-4 p-4 bg-[var(--color-primary-surface)] border-b border-[var(--color-primary-borderSecondary)]',
         className
       )}
     >

@@ -59,11 +59,11 @@ export function TodoListWidget({ className }: TodoListWidgetProps) {
   const getPriorityIcon = (priority: TodoItem['priority']) => {
     switch (priority) {
       case 'high':
-        return <AlertCircle className="w-3 h-3 text-red-500" />
+        return <AlertCircle className="w-3 h-3 text-[var(--color-status-error)]" />
       case 'medium':
-        return <Clock className="w-3 h-3 text-orange-500" />
+        return <Clock className="w-3 h-3 text-[var(--color-status-warning)]" />
       default:
-        return <Clock className="w-3 h-3 text-gray-400" />
+        return <Clock className="w-3 h-3 text-[var(--color-text-tertiary)]" />
     }
   }
 
@@ -71,16 +71,16 @@ export function TodoListWidget({ className }: TodoListWidgetProps) {
   const completedTodos = todos.filter(todo => todo.completed)
 
   return (
-    <div className={`h-full bg-white p-4 ${className || ''}`}>
+    <div className={`h-full bg-[var(--color-primary-surface)] p-4 ${className || ''}`}>
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <CheckSquare className="h-5 w-5 text-blue-600" />
-          <Typography variant="h3" className="text-gray-900">
+          <CheckSquare className="h-5 w-5 text-[var(--color-brand-secondary-start)]" />
+          <Typography variant="h3" className="text-[var(--color-text-primary)]">
             할 일
           </Typography>
         </div>
         <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
-          <Plus className="h-4 w-4 text-gray-600" />
+          <Plus className="h-4 w-4 text-[var(--color-text-secondary)]" />
         </Button>
       </div>
 
@@ -89,14 +89,14 @@ export function TodoListWidget({ className }: TodoListWidgetProps) {
         {incompleteTodos.map((todo) => (
           <div
             key={todo.id}
-            className="flex items-start gap-3 p-2 hover:bg-gray-50 rounded-lg transition-colors cursor-pointer"
+            className="flex items-start gap-3 p-2 hover:bg-[var(--color-primary-surfaceHover)] rounded-lg transition-colors cursor-pointer"
             onClick={() => toggleTodo(todo.id)}
           >
             <button className="mt-0.5">
-              <Square className="w-4 h-4 text-gray-400 hover:text-blue-500" />
+              <Square className="w-4 h-4 text-[var(--color-text-tertiary)] hover:text-[var(--color-brand-secondary-start)]" />
             </button>
             <div className="flex-1 min-w-0">
-              <Typography variant="body1" className="text-gray-900">
+              <Typography variant="body1" className="text-[var(--color-text-primary)]">
                 {todo.title}
               </Typography>
               <div className="flex items-center gap-2 mt-1">

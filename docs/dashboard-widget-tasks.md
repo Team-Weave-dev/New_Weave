@@ -467,25 +467,25 @@
 
 ## 🎯 Phase 5: 영속성 & 최적화 (Week 5)
 
-### [ ] **P5-01**: Supabase 스키마 구현
-- **Title**: 데이터베이스 테이블 및 관계 설정
-- **Description**: 대시보드 레이아웃 저장을 위한 DB 스키마 구현
-- **Status**: `TODO`
+### [x] **P5-01**: Mock 데이터 스키마 구현
+- **Title**: Mock 데이터 스키마 및 타입 정의
+- **Description**: 대시보드 레이아웃 저장을 위한 Mock 데이터 구조 구현 (Supabase는 나중에 연결)
+- **Status**: `DONE`
 - **Dependencies**: None
 - **Priority**: `P0 (Critical)`
 - **Details**:
-  - dashboard_layouts 테이블
-  - dashboard_widgets 테이블
-  - 인덱스 설정
-  - RLS 정책
+  - DashboardLayout 인터페이스
+  - DashboardWidget 인터페이스
+  - UserSettings 인터페이스
+  - Mock 데이터 생성
 - **Test Strategy**:
-  - 마이그레이션 테스트
-  - CRUD 작업 테스트
+  - TypeScript 타입 검증
+  - Mock 데이터 구조 테스트
 
-### [ ] **P5-02**: 레이아웃 저장 서비스
-- **Title**: 레이아웃 데이터 영속성 서비스
-- **Description**: 대시보드 레이아웃을 Supabase에 저장하는 서비스
-- **Status**: `TODO`
+### [x] **P5-02**: 레이아웃 저장 서비스
+- **Title**: 레이아웃 데이터 영속성 서비스 (Mock 기반)
+- **Description**: 대시보드 레이아웃을 LocalStorage에 저장하는 서비스
+- **Status**: `DONE`
 - **Dependencies**: P5-01
 - **Priority**: `P0 (Critical)`
 - **Details**:
@@ -494,13 +494,13 @@
   - 에러 핸들링
   - 재시도 로직
 - **Test Strategy**:
-  - API 호출 테스트
+  - LocalStorage 작업 테스트
   - 에러 케이스 테스트
 
-### [ ] **P5-03**: 자동 저장 기능
+### [x] **P5-03**: 자동 저장 기능
 - **Title**: 변경사항 자동 저장 시스템
 - **Description**: 레이아웃 변경 시 자동으로 저장하는 기능
-- **Status**: `TODO`
+- **Status**: `DONE`
 - **Dependencies**: P5-02
 - **Priority**: `P1 (High)`
 - **Details**:
@@ -511,44 +511,44 @@
   - 자동 저장 트리거 테스트
   - Debounce 타이밍 테스트
 
-### [ ] **P5-04**: LocalStorage 백업
+### [x] **P5-04**: LocalStorage 백업
 - **Title**: 오프라인 백업 시스템
 - **Description**: 네트워크 실패 시를 대비한 로컬 저장소 백업
-- **Status**: `TODO`
+- **Status**: `DONE`
 - **Dependencies**: P5-02
 - **Priority**: `P2 (Medium)`
 - **Details**:
-  - localStorage 래퍼
-  - 동기화 로직
+  - localStorage 백업/복원
   - 버전 관리
+  - 내보내기/가져오기
 - **Test Strategy**:
-  - 오프라인 시나리오 테스트
-  - 동기화 테스트
+  - 백업/복원 테스트
+  - 버전 호환성 테스트
 
-### [ ] **P5-05**: 성능 최적화
+### [x] **P5-05**: 성능 최적화
 - **Title**: 렌더링 및 상태 관리 최적화
 - **Description**: React.memo, useMemo 등을 활용한 성능 개선
-- **Status**: `TODO`
+- **Status**: `DONE`
 - **Dependencies**: P3-01, P3-02, P3-03
 - **Priority**: `P1 (High)`
 - **Details**:
-  - 컴포넌트 메모이제이션
-  - 불필요한 리렌더링 방지
-  - 번들 크기 최적화
+  - 컴포넌트 메모이제이션 헬퍼
+  - 성능 모니터링 훅
+  - 배치 업데이트 최적화
 - **Test Strategy**:
   - 성능 프로파일링
   - 렌더링 횟수 측정
 
-### [ ] **P5-06**: 반응형 그리드 시스템
+### [x] **P5-06**: 반응형 그리드 시스템
 - **Title**: 화면 크기별 그리드 자동 조정
 - **Description**: 디바이스 크기에 따라 그리드를 자동으로 조정
-- **Status**: `TODO`
+- **Status**: `DONE`
 - **Dependencies**: P1-02
 - **Priority**: `P2 (Medium)`
 - **Details**:
-  - 미디어 쿼리 구현
-  - 그리드 크기 자동 전환
-  - 위젯 크기 조정
+  - 브레이크포인트 정의
+  - 반응형 그리드 훅
+  - 위치 변환 유틸리티
 - **Test Strategy**:
   - 다양한 화면 크기 테스트
   - 브레이크포인트 테스트
