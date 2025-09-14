@@ -8,6 +8,7 @@ let isInitialized = false;
 // 위젯 메타데이터 정의
 const widgetMetadata: Record<WidgetType, WidgetMetadata> = {
   'project-summary': {
+    type: 'project-summary',
     name: '프로젝트 요약',
     description: '진행 중인 프로젝트 현황을 한눈에 확인',
     icon: 'folder',
@@ -17,6 +18,7 @@ const widgetMetadata: Record<WidgetType, WidgetMetadata> = {
     tags: ['프로젝트', '요약', '현황'],
   },
   'tax-deadline': {
+    type: 'tax-deadline',
     name: '세무 캘린더',
     description: '세무 관련 마감일과 일정을 표시',
     icon: 'calendar',
@@ -26,6 +28,7 @@ const widgetMetadata: Record<WidgetType, WidgetMetadata> = {
     tags: ['세무', '캘린더', '일정'],
   },
   'revenue-chart': {
+    type: 'revenue-chart',
     name: '수익 차트',
     description: '월별/분기별 수익을 차트로 표시',
     icon: 'chart',
@@ -35,6 +38,7 @@ const widgetMetadata: Record<WidgetType, WidgetMetadata> = {
     tags: ['차트', '수익', '매출'],
   },
   'task-tracker': {
+    type: 'task-tracker',
     name: '작업 추적기',
     description: '프로젝트별 작업을 추적하고 관리',
     icon: 'tasks',
@@ -44,6 +48,7 @@ const widgetMetadata: Record<WidgetType, WidgetMetadata> = {
     tags: ['작업', '할일', '추적'],
   },
   'kpi-metrics': {
+    type: 'kpi-metrics',
     name: 'KPI 지표',
     description: '핵심 성과 지표를 한눈에',
     icon: 'chart-bar',
@@ -53,6 +58,7 @@ const widgetMetadata: Record<WidgetType, WidgetMetadata> = {
     tags: ['KPI', '지표', '성과'],
   },
   'tax-calculator': {
+    type: 'tax-calculator',
     name: '세금 계산기',
     description: '부가세, 소득세 등을 간편하게 계산',
     icon: 'calculator',
@@ -62,6 +68,7 @@ const widgetMetadata: Record<WidgetType, WidgetMetadata> = {
     tags: ['세금', '계산기', '부가세'],
   },
   'todo-list': {
+    type: 'todo-list',
     name: '할 일 목록',
     description: '개인 할 일을 관리하고 추적',
     icon: 'list-check',
@@ -71,6 +78,7 @@ const widgetMetadata: Record<WidgetType, WidgetMetadata> = {
     tags: ['할일', '목록', '관리'],
   },
   'calendar': {
+    type: 'calendar',
     name: '캘린더',
     description: '일정과 이벤트를 캘린더 형태로 표시',
     icon: 'calendar-days',
@@ -80,6 +88,7 @@ const widgetMetadata: Record<WidgetType, WidgetMetadata> = {
     tags: ['캘린더', '일정', '이벤트'],
   },
   'recent-activity': {
+    type: 'recent-activity',
     name: '최근 활동',
     description: '최근 활동 내역을 시간순으로 표시',
     icon: 'activity',
@@ -89,6 +98,7 @@ const widgetMetadata: Record<WidgetType, WidgetMetadata> = {
     tags: ['활동', '히스토리', '로그'],
   },
   'custom': {
+    type: 'custom',
     name: '커스텀 위젯',
     description: '사용자 정의 위젯',
     icon: 'box',

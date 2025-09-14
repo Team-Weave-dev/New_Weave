@@ -52,6 +52,7 @@ export type WidgetCategory = 'project' | 'tax' | 'analytics' | 'productivity' | 
 
 // 위젯 메타데이터
 export interface WidgetMetadata {
+  type?: WidgetType  // 위젯 타입 (선택적, 테스트용)
   name: string
   description: string
   icon?: string

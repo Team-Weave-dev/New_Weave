@@ -122,7 +122,21 @@ export const useDashboardStore = create<DashboardStore>()(
         }
         
         set((state) => {
-          if (!state.currentLayout) return state
+          if (!state.currentLayout) {
+            // currentLayout가 없으면 기본 레이아웃 생성
+            const newLayout: DashboardLayout = {
+              id: `layout-${Date.now()}`,
+              name: 'Default Dashboard',
+              gridSize: '3x3',
+              widgets: [widget],
+              createdAt: new Date(),
+              updatedAt: new Date(),
+            }
+            return {
+              currentLayout: newLayout,
+              layouts: [...state.layouts, newLayout],
+            }
+          }
           
           // 중복 ID 체크
           const existingWidget = state.currentLayout.widgets.find(w => w.id === widget.id)
@@ -131,12 +145,17 @@ export const useDashboardStore = create<DashboardStore>()(
             return state
           }
           
+          const updatedLayout = {
+            ...state.currentLayout,
+            widgets: [...state.currentLayout.widgets, widget],
+            updatedAt: new Date(),
+          }
+          
           return {
-            currentLayout: {
-              ...state.currentLayout,
-              widgets: [...state.currentLayout.widgets, widget],
-              updatedAt: new Date(),
-            },
+            currentLayout: updatedLayout,
+            layouts: state.layouts.map(l => 
+              l.id === updatedLayout.id ? updatedLayout : l
+            ),
           }
         })
       },
@@ -372,7 +391,7 @@ export const useDashboardStore = create<DashboardStore>()(
       
       // Edit Mode Actions
       setEditMode: (editMode) => {
-        set({ isEditMode: editMode, selectedWidgetId: null })
+        set(() => ({ isEditMode: editMode, selectedWidgetId: null }))
       },
       
       selectWidget: (widgetId) => {

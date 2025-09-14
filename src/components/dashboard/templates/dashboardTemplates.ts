@@ -5,7 +5,7 @@ export interface DashboardTemplate {
   name: string;
   description: string;
   preview: string;
-  category: 'project' | 'tax' | 'balanced' | 'minimal';
+  category: 'project' | 'tax' | 'balanced' | 'minimal' | 'productivity' | 'business';
   layout: Partial<DashboardLayout>;
   recommendedFor: string[];
 }
@@ -172,12 +172,122 @@ export const minimalTemplate: DashboardTemplate = {
   }
 };
 
+// 생산성 템플릿
+export const productivityTemplate: DashboardTemplate = {
+  id: 'productivity',
+  name: '생산성 중심',
+  description: '업무 효율과 시간 관리에 특화된 대시보드',
+  preview: '🚀',
+  category: 'productivity',
+  recommendedFor: ['개인 사업자', '프리랜서', '원격 근무자'],
+  layout: {
+    gridSize: '4x4',
+    widgets: [
+      {
+        id: 'todo-list-1',
+        type: 'todo-list' as WidgetType,
+        position: { x: 0, y: 0, width: 2, height: 2 },
+        config: {}
+      },
+      {
+        id: 'calendar-1',
+        type: 'calendar' as WidgetType,
+        position: { x: 2, y: 0, width: 2, height: 2 },
+        config: {}
+      },
+      {
+        id: 'task-tracker-prod',
+        type: 'task-tracker' as WidgetType,
+        position: { x: 0, y: 2, width: 2, height: 1 },
+        config: {}
+      },
+      {
+        id: 'recent-activity-1',
+        type: 'recent-activity' as WidgetType,
+        position: { x: 2, y: 2, width: 2, height: 1 },
+        config: {}
+      },
+      {
+        id: 'kpi-metrics-prod',
+        type: 'kpi-metrics' as WidgetType,
+        position: { x: 0, y: 3, width: 4, height: 1 },
+        config: {}
+      }
+    ]
+  }
+};
+
+// 비즈니스 템플릿
+export const businessTemplate: DashboardTemplate = {
+  id: 'business',
+  name: '비즈니스 종합',
+  description: '매출, 고객, 프로젝트를 종합적으로 관리하는 대시보드',
+  preview: '💼',
+  category: 'business',
+  recommendedFor: ['CEO', '사업주', '경영진', '매니저'],
+  layout: {
+    gridSize: '5x5',
+    widgets: [
+      {
+        id: 'revenue-chart-biz',
+        type: 'revenue-chart' as WidgetType,
+        position: { x: 0, y: 0, width: 3, height: 2 },
+        config: {}
+      },
+      {
+        id: 'kpi-metrics-biz',
+        type: 'kpi-metrics' as WidgetType,
+        position: { x: 3, y: 0, width: 2, height: 1 },
+        config: {}
+      },
+      {
+        id: 'project-summary-biz',
+        type: 'project-summary' as WidgetType,
+        position: { x: 3, y: 1, width: 2, height: 1 },
+        config: {}
+      },
+      {
+        id: 'tax-deadline-biz',
+        type: 'tax-deadline' as WidgetType,
+        position: { x: 0, y: 2, width: 2, height: 1 },
+        config: {}
+      },
+      {
+        id: 'task-tracker-biz',
+        type: 'task-tracker' as WidgetType,
+        position: { x: 2, y: 2, width: 2, height: 2 },
+        config: {}
+      },
+      {
+        id: 'tax-calculator-biz',
+        type: 'tax-calculator' as WidgetType,
+        position: { x: 4, y: 2, width: 1, height: 2 },
+        config: {}
+      },
+      {
+        id: 'recent-activity-biz',
+        type: 'recent-activity' as WidgetType,
+        position: { x: 0, y: 3, width: 2, height: 1 },
+        config: {}
+      },
+      {
+        id: 'custom-widget-1',
+        type: 'custom' as WidgetType,
+        position: { x: 0, y: 4, width: 5, height: 1 },
+        config: { title: '사업 목표 및 지표' }
+      }
+    ]
+  }
+};
+
 // 모든 템플릿 배열
 export const dashboardTemplates: DashboardTemplate[] = [
   projectTemplate,
   taxTemplate,
   balancedTemplate,
-  minimalTemplate
+  minimalTemplate,
+  productivityTemplate,
+  businessTemplate
 ];
 
 // 템플릿 적용 함수

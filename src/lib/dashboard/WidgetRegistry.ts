@@ -83,6 +83,11 @@ class WidgetRegistryClass {
     return widget ? widget.component : null
   }
 
+  // 위젯 가져오기 (get 메서드 - getComponent의 별칭)
+  get(type: WidgetType): WidgetComponent | LazyWidgetComponent | null {
+    return this.getComponent(type)
+  }
+
   // 위젯 메타데이터 가져오기
   getMetadata(type: WidgetType): WidgetMetadata | null {
     const widget = this.widgets.get(type)
@@ -115,6 +120,11 @@ class WidgetRegistryClass {
     return widgets
   }
 
+  // 카테고리별 위젯 가져오기 (getByCategory 별칭)
+  getByCategory(category: WidgetCategory): WidgetRegistration[] {
+    return this.getWidgetsByCategory(category)
+  }
+
   // 모든 카테고리 가져오기
   getCategories(): WidgetCategory[] {
     return Array.from(this.categories.keys())
@@ -142,6 +152,11 @@ class WidgetRegistryClass {
         metadata.tags?.some(tag => tag.toLowerCase().includes(lowerQuery))
       )
     })
+  }
+
+  // 위젯 검색 (search 별칭)
+  search(query: string): WidgetRegistration[] {
+    return this.searchWidgets(query)
   }
 
   // 우선순위별 위젯 가져오기
