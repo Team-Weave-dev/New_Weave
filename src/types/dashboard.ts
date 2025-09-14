@@ -42,6 +42,9 @@ export type WidgetType =
   | 'task-tracker'
   | 'kpi-metrics'
   | 'tax-calculator'
+  | 'todo-list'
+  | 'calendar'
+  | 'recent-activity'
   | 'custom'
 
 // 위젯 카테고리

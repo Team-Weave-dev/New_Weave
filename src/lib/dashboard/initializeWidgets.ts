@@ -61,6 +61,33 @@ const widgetMetadata: Record<WidgetType, WidgetMetadata> = {
     maxSize: { width: 2, height: 2 },
     tags: ['세금', '계산기', '부가세'],
   },
+  'todo-list': {
+    name: '할 일 목록',
+    description: '개인 할 일을 관리하고 추적',
+    icon: 'list-check',
+    defaultSize: { width: 1, height: 1 },
+    minSize: { width: 1, height: 1 },
+    maxSize: { width: 2, height: 3 },
+    tags: ['할일', '목록', '관리'],
+  },
+  'calendar': {
+    name: '캘린더',
+    description: '일정과 이벤트를 캘린더 형태로 표시',
+    icon: 'calendar-days',
+    defaultSize: { width: 2, height: 2 },
+    minSize: { width: 2, height: 2 },
+    maxSize: { width: 3, height: 3 },
+    tags: ['캘린더', '일정', '이벤트'],
+  },
+  'recent-activity': {
+    name: '최근 활동',
+    description: '최근 활동 내역을 시간순으로 표시',
+    icon: 'activity',
+    defaultSize: { width: 1, height: 2 },
+    minSize: { width: 1, height: 1 },
+    maxSize: { width: 2, height: 3 },
+    tags: ['활동', '히스토리', '로그'],
+  },
   'custom': {
     name: '커스텀 위젯',
     description: '사용자 정의 위젯',
@@ -134,6 +161,31 @@ export function initializeWidgetRegistry() {
     'high'
   );
 
+  // 생산성 관련 위젯
+  WidgetRegistry.register(
+    'todo-list',
+    lazy(() => import('@/components/dashboard/widgets/TodoListWidget').then(m => ({ default: m.TodoListWidget }))),
+    widgetMetadata['todo-list'],
+    'productivity',
+    'medium'
+  );
+
+  WidgetRegistry.register(
+    'calendar',
+    lazy(() => import('@/components/dashboard/widgets/CalendarWidget').then(m => ({ default: m.CalendarWidget }))),
+    widgetMetadata['calendar'],
+    'productivity',
+    'medium'
+  );
+
+  WidgetRegistry.register(
+    'recent-activity',
+    lazy(() => import('@/components/dashboard/widgets/RecentActivityWidget').then(m => ({ default: m.RecentActivityWidget }))),
+    widgetMetadata['recent-activity'],
+    'productivity',
+    'low'
+  );
+
   // 레지스트리 상태 출력 (디버깅)
   if (process.env.NODE_ENV === 'development') {
     WidgetRegistry.debug();
@@ -153,6 +205,9 @@ export const widgetIcons: Record<WidgetType, string> = {
   'task-tracker': 'CheckSquare',
   'kpi-metrics': 'BarChart3',
   'tax-calculator': 'Calculator',
+  'todo-list': 'ListChecks',
+  'calendar': 'CalendarDays',
+  'recent-activity': 'Activity',
   'custom': 'Box',
 };
 

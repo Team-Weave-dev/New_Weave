@@ -1,11 +1,11 @@
 'use client'
 
-import React, { useEffect, useState, Suspense } from 'react'
+import React, { useEffect, useState, Suspense, useMemo, useCallback } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { useDashboardStore } from '@/lib/stores/useDashboardStore'
 import { extractLayoutFromShareLink } from '@/lib/dashboard/layoutSharing'
 import { GridLayout, GridItem } from './GridLayout'
-import { WidgetWrapper } from './WidgetWrapper'
+import { OptimizedWidgetWrapper } from './OptimizedWidgetWrapper'
 import { EditModeToolbar } from './EditModeToolbar'
 import { DndProvider } from './dnd/DndProvider'
 import { SortableWidget } from './dnd/SortableWidget'
@@ -121,8 +121,8 @@ export function DashboardContainer({
     }
   }, [isInitialized, loadFromLocalStorage, searchParams])
 
-  // 위젯 타입에 따른 컴포넌트 렌더링 (Lazy Loading with Suspense)
-  const renderWidgetContent = (widget: any) => {
+  // 위젯 타입에 따른 컴포넌트 렌더링 (Lazy Loading with Suspense) - 메모이제이션
+  const renderWidgetContent = useCallback((widget: any) => {
     const widgetProps = {
       id: widget.id,
       type: widget.type,
@@ -166,7 +166,7 @@ export function DashboardContainer({
         </div>
       </WidgetErrorBoundary>
     )
-  }
+  }, [isEditMode])
 
   // 위젯 추가 핸들러
   const handleAddWidget = () => {
@@ -269,7 +269,7 @@ export function DashboardContainer({
                     id={widget.id}
                     disabled={!isEditMode || widget.locked}
                   >
-                    <WidgetWrapper
+                    <OptimizedWidgetWrapper
                       id={widget.id}
                       type={widget.type}
                       title={widget.type}
@@ -278,7 +278,7 @@ export function DashboardContainer({
                       onConfigure={() => setConfigPanelWidgetId(widget.id)}
                     >
                       {renderWidgetContent(widget)}
-                    </WidgetWrapper>
+                    </OptimizedWidgetWrapper>
                   </SortableWidget>
                 </AnimatedWidget>
               ))}
