@@ -148,10 +148,10 @@ export function ResizeHandle({
   return (
     <div
       className={cn(
-        'absolute z-30 hover:bg-blue-500 transition-colors',
+        'absolute z-30 hover:bg-[var(--color-blue-500)] transition-colors',
         getPositionClasses(),
         {
-          'bg-blue-500': isResizing,
+          'bg-[var(--color-blue-500)]': isResizing,
           'bg-transparent': !isResizing,
         },
         className

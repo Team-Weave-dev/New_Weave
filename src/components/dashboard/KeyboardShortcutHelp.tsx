@@ -3,6 +3,7 @@
 import React from 'react'
 import { X, Keyboard } from 'lucide-react'
 import Button from '@/components/ui/Button'
+import Typography from '@/components/ui/Typography'
 import { cn } from '@/lib/utils'
 
 interface KeyboardShortcutHelpProps {
@@ -54,12 +55,14 @@ export function KeyboardShortcutHelp({ isOpen, onClose }: KeyboardShortcutHelpPr
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[80vh] overflow-hidden">
+      <div className="bg-[var(--color-primary-surface)] rounded-lg shadow-xl w-full max-w-2xl max-h-[80vh] overflow-hidden">
         {/* 헤더 */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-200">
+        <div className="flex items-center justify-between p-4 border-b border-[var(--color-gray-200)]">
           <div className="flex items-center gap-2">
-            <Keyboard className="h-5 w-5 text-gray-600" />
-            <h2 className="text-lg font-semibold">키보드 단축키</h2>
+            <Keyboard className="h-5 w-5 text-[var(--color-gray-600)]" />
+            <Typography variant="h2" className="text-lg font-semibold">
+              키보드 단축키
+            </Typography>
           </div>
           <Button
             variant="ghost"
@@ -76,14 +79,14 @@ export function KeyboardShortcutHelp({ isOpen, onClose }: KeyboardShortcutHelpPr
           <div className="space-y-6">
             {shortcuts.map((category) => (
               <div key={category.category}>
-                <h3 className="text-sm font-semibold text-gray-700 mb-3">
+                <Typography variant="h3" className="text-sm font-semibold text-[var(--color-gray-700)] mb-3">
                   {category.category}
-                </h3>
+                </Typography>
                 <div className="space-y-2">
                   {category.items.map((item, index) => (
                     <div
                       key={index}
-                      className="flex items-center justify-between p-2 rounded hover:bg-gray-50"
+                      className="flex items-center justify-between p-2 rounded hover:bg-[var(--color-gray-50)]"
                     >
                       <div className="flex items-center gap-2">
                         {item.keys.map((key, keyIndex) => (
@@ -112,11 +115,11 @@ export function KeyboardShortcutHelp({ isOpen, onClose }: KeyboardShortcutHelpPr
           </div>
 
           {/* 안내 메시지 */}
-          <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-            <p className="text-sm text-blue-800">
+          <div className="mt-6 p-4 bg-[var(--color-blue-50)] rounded-lg">
+            <Typography variant="body2" className="text-[var(--color-blue-800)]">
               💡 <strong>팁:</strong> 편집 모드에서 위젯을 선택한 후 단축키를 사용하세요.
               대부분의 단축키는 편집 모드에서만 작동합니다.
-            </p>
+            </Typography>
           </div>
         </div>
       </div>

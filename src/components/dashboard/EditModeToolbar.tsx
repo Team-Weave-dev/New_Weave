@@ -3,6 +3,8 @@
 import React, { useState } from 'react'
 import { useDashboardStore } from '@/lib/stores/useDashboardStore'
 import Button from '@/components/ui/Button'
+import { useToast } from '@/components/ui/Toast'
+import { log } from '@/lib/logger'
 import {
   Edit3,
   Save,
@@ -49,6 +51,7 @@ export function EditModeToolbar({
   const [isSaving, setIsSaving] = useState(false)
   const [isLayoutManagerOpen, setIsLayoutManagerOpen] = useState(false)
   const [isShareModalOpen, setIsShareModalOpen] = useState(false)
+  const { addToast } = useToast()
 
   const handleToggleEditMode = () => {
     setEditMode(!isEditMode)
@@ -63,7 +66,7 @@ export function EditModeToolbar({
       }
       setEditMode(false)
     } catch (error) {
-      console.error('Failed to save layout:', error)
+      log.error('Failed to save layout:', error)
     } finally {
       setIsSaving(false)
     }
@@ -107,9 +110,9 @@ export function EditModeToolbar({
           updateLayout(newLayout.id, { widgets: layout.widgets })
           setCurrentLayout(newLayout)
           saveToLocalStorage()
-          alert('레이아웃을 성공적으로 가져왔습니다.')
+          addToast('레이아웃을 성공적으로 가져왔습니다.', 'success')
         } else {
-          alert('레이아웃 파일을 읽을 수 없습니다.')
+          addToast('레이아웃 파일을 읽을 수 없습니다.', 'error')
         }
       }
     }
@@ -161,7 +164,7 @@ export function EditModeToolbar({
 
             {/* 그리드 크기 선택 */}
             <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-600 dark:text-gray-400">
+              <span className="text-sm text-[var(--color-gray-600)] dark:text-[var(--color-gray-400)]">
                 그리드:
               </span>
               <div className="flex gap-1">
@@ -267,7 +270,7 @@ export function EditModeToolbar({
 
       {/* 뷰 모드 정보 */}
       {!isEditMode && currentLayout && (
-        <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
+        <div className="flex items-center gap-4 text-sm text-[var(--color-gray-600)] dark:text-[var(--color-gray-400)]">
           <div className="flex items-center gap-2">
             <Layout className="h-4 w-4" />
             <span>{currentLayout.name}</span>

@@ -3,6 +3,8 @@
 import React, { useState, useMemo, useEffect } from 'react'
 import { X, Search, Plus, Grid3x3, Briefcase, Calculator, TrendingUp, CheckSquare, Package, Folder, Calendar, BarChart3, Box } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
+import Typography from '@/components/ui/Typography'
+import Button from '@/components/ui/Button'
 import { cn } from '@/lib/utils'
 import { WidgetRegistry } from '@/lib/dashboard/WidgetRegistry'
 import type { WidgetCategory, WidgetMetadata, WidgetType } from '@/types/dashboard'
@@ -125,14 +127,18 @@ export function WidgetLibrary({ isOpen, onClose, onAddWidget }: WidgetLibraryPro
       <div className="flex items-center justify-between p-4 border-b border-border-primary">
         <div className="flex items-center gap-2">
           <Grid3x3 className="w-5 h-5 text-txt-secondary" />
-          <h3 className="text-lg font-semibold">위젯 라이브러리</h3>
+          <Typography variant="h3" className="text-lg font-semibold">
+            위젯 라이브러리
+          </Typography>
         </div>
-        <button
+        <Button
+          variant="ghost"
+          size="sm"
           onClick={onClose}
-          className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded"
+          className="p-1 hover:bg-[var(--color-gray-100)] dark:hover:bg-[var(--color-gray-800)] rounded h-auto"
         >
           <X className="w-5 h-5" />
-        </button>
+        </Button>
       </div>
 
       {/* 검색 바 */}
@@ -144,38 +150,42 @@ export function WidgetLibrary({ isOpen, onClose, onAddWidget }: WidgetLibraryPro
             placeholder="위젯 검색..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800"
+            className="pl-10 w-full px-3 py-2 border border-[var(--color-gray-300)] dark:border-[var(--color-gray-700)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--color-blue-500)] dark:bg-[var(--color-gray-800)]"
           />
         </div>
       </div>
 
       {/* 카테고리 탭 */}
       <div className="flex items-center gap-2 p-4 border-b border-border-primary overflow-x-auto">
-        <button
+        <Button
+          variant={selectedCategory === 'all' ? 'primary' : 'ghost'}
+          size="sm"
           className={cn(
             "px-3 py-1 rounded text-sm font-medium transition-colors",
             selectedCategory === 'all' 
-              ? "bg-blue-500 text-white" 
-              : "hover:bg-gray-100 dark:hover:bg-gray-800"
+              ? "bg-[var(--color-blue-500)] text-white" 
+              : "hover:bg-[var(--color-gray-100)] dark:hover:bg-[var(--color-gray-800)]"
           )}
           onClick={() => setSelectedCategory('all')}
         >
           전체
-        </button>
+        </Button>
         {Object.entries(categoryLabels).map(([key, label]) => (
-          <button
+          <Button
             key={key}
+            variant={selectedCategory === key ? 'primary' : 'ghost'}
+            size="sm"
             className={cn(
               "px-3 py-1 rounded text-sm font-medium transition-colors flex items-center gap-1",
               selectedCategory === key 
-                ? "bg-blue-500 text-white" 
-                : "hover:bg-gray-100 dark:hover:bg-gray-800"
+                ? "bg-[var(--color-blue-500)] text-white" 
+                : "hover:bg-[var(--color-gray-100)] dark:hover:bg-[var(--color-gray-800)]"
             )}
             onClick={() => setSelectedCategory(key as WidgetCategory)}
           >
             {categoryIcons[key as WidgetCategory]}
             {label}
-          </button>
+          </Button>
         ))}
       </div>
 
@@ -196,39 +206,41 @@ export function WidgetLibrary({ isOpen, onClose, onAddWidget }: WidgetLibraryPro
                   className={cn(
                     "p-4 cursor-pointer transition-all",
                     isAdded 
-                      ? "bg-gray-100 dark:bg-gray-800 opacity-60" 
-                      : "hover:shadow-lg hover:border-blue-300 dark:hover:border-blue-700"
+                      ? "bg-[var(--color-gray-100)] dark:bg-[var(--color-gray-800)] opacity-60" 
+                      : "hover:shadow-lg hover:border-[var(--color-blue-300)] dark:hover:border-[var(--color-blue-700)]"
                   )}
                   onClick={() => !isAdded && onAddWidget(widget.type, widget.metadata)}
                 >
                   <div className="flex items-start gap-4">
-                    <div className="p-3 bg-gray-100 dark:bg-gray-800 rounded-lg">
+                    <div className="p-3 bg-[var(--color-gray-100)] dark:bg-[var(--color-gray-800)] rounded-lg">
                       {widgetIcons[widget.metadata.icon || 'box'] || <Box className="w-8 h-8" />}
                     </div>
                     <div className="flex-1">
-                      <h4 className="font-medium text-txt-primary mb-1">
+                      <Typography variant="h4" className="font-medium text-txt-primary mb-1">
                         {widget.metadata.name}
-                      </h4>
-                      <p className="text-sm text-txt-secondary mb-2">
+                      </Typography>
+                      <Typography variant="body2" className="text-txt-secondary mb-2">
                         {widget.metadata.description}
-                      </p>
+                      </Typography>
                       <div className="flex items-center justify-between">
                         <div className="flex gap-1">
                           {widget.metadata.tags?.slice(0, 2).map(tag => (
                             <span 
                               key={tag}
-                              className="px-2 py-0.5 text-xs bg-gray-200 dark:bg-gray-700 rounded"
+                              className="px-2 py-0.5 text-xs bg-[var(--color-gray-200)] dark:bg-[var(--color-gray-700)] rounded"
                             >
                               {tag}
                             </span>
                           ))}
                         </div>
-                        <button
+                        <Button
+                          variant={isAdded ? "ghost" : "primary"}
+                          size="sm"
                           className={cn(
                             "px-3 py-1 text-sm rounded transition-colors flex items-center gap-1",
                             isAdded
-                              ? "bg-gray-300 dark:bg-gray-600 text-gray-500 cursor-not-allowed"
-                              : "bg-blue-500 text-white hover:bg-blue-600"
+                              ? "bg-[var(--color-gray-300)] dark:bg-[var(--color-gray-600)] text-[var(--color-gray-500)] cursor-not-allowed"
+                              : "bg-[var(--color-blue-500)] text-white hover:bg-[var(--color-blue-600)]"
                           )}
                           disabled={isAdded}
                           onClick={(e) => {
@@ -240,7 +252,7 @@ export function WidgetLibrary({ isOpen, onClose, onAddWidget }: WidgetLibraryPro
                         >
                           <Plus className="w-3 h-3" />
                           {isAdded ? '추가됨' : '추가'}
-                        </button>
+                        </Button>
                       </div>
                     </div>
                   </div>

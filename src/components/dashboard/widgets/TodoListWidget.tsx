@@ -92,16 +92,21 @@ export function TodoListWidget({ className }: TodoListWidgetProps) {
             className="flex items-start gap-3 p-2 hover:bg-[var(--color-primary-surfaceHover)] rounded-lg transition-colors cursor-pointer"
             onClick={() => toggleTodo(todo.id)}
           >
-            <button className="mt-0.5">
+            <Button 
+              variant="ghost" 
+              size="sm"
+              className="mt-0.5 p-0 h-auto min-h-0"
+              onClick={(e) => e.stopPropagation()}
+            >
               <Square className="w-4 h-4 text-[var(--color-text-tertiary)] hover:text-[var(--color-brand-secondary-start)]" />
-            </button>
+            </Button>
             <div className="flex-1 min-w-0">
               <Typography variant="body1" className="text-[var(--color-text-primary)]">
                 {todo.title}
               </Typography>
               <div className="flex items-center gap-2 mt-1">
                 {getPriorityIcon(todo.priority)}
-                <Typography variant="body2" className="text-gray-500">
+                <Typography variant="body2" className="text-[var(--color-gray-500)]">
                   {todo.dueDate}
                 </Typography>
               </div>
@@ -112,27 +117,32 @@ export function TodoListWidget({ className }: TodoListWidgetProps) {
         {/* 완료된 항목 */}
         {completedTodos.length > 0 && (
           <>
-            <div className="border-t border-gray-200 pt-3">
-              <Typography variant="body2" className="text-gray-500 mb-2">
+            <div className="border-t border-[var(--color-gray-200)] pt-3">
+              <Typography variant="body2" className="text-[var(--color-gray-500)] mb-2">
                 완료된 작업 ({completedTodos.length})
               </Typography>
             </div>
             {completedTodos.map((todo) => (
               <div
                 key={todo.id}
-                className="flex items-start gap-3 p-2 hover:bg-gray-50 dark:hover:bg-gray-800/50 rounded-lg transition-colors cursor-pointer opacity-60"
+                className="flex items-start gap-3 p-2 hover:bg-[var(--color-gray-50)] dark:hover:bg-[var(--color-gray-800)]/50 rounded-lg transition-colors cursor-pointer opacity-60"
                 onClick={() => toggleTodo(todo.id)}
               >
-                <button className="mt-0.5">
-                  <CheckSquare className="w-4 h-4 text-green-500" />
-                </button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="mt-0.5 p-0 h-auto min-h-0"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <CheckSquare className="w-4 h-4 text-[var(--color-green-500)]" />
+                </Button>
                 <div className="flex-1 min-w-0">
-                  <Typography variant="body1" className="text-gray-600 line-through">
+                  <Typography variant="body1" className="text-[var(--color-gray-600)] line-through">
                     {todo.title}
                   </Typography>
                   <div className="flex items-center gap-2 mt-1">
                     {getPriorityIcon(todo.priority)}
-                    <Typography variant="body2" className="text-gray-400">
+                    <Typography variant="body2" className="text-[var(--color-gray-400)]">
                       {todo.dueDate}
                     </Typography>
                   </div>
@@ -144,8 +154,8 @@ export function TodoListWidget({ className }: TodoListWidgetProps) {
       </div>
 
       {/* 요약 */}
-      <div className="mt-4 pt-3 border-t border-gray-200">
-        <Typography variant="body2" className="text-gray-600">
+      <div className="mt-4 pt-3 border-t border-[var(--color-gray-200)]">
+        <Typography variant="body2" className="text-[var(--color-gray-600)]">
           {incompleteTodos.length}개 남음, {completedTodos.length}개 완료
         </Typography>
       </div>

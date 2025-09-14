@@ -253,7 +253,7 @@ export function KPIWidget({
   // 트렌드 아이콘 가져오기
   const getTrendIcon = (trend: KPIMetric['trend'], change: number) => {
     if (Math.abs(change) < 0.5) {
-      return <Minus className="w-4 h-4 text-gray-500" />
+      return <Minus className="w-4 h-4 text-[var(--color-gray-500)]" />
     }
     if (trend === 'up') {
       return <ArrowUp className="w-4 h-4 text-[var(--color-status-success)]" />
@@ -301,13 +301,13 @@ export function KPIWidget({
   // 편집 모드 뷰
   if (isEditMode) {
     return (
-      <Card className={cn("h-full flex items-center justify-center bg-gray-50 dark:bg-gray-900", className)}>
+      <Card className={cn("h-full flex items-center justify-center bg-[var(--color-gray-50)] dark:bg-[var(--color-gray-900)]", className)}>
         <div className="text-center">
-          <BarChart3 className="w-12 h-12 mx-auto mb-2 text-gray-400" />
-          <Typography variant="body2" className="text-gray-600 dark:text-gray-400">
+          <BarChart3 className="w-12 h-12 mx-auto mb-2 text-[var(--color-gray-400)]" />
+          <Typography variant="body2" className="text-[var(--color-gray-600)] dark:text-[var(--color-gray-400)]">
             KPI 메트릭
           </Typography>
-          <Typography variant="caption" className="text-gray-500 dark:text-gray-500 mt-1">
+          <Typography variant="caption" className="text-[var(--color-gray-500)] dark:text-[var(--color-gray-500)] mt-1">
             핵심 성과 지표
           </Typography>
         </div>
@@ -320,10 +320,10 @@ export function KPIWidget({
     return (
       <Card className={cn("h-full p-4", className)}>
         <div className="animate-pulse">
-          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/3 mb-4"></div>
+          <div className="h-4 bg-[var(--color-gray-200)] dark:bg-[var(--color-gray-700)] rounded w-1/3 mb-4"></div>
           <div className="grid grid-cols-2 gap-3">
             {[1, 2, 3, 4].map(i => (
-              <div key={i} className="h-24 bg-gray-200 dark:bg-gray-700 rounded"></div>
+              <div key={i} className="h-24 bg-[var(--color-gray-200)] dark:bg-[var(--color-gray-700)] rounded"></div>
             ))}
           </div>
         </div>
@@ -343,7 +343,7 @@ export function KPIWidget({
           <select
             value={period}
             onChange={(e) => setPeriod(e.target.value as PeriodType)}
-            className="text-sm border border-gray-300 dark:border-gray-700 rounded px-2 py-1"
+            className="text-sm border border-[var(--color-gray-300)] dark:border-[var(--color-gray-700)] rounded px-2 py-1"
           >
             <option value="month">월간</option>
             <option value="quarter">분기</option>
@@ -355,34 +355,34 @@ export function KPIWidget({
       {/* 요약 통계 */}
       <div className="grid grid-cols-4 gap-2 mb-4">
         <div className="text-center">
-          <Typography variant="caption" className="text-gray-500">
+          <Typography variant="caption" className="text-[var(--color-gray-500)]">
             전체
           </Typography>
-          <Typography variant="h4" className="text-gray-900">
+          <Typography variant="h4" className="text-[var(--color-gray-900)]">
             {summary.total}
           </Typography>
         </div>
         <div className="text-center">
-          <Typography variant="caption" className="text-gray-500">
+          <Typography variant="caption" className="text-[var(--color-gray-500)]">
             달성
           </Typography>
-          <Typography variant="h4" className="text-green-600">
+          <Typography variant="h4" className="text-[var(--color-green-600)]">
             {summary.achieving}
           </Typography>
         </div>
         <div className="text-center">
-          <Typography variant="caption" className="text-gray-500">
+          <Typography variant="caption" className="text-[var(--color-gray-500)]">
             개선
           </Typography>
-          <Typography variant="h4" className="text-blue-600">
+          <Typography variant="h4" className="text-[var(--color-blue-600)]">
             {summary.improving}
           </Typography>
         </div>
         <div className="text-center">
-          <Typography variant="caption" className="text-gray-500">
+          <Typography variant="caption" className="text-[var(--color-gray-500)]">
             주의
           </Typography>
-          <Typography variant="h4" className="text-orange-600">
+          <Typography variant="h4" className="text-[var(--color-orange-600)]">
             {summary.warning}
           </Typography>
         </div>
@@ -399,7 +399,7 @@ export function KPIWidget({
               <div
                 key={metric.id}
                 className={cn(
-                  "p-3 rounded-lg border border-gray-200 dark:border-gray-700",
+                  "p-3 rounded-lg border border-[var(--color-gray-200)] dark:border-[var(--color-gray-700)]",
                   colors.bg
                 )}
               >
@@ -409,7 +409,7 @@ export function KPIWidget({
                     <div className={cn("p-1.5 rounded", colors.bg)}>
                       <Icon className={cn("w-4 h-4", colors.icon)} />
                     </div>
-                    <Typography variant="caption" className="text-gray-600 dark:text-gray-400">
+                    <Typography variant="caption" className="text-[var(--color-gray-600)] dark:text-[var(--color-gray-400)]">
                       {metric.name}
                     </Typography>
                   </div>
@@ -427,7 +427,7 @@ export function KPIWidget({
                       variant="caption" 
                       className={cn(
                         "font-medium",
-                        metric.change > 0 ? "text-green-600" : metric.change < 0 ? "text-red-600" : "text-gray-500"
+                        metric.change > 0 ? "text-[var(--color-green-600)]" : metric.change < 0 ? "text-[var(--color-red-600)]" : "text-[var(--color-gray-500)]"
                       )}
                     >
                       {metric.change > 0 ? '+' : ''}{metric.change.toFixed(1)}%
@@ -439,14 +439,14 @@ export function KPIWidget({
                 {metric.target && metric.achievement !== undefined && (
                   <div>
                     <div className="flex items-center justify-between mb-1">
-                      <Typography variant="caption" className="text-gray-500 dark:text-gray-400">
+                      <Typography variant="caption" className="text-[var(--color-gray-500)] dark:text-[var(--color-gray-400)]">
                         목표: {formatValue(metric.target, metric.unit)}
                       </Typography>
-                      <Typography variant="caption" className="font-medium text-gray-600 dark:text-gray-300">
+                      <Typography variant="caption" className="font-medium text-[var(--color-gray-600)] dark:text-[var(--color-gray-300)]">
                         {metric.achievement.toFixed(1)}%
                       </Typography>
                     </div>
-                    <div className="w-full h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                    <div className="w-full h-1.5 bg-[var(--color-gray-200)] dark:bg-[var(--color-gray-700)] rounded-full overflow-hidden">
                       <div
                         className={cn(
                           "h-full transition-all duration-500",
@@ -465,18 +465,18 @@ export function KPIWidget({
 
       {/* 하단 요약 */}
       {config?.showSummary !== false && (
-        <div className="mt-4 pt-3 border-t border-gray-200 dark:border-gray-700">
+        <div className="mt-4 pt-3 border-t border-[var(--color-gray-200)] dark:border-[var(--color-gray-700)]">
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-1">
-                <TrendingUp className="w-4 h-4 text-green-600" />
-                <Typography variant="caption" className="text-gray-600 dark:text-gray-400">
+                <TrendingUp className="w-4 h-4 text-[var(--color-green-600)]" />
+                <Typography variant="caption" className="text-[var(--color-gray-600)] dark:text-[var(--color-gray-400)]">
                   달성률 {summary.achievementRate}%
                 </Typography>
               </div>
               <div className="flex items-center gap-1">
-                <Activity className="w-4 h-4 text-blue-600" />
-                <Typography variant="caption" className="text-gray-600 dark:text-gray-400">
+                <Activity className="w-4 h-4 text-[var(--color-blue-600)]" />
+                <Typography variant="caption" className="text-[var(--color-gray-600)] dark:text-[var(--color-gray-400)]">
                   개선율 {summary.improvementRate}%
                 </Typography>
               </div>

@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react'
 import { useDashboardStore } from '@/lib/stores/useDashboardStore'
+import { useToast } from '@/components/ui/Toast'
 import { cn } from '@/lib/utils'
 import { 
   Layout, 
@@ -38,6 +39,7 @@ export function LayoutManager({ isOpen, onClose }: LayoutManagerProps) {
   const [newLayoutGridSize, setNewLayoutGridSize] = useState<GridSize>('3x3')
   const [editingLayoutId, setEditingLayoutId] = useState<string | null>(null)
   const [editingName, setEditingName] = useState('')
+  const { addToast } = useToast()
 
   const handleCreateLayout = () => {
     if (newLayoutName.trim()) {
@@ -62,7 +64,7 @@ export function LayoutManager({ isOpen, onClose }: LayoutManagerProps) {
         saveToLocalStorage()
       }
     } else {
-      alert('최소 하나의 레이아웃은 유지되어야 합니다.')
+      addToast('최소 하나의 레이아웃은 유지되어야 합니다.', 'warning')
     }
   }
 
@@ -96,7 +98,7 @@ export function LayoutManager({ isOpen, onClose }: LayoutManagerProps) {
   const handleSetDefaultLayout = (layoutId: string) => {
     // localStorage에 기본 레이아웃 ID 저장
     localStorage.setItem('defaultLayoutId', layoutId)
-    alert('기본 레이아웃으로 설정되었습니다.')
+    addToast('기본 레이아웃으로 설정되었습니다.', 'success')
   }
 
   if (!isOpen) return null

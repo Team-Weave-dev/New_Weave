@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import { useDashboardStore } from '@/lib/stores/useDashboardStore'
 import Button from '@/components/ui/Button'
+import Typography from '@/components/ui/Typography'
 import { 
   Share2, 
   Link, 
@@ -100,12 +101,14 @@ export function ShareLayoutModal({ isOpen, onClose, layout: propLayout }: ShareL
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[80vh] overflow-hidden">
+      <div className="bg-[var(--color-primary-surface)] rounded-lg shadow-xl w-full max-w-2xl max-h-[80vh] overflow-hidden">
         {/* 헤더 */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-200">
+        <div className="flex items-center justify-between p-4 border-b border-[var(--color-gray-200)]">
           <div className="flex items-center gap-2">
-            <Share2 className="h-5 w-5 text-gray-600" />
-            <h2 className="text-lg font-semibold">레이아웃 공유</h2>
+            <Share2 className="h-5 w-5 text-[var(--color-gray-600)]" />
+            <Typography variant="h2" className="text-lg font-semibold">
+              레이아웃 공유
+            </Typography>
           </div>
           <Button
             variant="ghost"
@@ -120,14 +123,14 @@ export function ShareLayoutModal({ isOpen, onClose, layout: propLayout }: ShareL
         {/* 내용 */}
         <div className="p-6">
           {/* 레이아웃 정보 */}
-          <div className="mb-6 p-4 bg-gray-50 rounded-lg">
-            <h3 className="font-semibold mb-2">{layout.name}</h3>
-            <div className="flex items-center gap-4 text-sm text-gray-600">
-              <span>{layout.gridSize} 그리드</span>
-              <span>•</span>
-              <span>{layout.widgets.length}개 위젯</span>
-              <span>•</span>
-              <span>생성: {new Date(layout.createdAt).toLocaleDateString('ko-KR')}</span>
+          <div className="mb-6 p-4 bg-[var(--color-gray-50)] rounded-lg">
+            <Typography variant="h3" className="font-semibold mb-2">{layout.name}</Typography>
+            <div className="flex items-center gap-4">
+              <Typography variant="body2" className="text-[var(--color-gray-600)]">{layout.gridSize} 그리드</Typography>
+              <Typography variant="body2" className="text-[var(--color-gray-600)]">•</Typography>
+              <Typography variant="body2" className="text-[var(--color-gray-600)]">{layout.widgets.length}개 위젯</Typography>
+              <Typography variant="body2" className="text-[var(--color-gray-600)]">•</Typography>
+              <Typography variant="body2" className="text-[var(--color-gray-600)]">생성: {new Date(layout.createdAt).toLocaleDateString('ko-KR')}</Typography>
             </div>
           </div>
 
@@ -171,7 +174,7 @@ export function ShareLayoutModal({ isOpen, onClose, layout: propLayout }: ShareL
                     type="text"
                     value={shareLink}
                     readOnly
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-sm"
+                    className="flex-1 px-3 py-2 border border-[var(--color-gray-300)] rounded-md bg-[var(--color-gray-50)] text-sm"
                     onClick={(e) => e.currentTarget.select()}
                   />
                   <Button

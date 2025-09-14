@@ -4,6 +4,10 @@ import React, { useEffect, useState, Suspense, useMemo, useCallback } from 'reac
 import { useSearchParams } from 'next/navigation'
 import { useDashboardStore } from '@/lib/stores/useDashboardStore'
 import { extractLayoutFromShareLink } from '@/lib/dashboard/layoutSharing'
+import { useToast } from '@/components/ui/Toast'
+import Typography from '@/components/ui/Typography'
+import Button from '@/components/ui/Button'
+import { log } from '@/lib/logger'
 import { GridLayout, GridItem } from './GridLayout'
 import { OptimizedWidgetWrapper } from './OptimizedWidgetWrapper'
 import { EditModeToolbar } from './EditModeToolbar'
@@ -52,6 +56,7 @@ export function DashboardContainer({
   const [isShortcutHelpOpen, setIsShortcutHelpOpen] = useState(false)
   
   const searchParams = useSearchParams()
+  const { addToast } = useToast()
   
   // 키보드 네비게이션 훅 사용
   useDashboardKeyboardNavigation()
@@ -98,7 +103,7 @@ export function DashboardContainer({
             url.searchParams.delete('share')
             window.history.replaceState({}, '', url.toString())
             
-            alert('공유된 레이아웃을 성공적으로 가져왔습니다.')
+            addToast('공유된 레이아웃을 성공적으로 가져왔습니다.', 'success')
           }
         } else {
           // localStorage에서 저장된 레이아웃 로드
@@ -110,7 +115,7 @@ export function DashboardContainer({
         
         setIsInitialized(true)
       } catch (error) {
-        console.error('Failed to initialize dashboard:', error)
+        log.error('Failed to initialize dashboard:', error)
       } finally {
         setIsLoading(false)
       }
@@ -150,7 +155,7 @@ export function DashboardContainer({
     }
     
     // 위젯을 찾을 수 없는 경우 폴백
-    console.warn(`Widget type "${widget.type}" (normalized: "${normalizedType}") not found in registry`);
+    log.warn(`Widget type "${widget.type}" (normalized: "${normalizedType}") not found in registry`);
     return (
       <WidgetErrorBoundary widgetId={widget.id} widgetType={widget.type}>
         <div className="p-4 bg-[var(--color-primary-surface)] rounded-lg border border-[var(--color-primary-borderSecondary)]">
@@ -192,18 +197,18 @@ export function DashboardContainer({
     }
     
     addWidget(newWidget)
-    console.log('위젯 추가됨:', type, metadata.name)
+    log.info('위젯 추가됨:', { type, name: metadata.name })
   }
 
   // 레이아웃 저장 핸들러
   const handleSaveLayout = async () => {
-    console.log('레이아웃 저장')
+    log.info('레이아웃 저장')
     // TODO: Supabase에 저장 구현
   }
 
   // 취소 핸들러
   const handleCancel = () => {
-    console.log('편집 취소')
+    log.info('편집 취소')
     // TODO: 변경사항 되돌리기 구현
   }
 
@@ -287,15 +292,16 @@ export function DashboardContainer({
             {isEditMode && currentLayout.widgets.length === 0 && (
               <div className="col-span-full row-span-full flex items-center justify-center">
                 <div className="text-center">
-                  <p className="text-gray-500 mb-4">
+                  <Typography variant="body1" className="text-[var(--color-gray-500)] mb-4">
                     위젯을 추가하여 대시보드를 구성하세요
-                  </p>
-                  <button
+                  </Typography>
+                  <Button
                     onClick={handleAddWidget}
-                    className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                    variant="primary"
+                    className="bg-[var(--color-blue-500)] hover:bg-[var(--color-blue-600)]"
                   >
                     첫 위젯 추가하기
-                  </button>
+                  </Button>
                 </div>
               </div>
             )}
