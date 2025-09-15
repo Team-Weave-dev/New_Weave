@@ -302,7 +302,7 @@ export function KPIWidget({
   // 편집 모드 뷰
   if (isEditMode) {
     return (
-      <Card className={cn("h-full flex items-center justify-center bg-gray-50 dark:bg-gray-900", className)}>
+      <Card className={cn("h-full flex items-center justify-center bg-gray-50", className)}>
         <div className="text-center">
           <BarChart3 className={cn("w-12 h-12 mx-auto mb-2", widgetColors.primary.icon)} />
           <Typography variant="body2" className={widgetColors.text.secondary}>
@@ -321,10 +321,10 @@ export function KPIWidget({
     return (
       <Card className={cn("h-full p-4", className)}>
         <div className="animate-pulse">
-          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/3 mb-4"></div>
+          <div className="h-4 bg-gray-200 rounded w-1/3 mb-4"></div>
           <div className="grid grid-cols-2 gap-3">
             {[1, 2, 3, 4].map(i => (
-              <div key={i} className="h-24 bg-gray-200 dark:bg-gray-700 rounded"></div>
+              <div key={i} className="h-24 bg-gray-200 rounded"></div>
             ))}
           </div>
         </div>
@@ -447,7 +447,7 @@ export function KPIWidget({
                         {metric.achievement.toFixed(1)}%
                       </Typography>
                     </div>
-                    <div className="w-full h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                    <div className="w-full h-1.5 bg-gray-200 rounded-full overflow-hidden">
                       <div
                         className={cn(
                           "h-full transition-all duration-500",

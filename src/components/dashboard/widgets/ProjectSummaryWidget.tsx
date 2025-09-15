@@ -132,7 +132,7 @@ export function ProjectSummaryWidget({
   // 편집 모드 뷰
   if (isEditMode) {
     return (
-      <Card className={cn("h-full flex items-center justify-center bg-gray-50 dark:bg-gray-900", className)}>
+      <Card className={cn("h-full flex items-center justify-center bg-gray-50", className)}>
         <div className="text-center">
           <Briefcase className={cn("w-12 h-12 mx-auto mb-2", widgetColors.primary.icon)} />
           <Typography variant="body2" className={widgetColors.text.secondary}>
@@ -151,11 +151,11 @@ export function ProjectSummaryWidget({
     return (
       <Card className={cn("h-full p-4", className)}>
         <div className="animate-pulse">
-          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/3 mb-4"></div>
+          <div className="h-4 bg-gray-200 rounded w-1/3 mb-4"></div>
           <div className="space-y-3">
-            <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded"></div>
-            <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-5/6"></div>
-            <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-4/6"></div>
+            <div className="h-3 bg-gray-200 rounded"></div>
+            <div className="h-3 bg-gray-200 rounded w-5/6"></div>
+            <div className="h-3 bg-gray-200 rounded w-4/6"></div>
           </div>
         </div>
       </Card>
@@ -184,13 +184,13 @@ export function ProjectSummaryWidget({
     )
   }
 
-  // 상태별 색상
+  // 상태별 색상 - 밝고 깔끔한 스타일
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'completed': return 'text-[var(--color-status-success)] bg-[var(--color-status-success)]/10'
-      case 'in_progress': return 'text-[var(--color-status-info)] bg-[var(--color-status-info)]/10'
+      case 'completed': return 'text-[var(--color-brand-secondary-end)] bg-[var(--color-brand-secondary-start)]/10'
+      case 'in_progress': return 'text-[var(--color-brand-primary-end)] bg-[var(--color-brand-primary-start)]/10'
       case 'on_hold': return 'text-[var(--color-status-warning)] bg-[var(--color-status-warning)]/10'
-      default: return 'text-[var(--color-text-secondary)] bg-[var(--color-primary-surfaceSecondary)]'
+      default: return 'text-[var(--color-text-secondary)] bg-gray-100'
     }
   }
 
@@ -204,60 +204,68 @@ export function ProjectSummaryWidget({
   }
 
   return (
-    <Card className={cn("h-full p-4 flex flex-col", className)}>
+    <Card className={cn("h-full p-4 flex flex-col bg-white shadow-sm hover:shadow-md transition-shadow", className)}>
       {/* 헤더 */}
-      <CardHeader className="pb-3">
+      <CardHeader className="pb-3 px-0">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Briefcase className="w-5 h-5 text-[var(--color-brand-primary-start)]" />
-            <CardTitle>프로젝트 현황</CardTitle>
+            <div className="p-2 rounded-lg bg-[var(--color-brand-primary-start)]/10">
+              <Briefcase className="w-5 h-5 text-[var(--color-brand-primary-end)]" />
+            </div>
+            <CardTitle className={widgetColors.text.primary}>프로젝트 현황</CardTitle>
           </div>
-          <Typography variant="caption" color="secondary">
-            총 {data.total}개
-          </Typography>
+          <span className="px-3 py-1 bg-[var(--color-brand-primary-start)]/10 rounded-full">
+            <Typography variant="caption" className="font-medium text-[var(--color-brand-primary-end)]">
+              총 {data.total}개
+            </Typography>
+          </span>
         </div>
       </CardHeader>
 
-      {/* 통계 카드 */}
+      {/* 통계 카드 - 밝고 깔끔한 스타일 */}
       <div className="grid grid-cols-2 gap-3 mb-4">
-        <Card variant="elevated" className="p-3 bg-[var(--color-status-info)]/10">
-          <div className="flex items-center justify-between">
-            <Clock className="w-4 h-4 text-[var(--color-status-info)]" />
-            <Typography variant="caption" className="text-[var(--color-status-info)]">
+        <div className="p-4 rounded-xl bg-[var(--color-brand-primary-start)]/5 border border-[var(--color-brand-primary-start)]/20">
+          <div className="flex items-center justify-between mb-2">
+            <div className="p-1.5 rounded-lg bg-white">
+              <Clock className="w-4 h-4 text-[var(--color-brand-primary-end)]" />
+            </div>
+            <Typography variant="caption" className="font-medium text-[var(--color-brand-primary-end)]">
               진행중
             </Typography>
           </div>
-          <Typography variant="h2" className="mt-1">
+          <Typography variant="h2" className={cn(widgetColors.text.primary, "font-bold")}>
             {data.inProgress}
           </Typography>
-        </Card>
+        </div>
 
-        <Card variant="elevated" className="p-3 bg-[var(--color-status-success)]/10">
-          <div className="flex items-center justify-between">
-            <CheckCircle className="w-4 h-4 text-[var(--color-status-success)]" />
-            <Typography variant="caption" className="text-[var(--color-status-success)]">
+        <div className="p-4 rounded-xl bg-[var(--color-brand-secondary-start)]/5 border border-[var(--color-brand-secondary-start)]/20">
+          <div className="flex items-center justify-between mb-2">
+            <div className="p-1.5 rounded-lg bg-white">
+              <CheckCircle className="w-4 h-4 text-[var(--color-brand-secondary-end)]" />
+            </div>
+            <Typography variant="caption" className="font-medium text-[var(--color-brand-secondary-end)]">
               완료
             </Typography>
           </div>
-          <Typography variant="h2" className="mt-1">
+          <Typography variant="h2" className={cn(widgetColors.text.primary, "font-bold")}>
             {data.completed}
           </Typography>
-        </Card>
+        </div>
       </div>
 
-      {/* 평균 진행률 */}
+      {/* 평균 진행률 - 깔끔한 프로그레스 바 */}
       <div className="mb-4">
-        <div className="flex justify-between mb-1">
-          <Typography variant="body2" className={widgetColors.text.secondary}>
+        <div className="flex justify-between mb-2">
+          <Typography variant="body2" className={cn(widgetColors.text.secondary, "font-medium")}>
             평균 진행률
           </Typography>
-          <Typography variant="body2" className="font-medium">
+          <Typography variant="body2" className="font-bold text-[var(--color-brand-primary-end)]">
             {data.averageProgress}%
           </Typography>
         </div>
-        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+        <div className="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden">
           <div
-            className="bg-blue-500 h-2 rounded-full transition-all duration-300"
+            className="h-full rounded-full transition-all duration-500 ease-out bg-[var(--color-brand-primary-end)]"
             style={{ width: `${data.averageProgress}%` }}
           />
         </div>
@@ -273,27 +281,35 @@ export function ProjectSummaryWidget({
             {data.recentProjects.map((project) => (
               <div
                 key={project.id}
-                className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer"
+                className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200 hover:shadow-sm hover:border-[var(--color-brand-primary-end)] transition-all cursor-pointer"
               >
                 <div className="flex-1 min-w-0">
-                  <Typography variant="body2" className="font-medium truncate">
+                  <Typography variant="body2" className={cn(widgetColors.text.primary, "font-semibold truncate")}>
                     {project.name}
                   </Typography>
-                  <Typography variant="caption" className={cn(widgetColors.text.secondary, "truncate")}>
+                  <Typography variant="caption" className={cn(widgetColors.text.tertiary, "truncate")}>
                     {project.client}
                   </Typography>
                 </div>
                 <div className="flex items-center gap-2 ml-2">
                   <span className={cn(
-                    "text-xs px-2 py-1 rounded-full",
+                    "text-xs px-3 py-1.5 rounded-full font-medium",
                     getStatusColor(project.status)
                   )}>
                     {getStatusLabel(project.status)}
                   </span>
                   {project.status === 'in_progress' && (
-                    <Typography variant="caption" className={widgetColors.text.secondary}>
-                      {project.progress}%
-                    </Typography>
+                    <div className="flex items-center gap-1">
+                      <div className="w-8 h-1 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                        <div 
+                          className="h-full bg-[var(--color-brand-primary-end)] rounded-full"
+                          style={{ width: `${project.progress}%` }}
+                        />
+                      </div>
+                      <Typography variant="caption" className="font-medium text-[var(--color-brand-primary-end)] min-w-[2.5rem] text-right">
+                        {project.progress}%
+                      </Typography>
+                    </div>
                   )}
                 </div>
               </div>
@@ -304,7 +320,7 @@ export function ProjectSummaryWidget({
 
       {/* 전체 수익 (옵션) */}
       {config?.showRevenue && data.totalRevenue > 0 && (
-        <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
+        <div className="mt-3 pt-3 border-t border-gray-200">
           <div className="flex justify-between items-center">
             <Typography variant="body2" className={widgetColors.text.secondary}>
               총 수익

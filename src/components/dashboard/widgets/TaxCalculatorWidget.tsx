@@ -213,13 +213,13 @@ export function TaxCalculatorWidget({
   // 편집 모드 뷰
   if (isEditMode) {
     return (
-      <Card className={cn("h-full flex items-center justify-center bg-gray-50 dark:bg-gray-900", className)}>
+      <Card className={cn("h-full flex items-center justify-center bg-gray-50", className)}>
         <div className="text-center">
           <Calculator className="w-12 h-12 mx-auto mb-2 text-gray-400" />
-          <Typography variant="body2" className="text-gray-600 dark:text-gray-400">
+          <Typography variant="body2" className="text-gray-600">
             세무 계산기
           </Typography>
-          <Typography variant="caption" className="text-gray-500 dark:text-gray-500 mt-1">
+          <Typography variant="caption" className="text-gray-500 mt-1">
             간편 세금 계산
           </Typography>
         </div>
@@ -247,7 +247,7 @@ export function TaxCalculatorWidget({
 
       {/* 세금 종류 선택 */}
       <div className="mb-3">
-        <Typography variant="caption" className="text-gray-600 dark:text-gray-400 mb-2 block">
+        <Typography variant="caption" className="text-gray-600 mb-2 block">
           세금 종류
         </Typography>
         <div className="grid grid-cols-2 gap-2">
@@ -301,7 +301,7 @@ export function TaxCalculatorWidget({
       {/* VAT 모드 선택 (부가세일 때만) */}
       {selectedTaxType === 'vat' && (
         <div className="mb-3">
-          <Typography variant="caption" className="text-gray-600 dark:text-gray-400 mb-2 block">
+          <Typography variant="caption" className="text-gray-600 mb-2 block">
             계산 방식
           </Typography>
           <div className="flex gap-2">
@@ -333,7 +333,7 @@ export function TaxCalculatorWidget({
 
       {/* 금액 입력 */}
       <div className="mb-4">
-        <Typography variant="caption" className="text-gray-600 dark:text-gray-400 mb-2 block">
+        <Typography variant="caption" className="text-gray-600 mb-2 block">
           {selectedTaxType === 'vat' && vatMode === 'include' ? '총액' : 
            selectedTaxType === 'income' ? '연간 소득' :
            selectedTaxType === 'corporate' ? '과세표준' :
@@ -346,7 +346,7 @@ export function TaxCalculatorWidget({
             value={amount ? parseInt(amount).toLocaleString('ko-KR') : ''}
             onChange={handleAmountChange}
             placeholder="금액을 입력하세요"
-            className="w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg text-right"
+            className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg text-right"
           />
         </div>
       </div>
@@ -376,12 +376,12 @@ export function TaxCalculatorWidget({
 
           {/* 상세 정보 */}
           {showDetails && (
-            <div className="space-y-2 pt-2 border-t border-gray-200 dark:border-gray-700">
+            <div className="space-y-2 pt-2 border-t border-gray-200">
               <div className="flex justify-between items-center">
                 <Typography variant="caption" className="text-gray-500">
                   세율
                 </Typography>
-                <Typography variant="body2" className="text-gray-700 dark:text-gray-300">
+                <Typography variant="body2" className="text-gray-700">
                   {(calculation.taxRate * 100).toFixed(1)}%
                 </Typography>
               </div>
@@ -391,7 +391,7 @@ export function TaxCalculatorWidget({
                   <Typography variant="caption" className="text-gray-500">
                     실효세율
                   </Typography>
-                  <Typography variant="body2" className="text-gray-700 dark:text-gray-300">
+                  <Typography variant="body2" className="text-gray-700">
                     {(calculation.effectiveRate * 100).toFixed(1)}%
                   </Typography>
                 </div>
@@ -402,7 +402,7 @@ export function TaxCalculatorWidget({
                   <Typography variant="caption" className="text-gray-500">
                     누진공제
                   </Typography>
-                  <Typography variant="body2" className="text-gray-700 dark:text-gray-300">
+                  <Typography variant="body2" className="text-gray-700">
                     {formatCurrency(calculation.deductions)}
                   </Typography>
                 </div>
@@ -413,7 +413,7 @@ export function TaxCalculatorWidget({
                   <Typography variant="caption" className="text-gray-500">
                     공급가액
                   </Typography>
-                  <Typography variant="body2" className="text-gray-700 dark:text-gray-300">
+                  <Typography variant="body2" className="text-gray-700">
                     {formatCurrency(calculation.baseAmount)}
                   </Typography>
                 </div>
@@ -436,7 +436,7 @@ export function TaxCalculatorWidget({
       )}
 
       {/* 하단 정보 */}
-      <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
+      <div className="mt-3 pt-3 border-t border-gray-200">
         <div className="flex items-center gap-1">
           <Info className="w-3 h-3 text-gray-400" />
           <Typography variant="caption" className="text-gray-500">

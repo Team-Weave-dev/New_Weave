@@ -161,13 +161,13 @@ export function TaxDeadlineWidget({
   // 편집 모드 뷰
   if (isEditMode) {
     return (
-      <Card className={cn("h-full flex items-center justify-center bg-gray-50 dark:bg-gray-900", className)}>
+      <Card className={cn("h-full flex items-center justify-center bg-gray-50", className)}>
         <div className="text-center">
           <Calendar className="w-12 h-12 mx-auto mb-2 text-gray-400" />
-          <Typography variant="body2" className="text-gray-600 dark:text-gray-400">
+          <Typography variant="body2" className="text-gray-600">
             세무 캘린더
           </Typography>
-          <Typography variant="caption" className="text-gray-500 dark:text-gray-500 mt-1">
+          <Typography variant="caption" className="text-gray-500 mt-1">
             세무 일정 관리
           </Typography>
         </div>
@@ -212,7 +212,7 @@ export function TaxDeadlineWidget({
         <div className="flex items-center gap-1">
           <button
             onClick={() => changeMonth('prev')}
-            className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded"
+            className="p-1 hover:bg-gray-100 rounded"
           >
             <ChevronLeft className="w-4 h-4" />
           </button>
@@ -221,7 +221,7 @@ export function TaxDeadlineWidget({
           </Typography>
           <button
             onClick={() => changeMonth('next')}
-            className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded"
+            className="p-1 hover:bg-gray-100 rounded"
           >
             <ChevronRight className="w-4 h-4" />
           </button>
@@ -287,8 +287,8 @@ export function TaxDeadlineWidget({
                   className={cn(
                     "aspect-square p-1 border rounded text-center relative",
                     isCurrentMonth 
-                      ? "bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700" 
-                      : "bg-gray-50 dark:bg-gray-950 border-gray-100 dark:border-gray-800",
+                      ? "bg-white border-gray-200" 
+                      : "bg-gray-50 border-gray-100",
                     isToday && cn("ring-2", "ring-" + widgetColors.secondary.border.split('-')[1]),
                     dayDeadlines.length > 0 && widgetColors.status.error.bgLight
                   )}
@@ -353,7 +353,7 @@ export function TaxDeadlineWidget({
                           </Typography>
                         </div>
                         {deadline.description && (
-                          <Typography variant="caption" className="text-gray-600 dark:text-gray-400">
+                          <Typography variant="caption" className="text-gray-600">
                             {deadline.description}
                           </Typography>
                         )}
@@ -389,10 +389,10 @@ export function TaxDeadlineWidget({
 
       {/* 다가오는 일정 알림 */}
       {!isEditMode && deadlines.length > 0 && (
-        <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
+        <div className="mt-3 pt-3 border-t border-gray-200">
           <div className="flex items-center gap-2">
             <AlertCircle className={cn("w-4 h-4", widgetColors.status.warning.icon)} />
-            <Typography variant="caption" className="text-gray-600 dark:text-gray-400">
+            <Typography variant="caption" className="text-gray-600">
               다가오는 일정: {deadlines.filter(d => {
                 const days = getDaysUntil(d.date)
                 return days >= 0 && days <= 7

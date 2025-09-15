@@ -116,7 +116,7 @@ export function RevenueChartWidget({
   // 편집 모드 뷰
   if (isEditMode) {
     return (
-      <Card className={cn("h-full flex items-center justify-center bg-gray-50 dark:bg-gray-900", className)}>
+      <Card className={cn("h-full flex items-center justify-center bg-gray-50", className)}>
         <div className="text-center">
           <TrendingUp className={cn("w-12 h-12 mx-auto mb-2", widgetColors.primary.icon)} />
           <Typography variant="body2" className={widgetColors.text.secondary}>
@@ -135,8 +135,8 @@ export function RevenueChartWidget({
     return (
       <Card className={cn("h-full p-4", className)}>
         <div className="animate-pulse">
-          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/3 mb-4"></div>
-          <div className="h-48 bg-gray-200 dark:bg-gray-700 rounded"></div>
+          <div className="h-4 bg-gray-200 rounded w-1/3 mb-4"></div>
+          <div className="h-48 bg-gray-200 rounded"></div>
         </div>
       </Card>
     )
@@ -157,7 +157,7 @@ export function RevenueChartWidget({
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       return (
-        <div className="bg-white dark:bg-gray-800 p-3 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700">
+        <div className="bg-white p-3 rounded-lg shadow-lg border border-gray-200">
           <Typography variant="body2" className="font-medium mb-2">
             {label}
           </Typography>
@@ -283,7 +283,7 @@ export function RevenueChartWidget({
           <select
             value={period}
             onChange={(e) => setPeriod(e.target.value as PeriodType)}
-            className="text-sm border border-gray-300 dark:border-gray-700 rounded px-2 py-1"
+            className="text-sm border border-gray-300 rounded px-2 py-1"
           >
             <option value="month">월별</option>
             <option value="quarter">분기별</option>
@@ -321,7 +321,7 @@ export function RevenueChartWidget({
 
       {/* 요약 정보 */}
       <div className="grid grid-cols-2 gap-3 mb-4">
-        <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3">
+        <div className="bg-[var(--color-brand-primary-start)]/5 rounded-lg p-3 border border-[var(--color-brand-primary-start)]/10">
           <div className="flex items-center justify-between mb-1">
             <DollarSign className={cn("w-4 h-4", widgetColors.primary.icon)} />
             <Typography variant="caption" className={widgetColors.primary.text}>
@@ -334,10 +334,10 @@ export function RevenueChartWidget({
         </div>
         
         <div className={cn(
-          "rounded-lg p-3",
+          "rounded-lg p-3 border",
           growthRate >= 0 
-            ? "bg-green-50 dark:bg-green-900/20" 
-            : "bg-red-50 dark:bg-red-900/20"
+            ? "bg-[var(--color-brand-secondary-start)]/5 border-[var(--color-brand-secondary-start)]/10" 
+            : "bg-[var(--color-status-error)]/5 border-[var(--color-status-error)]/10"
         )}>
           <div className="flex items-center justify-between mb-1">
             {growthRate >= 0 ? (
@@ -370,7 +370,7 @@ export function RevenueChartWidget({
 
       {/* 범례 */}
       {config?.showLegend !== false && (
-        <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
+        <div className="mt-3 pt-3 border-t border-gray-200">
           <div className="flex justify-center gap-4">
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 rounded-full bg-blue-500" />

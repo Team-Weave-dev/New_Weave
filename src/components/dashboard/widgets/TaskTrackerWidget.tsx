@@ -290,13 +290,13 @@ export function TaskTrackerWidget({
   // 편집 모드 뷰
   if (isEditMode) {
     return (
-      <Card className={cn("h-full flex items-center justify-center bg-gray-50 dark:bg-gray-900", className)}>
+      <Card className={cn("h-full flex items-center justify-center bg-gray-50", className)}>
         <div className="text-center">
           <CheckCircle2 className="w-12 h-12 mx-auto mb-2 text-gray-400" />
-          <Typography variant="body2" className="text-gray-600 dark:text-gray-400">
+          <Typography variant="body2" className="text-gray-600">
             작업 추적기
           </Typography>
-          <Typography variant="caption" className="text-gray-500 dark:text-gray-500 mt-1">
+          <Typography variant="caption" className="text-gray-500 mt-1">
             프로젝트별 작업 관리
           </Typography>
         </div>
@@ -309,10 +309,10 @@ export function TaskTrackerWidget({
     return (
       <Card className={cn("h-full p-4", className)}>
         <div className="animate-pulse">
-          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/3 mb-4"></div>
+          <div className="h-4 bg-gray-200 rounded w-1/3 mb-4"></div>
           <div className="space-y-2">
             {[1, 2, 3].map(i => (
-              <div key={i} className="h-12 bg-gray-200 dark:bg-gray-700 rounded"></div>
+              <div key={i} className="h-12 bg-gray-200 rounded"></div>
             ))}
           </div>
         </div>
@@ -388,7 +388,7 @@ export function TaskTrackerWidget({
         <select
           value={filterBy}
           onChange={(e) => setFilterBy(e.target.value as FilterOption)}
-          className="flex-1 text-xs border border-gray-300 dark:border-gray-700 rounded px-2 py-1"
+          className="flex-1 text-xs border border-gray-300 rounded px-2 py-1"
         >
           <option value="all">모든 작업</option>
           <option value="today">오늘</option>
@@ -399,7 +399,7 @@ export function TaskTrackerWidget({
         <select
           value={sortBy}
           onChange={(e) => setSortBy(e.target.value as SortOption)}
-          className="flex-1 text-xs border border-gray-300 dark:border-gray-700 rounded px-2 py-1"
+          className="flex-1 text-xs border border-gray-300 rounded px-2 py-1"
         >
           <option value="priority">우선순위</option>
           <option value="dueDate">마감일</option>
@@ -410,21 +410,21 @@ export function TaskTrackerWidget({
 
       {/* 새 작업 추가 폼 */}
       {showAddTask && (
-        <div className="mb-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+        <div className="mb-3 p-3 bg-gray-50 rounded-lg">
           <div className="flex gap-2 mb-2">
             <input
               type="text"
               value={newTaskTitle}
               onChange={(e) => setNewTaskTitle(e.target.value)}
               placeholder="새 작업 입력..."
-              className="flex-1 px-2 py-1 text-sm border border-gray-300 dark:border-gray-700 rounded"
+              className="flex-1 px-2 py-1 text-sm border border-gray-300 rounded"
               onKeyPress={(e) => e.key === 'Enter' && addTask()}
               autoFocus
             />
             <select
               value={newTaskPriority}
               onChange={(e) => setNewTaskPriority(e.target.value as Task['priority'])}
-              className="text-xs border border-gray-300 dark:border-gray-700 rounded px-2 py-1"
+              className="text-xs border border-gray-300 rounded px-2 py-1"
             >
               <option value="urgent">긴급</option>
               <option value="high">높음</option>
@@ -469,7 +469,7 @@ export function TaskTrackerWidget({
               <div
                 key={task.id}
                 className={cn(
-                  "group flex items-start gap-2 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors",
+                  "group flex items-start gap-2 p-2 rounded-lg hover:bg-gray-50 transition-colors",
                   task.completed && "opacity-60"
                 )}
               >
@@ -490,14 +490,14 @@ export function TaskTrackerWidget({
                       <Typography 
                         variant="body2" 
                         className={cn(
-                          "text-gray-900 dark:text-gray-100",
+                          "text-gray-900",
                           task.completed && "line-through"
                         )}
                       >
                         {task.title}
                       </Typography>
                       {task.description && (
-                        <Typography variant="caption" className="text-gray-500 dark:text-gray-400">
+                        <Typography variant="caption" className="text-gray-500">
                           {task.description}
                         </Typography>
                       )}
@@ -521,7 +521,7 @@ export function TaskTrackerWidget({
                   {/* 메타 정보 */}
                   <div className="flex items-center gap-3 mt-1">
                     {task.projectName && (
-                      <span className="text-xs text-gray-500 dark:text-gray-400">
+                      <span className="text-xs text-gray-500">
                         {task.projectName}
                       </span>
                     )}
@@ -544,7 +544,7 @@ export function TaskTrackerWidget({
                         {task.tags.map(tag => (
                           <span
                             key={tag}
-                            className="px-1.5 py-0.5 text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded"
+                            className="px-1.5 py-0.5 text-xs bg-gray-100 text-gray-600 rounded"
                           >
                             {tag}
                           </span>

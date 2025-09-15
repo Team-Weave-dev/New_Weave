@@ -126,7 +126,7 @@ export function TodoListWidget({ className }: TodoListWidgetProps) {
         {/* 완료된 항목 */}
         {completedTodos.length > 0 && (
           <>
-            <div className={cn("border-t pt-3 border-gray-200 dark:border-gray-700")}>
+            <div className={cn("border-t pt-3 border-gray-200")}>
               <Typography variant="body2" className={cn(widgetColors.text.secondary, "mb-2")}>
                 완료된 작업 ({completedTodos.length})
               </Typography>
@@ -136,7 +136,7 @@ export function TodoListWidget({ className }: TodoListWidgetProps) {
                 key={todo.id}
                 className={cn(
                   "flex items-start gap-3 p-2 rounded-lg transition-colors cursor-pointer opacity-60",
-                  "hover:bg-gray-50 dark:hover:bg-gray-800/50"
+                  "hover:bg-gray-50"
                 )}
                 onClick={() => toggleTodo(todo.id)}
               >
@@ -166,7 +166,7 @@ export function TodoListWidget({ className }: TodoListWidgetProps) {
       </div>
 
       {/* 요약 */}
-      <div className={cn("mt-4 pt-3 border-t border-gray-200 dark:border-gray-700")}>
+      <div className={cn("mt-4 pt-3 border-t border-gray-200")}>
         <Typography variant="body2" className={widgetColors.text.secondary}>
           {incompleteTodos.length}개 남음, {completedTodos.length}개 완료
         </Typography>
