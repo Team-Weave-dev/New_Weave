@@ -21,11 +21,16 @@ export async function middleware(request: NextRequest) {
     '/invoices',
     '/documents',
     '/reminder',
-    '/tax',
+    '/tax-management',
     '/chat',
     '/settings',
     '/ai-assistant',
     '/business-lookup',
+    '/clients',
+    '/payments',
+    '/reminders',
+    '/document-requests',
+    '/templates',
   ];
 
   // 레거시 리다이렉트 매핑 - /clients를 /projects?tab=clients로 리다이렉트
