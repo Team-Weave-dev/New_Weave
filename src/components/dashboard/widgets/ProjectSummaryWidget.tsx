@@ -7,6 +7,7 @@ import Typography from '@/components/ui/Typography'
 import type { WidgetProps } from '@/types/dashboard'
 import { getSupabaseClientSafe } from '@/lib/supabase/client'
 import { cn } from '@/lib/utils'
+import { widgetColors, widgetCategoryColors, gradients } from '@/lib/dashboard/widget-colors'
 
 interface ProjectSummary {
   total: number
@@ -133,11 +134,11 @@ export function ProjectSummaryWidget({
     return (
       <Card className={cn("h-full flex items-center justify-center bg-gray-50 dark:bg-gray-900", className)}>
         <div className="text-center">
-          <Briefcase className="w-12 h-12 mx-auto mb-2 text-gray-400" />
-          <Typography variant="body2" className="text-gray-600 dark:text-gray-400">
+          <Briefcase className={cn("w-12 h-12 mx-auto mb-2", widgetColors.primary.icon)} />
+          <Typography variant="body2" className={widgetColors.text.secondary}>
             프로젝트 요약
           </Typography>
-          <Typography variant="caption" className="text-gray-500 dark:text-gray-500 mt-1">
+          <Typography variant="caption" className={cn(widgetColors.text.tertiary, "mt-1")}>
             프로젝트 현황 표시
           </Typography>
         </div>
@@ -165,7 +166,7 @@ export function ProjectSummaryWidget({
   if (error && !data) {
     return (
       <Card className={cn("h-full p-4 flex items-center justify-center", className)}>
-        <Typography variant="body2" className="text-red-500">
+        <Typography variant="body2" className={widgetColors.status.error.text}>
           {error}
         </Typography>
       </Card>
@@ -176,7 +177,7 @@ export function ProjectSummaryWidget({
   if (!data) {
     return (
       <Card className={cn("h-full p-4 flex items-center justify-center", className)}>
-        <Typography variant="body2" className="text-gray-500">
+        <Typography variant="body2" className={widgetColors.text.secondary}>
           프로젝트가 없습니다
         </Typography>
       </Card>
@@ -247,7 +248,7 @@ export function ProjectSummaryWidget({
       {/* 평균 진행률 */}
       <div className="mb-4">
         <div className="flex justify-between mb-1">
-          <Typography variant="body2" className="text-gray-600 dark:text-gray-400">
+          <Typography variant="body2" className={widgetColors.text.secondary}>
             평균 진행률
           </Typography>
           <Typography variant="body2" className="font-medium">
@@ -265,7 +266,7 @@ export function ProjectSummaryWidget({
       {/* 최근 프로젝트 목록 */}
       {data.recentProjects.length > 0 && (
         <div className="flex-1 overflow-hidden">
-          <Typography variant="body2" className="font-medium text-gray-700 dark:text-gray-300 mb-2">
+          <Typography variant="body2" className={cn("font-medium mb-2", widgetColors.text.primary)}>
             최근 프로젝트
           </Typography>
           <div className="space-y-2 overflow-y-auto max-h-48">
@@ -278,7 +279,7 @@ export function ProjectSummaryWidget({
                   <Typography variant="body2" className="font-medium truncate">
                     {project.name}
                   </Typography>
-                  <Typography variant="caption" className="text-gray-500 truncate">
+                  <Typography variant="caption" className={cn(widgetColors.text.secondary, "truncate")}>
                     {project.client}
                   </Typography>
                 </div>
@@ -290,7 +291,7 @@ export function ProjectSummaryWidget({
                     {getStatusLabel(project.status)}
                   </span>
                   {project.status === 'in_progress' && (
-                    <Typography variant="caption" className="text-gray-500">
+                    <Typography variant="caption" className={widgetColors.text.secondary}>
                       {project.progress}%
                     </Typography>
                   )}
@@ -305,10 +306,10 @@ export function ProjectSummaryWidget({
       {config?.showRevenue && data.totalRevenue > 0 && (
         <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
           <div className="flex justify-between items-center">
-            <Typography variant="body2" className="text-gray-600 dark:text-gray-400">
+            <Typography variant="body2" className={widgetColors.text.secondary}>
               총 수익
             </Typography>
-            <Typography variant="h3" className="text-green-600">
+            <Typography variant="h3" className={widgetColors.status.success.text}>
               ₩{data.totalRevenue.toLocaleString()}
             </Typography>
           </div>

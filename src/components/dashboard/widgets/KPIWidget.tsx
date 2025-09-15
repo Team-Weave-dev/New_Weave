@@ -22,6 +22,7 @@ import Typography from '@/components/ui/Typography'
 import type { WidgetProps } from '@/types/dashboard'
 import { cn } from '@/lib/utils'
 import { getSupabaseClientSafe } from '@/lib/supabase/client'
+import { widgetColors, gradients } from '@/lib/dashboard/widget-colors'
 
 interface KPIMetric {
   id: string

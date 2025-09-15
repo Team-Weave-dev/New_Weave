@@ -7,6 +7,7 @@ import Typography from '@/components/ui/Typography'
 import type { WidgetProps } from '@/types/dashboard'
 import { cn } from '@/lib/utils'
 import { getSupabaseClientSafe } from '@/lib/supabase/client'
+import { widgetColors, chartColors, gradients } from '@/lib/dashboard/widget-colors'
 import {
   LineChart,
   Line,
@@ -117,11 +118,11 @@ export function RevenueChartWidget({
     return (
       <Card className={cn("h-full flex items-center justify-center bg-gray-50 dark:bg-gray-900", className)}>
         <div className="text-center">
-          <TrendingUp className="w-12 h-12 mx-auto mb-2 text-gray-400" />
-          <Typography variant="body2" className="text-gray-600 dark:text-gray-400">
+          <TrendingUp className={cn("w-12 h-12 mx-auto mb-2", widgetColors.primary.icon)} />
+          <Typography variant="body2" className={widgetColors.text.secondary}>
             수익 차트
           </Typography>
-          <Typography variant="caption" className="text-gray-500 dark:text-gray-500 mt-1">
+          <Typography variant="caption" className={cn(widgetColors.text.tertiary, "mt-1")}>
             매출/수익 시각화
           </Typography>
         </div>
@@ -166,7 +167,7 @@ export function RevenueChartWidget({
                 className="w-3 h-3 rounded-full" 
                 style={{ backgroundColor: entry.color }}
               />
-              <Typography variant="caption" className="text-gray-600 dark:text-gray-400">
+              <Typography variant="caption" className={widgetColors.text.secondary}>
                 {entry.name}:
               </Typography>
               <Typography variant="caption" className="font-medium">
@@ -191,7 +192,7 @@ export function RevenueChartWidget({
       case 'line':
         return (
           <LineChart {...chartProps}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--color-primary-borderSecondary)" />
             <XAxis dataKey="month" tick={{ fontSize: 12 }} />
             <YAxis tick={{ fontSize: 12 }} tickFormatter={formatCurrency} />
             <Tooltip content={<CustomTooltip />} />
@@ -199,7 +200,7 @@ export function RevenueChartWidget({
             <Line 
               type="monotone" 
               dataKey="revenue" 
-              stroke="#3b82f6" 
+              stroke="var(--color-brand-primary-end)" 
               strokeWidth={2}
               name="매출"
               dot={{ r: 3 }}
@@ -207,7 +208,7 @@ export function RevenueChartWidget({
             <Line 
               type="monotone" 
               dataKey="profit" 
-              stroke="#10b981" 
+              stroke="var(--color-brand-secondary-start)" 
               strokeWidth={2}
               name="순익"
               dot={{ r: 3 }}
@@ -217,14 +218,14 @@ export function RevenueChartWidget({
       case 'bar':
         return (
           <BarChart {...chartProps}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--color-primary-borderSecondary)" />
             <XAxis dataKey="month" tick={{ fontSize: 12 }} />
             <YAxis tick={{ fontSize: 12 }} tickFormatter={formatCurrency} />
             <Tooltip content={<CustomTooltip />} />
             <Legend />
-            <Bar dataKey="revenue" fill="#3b82f6" name="매출" />
-            <Bar dataKey="expense" fill="#ef4444" name="지출" />
-            <Bar dataKey="profit" fill="#10b981" name="순익" />
+            <Bar dataKey="revenue" fill="var(--color-brand-primary-end)" name="매출" />
+            <Bar dataKey="expense" fill="var(--color-status-error)" name="지출" />
+            <Bar dataKey="profit" fill="var(--color-brand-secondary-start)" name="순익" />
           </BarChart>
         )
       case 'area':
@@ -233,15 +234,15 @@ export function RevenueChartWidget({
           <AreaChart {...chartProps}>
             <defs>
               <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.8}/>
-                <stop offset="95%" stopColor="#3b82f6" stopOpacity={0.1}/>
+                <stop offset="5%" stopColor="var(--color-brand-primary-end)" stopOpacity={0.8}/>
+                <stop offset="95%" stopColor="var(--color-brand-primary-end)" stopOpacity={0.1}/>
               </linearGradient>
               <linearGradient id="colorProfit" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#10b981" stopOpacity={0.8}/>
-                <stop offset="95%" stopColor="#10b981" stopOpacity={0.1}/>
+                <stop offset="5%" stopColor="var(--color-brand-secondary-start)" stopOpacity={0.8}/>
+                <stop offset="95%" stopColor="var(--color-brand-secondary-start)" stopOpacity={0.1}/>
               </linearGradient>
             </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--color-primary-borderSecondary)" />
             <XAxis dataKey="month" tick={{ fontSize: 12 }} />
             <YAxis tick={{ fontSize: 12 }} tickFormatter={formatCurrency} />
             <Tooltip content={<CustomTooltip />} />
@@ -249,7 +250,7 @@ export function RevenueChartWidget({
             <Area 
               type="monotone" 
               dataKey="revenue" 
-              stroke="#3b82f6" 
+              stroke="var(--color-brand-primary-end)" 
               fillOpacity={1} 
               fill="url(#colorRevenue)"
               name="매출"
@@ -257,7 +258,7 @@ export function RevenueChartWidget({
             <Area 
               type="monotone" 
               dataKey="profit" 
-              stroke="#10b981" 
+              stroke="var(--color-brand-secondary-start)" 
               fillOpacity={1} 
               fill="url(#colorProfit)"
               name="순익"
@@ -272,8 +273,8 @@ export function RevenueChartWidget({
       {/* 헤더 */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <TrendingUp className="w-5 h-5 text-blue-600" />
-          <Typography variant="h3" className="text-gray-900">
+          <TrendingUp className={cn("w-5 h-5", widgetColors.primary.icon)} />
+          <Typography variant="h3" className={widgetColors.text.primary}>
             수익 차트
           </Typography>
         </div>
@@ -298,7 +299,7 @@ export function RevenueChartWidget({
                   "p-1 rounded",
                   chartType === type 
                     ? "bg-blue-500 text-white" 
-                    : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400"
+                    : cn(widgetColors.bg.surfaceSecondary, widgetColors.text.secondary)
                 )}
               >
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
@@ -322,12 +323,12 @@ export function RevenueChartWidget({
       <div className="grid grid-cols-2 gap-3 mb-4">
         <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3">
           <div className="flex items-center justify-between mb-1">
-            <DollarSign className="w-4 h-4 text-blue-600" />
-            <Typography variant="caption" className="text-blue-600">
+            <DollarSign className={cn("w-4 h-4", widgetColors.primary.icon)} />
+            <Typography variant="caption" className={widgetColors.primary.text}>
               총 수익
             </Typography>
           </div>
-          <Typography variant="h3" className="text-blue-900 dark:text-blue-100">
+          <Typography variant="h3" className={widgetColors.primary.text}>
             {formatCurrency(totalRevenue)}
           </Typography>
         </div>
@@ -340,20 +341,20 @@ export function RevenueChartWidget({
         )}>
           <div className="flex items-center justify-between mb-1">
             {growthRate >= 0 ? (
-              <ArrowUp className="w-4 h-4 text-green-600" />
+              <ArrowUp className={cn("w-4 h-4", widgetColors.status.success.icon)} />
             ) : (
-              <ArrowDown className="w-4 h-4 text-red-600" />
+              <ArrowDown className={cn("w-4 h-4", widgetColors.status.error.icon)} />
             )}
             <Typography variant="caption" className={
-              growthRate >= 0 ? "text-green-600" : "text-red-600"
+              growthRate >= 0 ? widgetColors.status.success.text : widgetColors.status.error.text
             }>
               전월 대비
             </Typography>
           </div>
           <Typography variant="h3" className={
             growthRate >= 0 
-              ? "text-green-900 dark:text-green-100" 
-              : "text-red-900 dark:text-red-100"
+              ? widgetColors.status.success.text 
+              : widgetColors.status.error.text
           }>
             {growthRate > 0 ? '+' : ''}{growthRate}%
           </Typography>
@@ -373,19 +374,19 @@ export function RevenueChartWidget({
           <div className="flex justify-center gap-4">
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 rounded-full bg-blue-500" />
-              <Typography variant="caption" className="text-gray-600 dark:text-gray-400">
+              <Typography variant="caption" className={widgetColors.text.secondary}>
                 매출
               </Typography>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 rounded-full bg-red-500" />
-              <Typography variant="caption" className="text-gray-600 dark:text-gray-400">
+              <Typography variant="caption" className={widgetColors.text.secondary}>
                 지출
               </Typography>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 rounded-full bg-green-500" />
-              <Typography variant="caption" className="text-gray-600 dark:text-gray-400">
+              <Typography variant="caption" className={widgetColors.text.secondary}>
                 순익
               </Typography>
             </div>
