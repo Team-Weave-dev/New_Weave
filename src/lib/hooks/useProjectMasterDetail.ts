@@ -108,6 +108,7 @@ export function useProjectMasterDetail(initialProjects: ProjectTableRow[] = []):
     customFilters: {}
   });
   
+  // 항상 최신 프로젝트부터 표시 (프로젝트 번호 내림차순 고정)
   const [sort, setSort] = useState<TableSortState>({
     column: 'no',
     direction: 'desc'

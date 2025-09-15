@@ -67,6 +67,11 @@ export function useProjectTable(initialData: ProjectTableRow[] = []) {
           ...parsedConfig,
           // 새로운 컬럼이 추가된 경우를 대비한 병합 로직
           columns: mergeColumns(parsedConfig.columns || [], DEFAULT_COLUMNS),
+          // 항상 최신 프로젝트부터 표시 (프로젝트 번호 내림차순 강제)
+          sort: { 
+            column: 'no', 
+            direction: 'desc' 
+          },
           pagination: { ...DEFAULT_PAGINATION, ...parsedConfig.pagination }
         };
       }

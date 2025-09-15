@@ -46,22 +46,32 @@ function UnifiedProjectsContent() {
     selectedProjectId
   });
 
-  // 초기화 - localStorage와 URL 파라미터 확인
+  // 초기화 - URL 정규화 및 localStorage 확인
   useEffect(() => {
     if (!isInitialized) {
-      // URL 파라미터가 있으면 우선 사용
-      if (urlViewMode === 'list' || urlViewMode === 'detail') {
-        setViewMode(urlViewMode);
-      } else {
-        // localStorage에서 사용자 선호 읽기
-        const savedMode = localStorage.getItem('preferredViewMode') as ViewMode | null;
-        if (savedMode === 'list' || savedMode === 'detail') {
-          setViewMode(savedMode);
-        }
+      // URL에 view 파라미터가 없거나 잘못된 값인 경우 자동으로 수정하여 리디렉트
+      if (!urlViewMode || (urlViewMode !== 'list' && urlViewMode !== 'detail')) {
+        // 첫 진입시에는 항상 list view (사용자 경험 최적화)
+        const defaultMode = 'list';
+        
+        console.log('🔄 URL 정규화: view 파라미터 수정 (첫 진입시 list view 고정)', { 
+          currentUrlViewMode: urlViewMode, 
+          defaultMode
+        });
+        
+        // URL에 올바른 view 파라미터 설정하여 리디렉트
+        const params = new URLSearchParams(searchParams.toString());
+        params.set('view', defaultMode);
+        router.replace(`${pathname}?${params.toString()}`);
+        return; // 리디렉트 후 리턴하여 중복 실행 방지
       }
+      
+      // 올바른 URL 파라미터가 있으면 사용
+      setViewMode(urlViewMode);
+      console.log('✅ URL 파라미터에서 뷰 모드 설정:', urlViewMode);
       setIsInitialized(true);
     }
-  }, [urlViewMode, isInitialized]);
+  }, [urlViewMode, isInitialized, searchParams, pathname, router]);
 
   // Detail View에서 선택된 프로젝트가 없을 때 첫 번째 프로젝트 자동 선택 (URL 동기화 완료 후에만)
   useEffect(() => {
