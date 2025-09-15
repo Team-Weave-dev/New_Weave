@@ -10,6 +10,10 @@ import Button from '@/components/ui/Button'
 import { log } from '@/lib/logger'
 import { GridLayout, GridItem } from './GridLayout'
 import { useResponsiveGrid } from '@/lib/dashboard/responsive-grid'
+import { AdaptiveWidget, MobileDashboardLayout } from './AdaptiveWidget'
+import { FloatingActionButton } from './FloatingActionButton'
+import { MobileDashboardTabs } from './MobileDashboardTabs'
+import { useTouchInteraction } from '@/hooks/useTouchInteraction'
 import { OptimizedWidgetWrapper } from './OptimizedWidgetWrapper'
 import { EditModeToolbar } from './EditModeToolbar'
 import { DndProvider } from './dnd/DndProvider'
@@ -70,6 +74,18 @@ export function DashboardContainer({
   
   // 키보드 네비게이션 훅 사용
   useDashboardKeyboardNavigation()
+  
+  // 터치 인터랙션 훅 사용
+  const {
+    selectedWidgetId: selectedForMove,
+    isSelectionMode,
+    selectWidgetForMove,
+    selectTargetPosition,
+    cancelSelection,
+    handleLongPress,
+    isTouch,
+    isMobile
+  } = useTouchInteraction()
 
   // WidgetRegistry 초기화 (한 번만 실행)
   useEffect(() => {
@@ -262,41 +278,86 @@ export function DashboardContainer({
 
       {/* 대시보드 그리드 */}
       <div className="flex-1 overflow-auto bg-white">
-        <DndProvider>
-          <LayoutTransition>
-            <GridLayout
-              gridSize={isResponsiveMode ? responsiveGridSize : currentLayout.gridSize}
-              className="h-full"
-              gap={deviceType === 'mobile' ? 12 : isEditMode ? 20 : 16}
-              padding={deviceType === 'mobile' ? 12 : isEditMode ? 20 : 16}
-            >
-              {currentLayout.widgets.map((widget) => (
-                <AnimatedWidget
-                  key={widget.id}
-                  id={widget.id}
-                  position={widget.position}
-                  isEditMode={isEditMode}
-                  className={cn({
-                    'hover:shadow-lg transition-shadow': isEditMode && !widget.locked,
-                  })}
-                >
-                  <SortableWidget
+        {/* 모바일 레이아웃 */}
+        {deviceType === 'mobile' ? (
+          <MobileDashboardTabs
+            widgets={currentLayout.widgets}
+            isEditMode={isEditMode}
+          />
+        ) : (
+          /* 데스크톱/태블릿 레이아웃 */
+          <DndProvider>
+            <LayoutTransition>
+              <GridLayout
+                gridSize={isResponsiveMode ? responsiveGridSize : currentLayout.gridSize}
+                className="h-full"
+                gap={isEditMode ? 20 : 16}
+                padding={isEditMode ? 20 : 16}
+              >
+                {currentLayout.widgets.map((widget) => (
+                  <AnimatedWidget
+                    key={widget.id}
                     id={widget.id}
-                    disabled={!isEditMode || widget.locked}
+                    position={widget.position}
+                    isEditMode={isEditMode}
+                    className={cn({
+                      'hover:shadow-lg transition-shadow': isEditMode && !widget.locked,
+                      'ring-2 ring-blue-500': isSelectionMode && selectedForMove === widget.id
+                    })}
                   >
-                    <OptimizedWidgetWrapper
-                      id={widget.id}
-                      type={widget.type}
-                      title={widget.type}
-                      locked={widget.locked}
-                      position={widget.position}
-                      onConfigure={() => setConfigPanelWidgetId(widget.id)}
-                    >
-                      {renderWidgetContent(widget)}
-                    </OptimizedWidgetWrapper>
-                  </SortableWidget>
-                </AnimatedWidget>
-              ))}
+                    {isTouch && isEditMode ? (
+                      /* 터치 디바이스 편집 모드 */
+                      <div {...handleLongPress(widget.id)}>
+                        <OptimizedWidgetWrapper
+                          id={widget.id}
+                          type={widget.type}
+                          title={widget.type}
+                          locked={widget.locked}
+                          position={widget.position}
+                          onConfigure={() => setConfigPanelWidgetId(widget.id)}
+                        >
+                          {renderWidgetContent(widget)}
+                        </OptimizedWidgetWrapper>
+                      </div>
+                    ) : (
+                      /* 데스크톱 드래그 앤 드롭 */
+                      <SortableWidget
+                        id={widget.id}
+                        disabled={!isEditMode || widget.locked}
+                      >
+                        <OptimizedWidgetWrapper
+                          id={widget.id}
+                          type={widget.type}
+                          title={widget.type}
+                          locked={widget.locked}
+                          position={widget.position}
+                          onConfigure={() => setConfigPanelWidgetId(widget.id)}
+                        >
+                          {renderWidgetContent(widget)}
+                        </OptimizedWidgetWrapper>
+                      </SortableWidget>
+                    )}
+                  </AnimatedWidget>
+                ))}
+
+              {/* 터치 선택 모드 - 빈 그리드 셀 표시 */}
+              {isSelectionMode && isTouch && (
+                <div className="absolute inset-0 pointer-events-none">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 p-4 h-full">
+                    {Array.from({ length: 16 }, (_, i) => (
+                      <div
+                        key={i}
+                        className="border-2 border-dashed border-blue-300 rounded-lg opacity-50 pointer-events-auto"
+                        onClick={() => {
+                          const x = i % 4
+                          const y = Math.floor(i / 4)
+                          selectTargetPosition(x, y)
+                        }}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
 
             {/* 빈 그리드 셀 (편집 모드에서만) */}
             {isEditMode && currentLayout.widgets.length === 0 && (
@@ -315,9 +376,10 @@ export function DashboardContainer({
                 </div>
               </div>
             )}
-          </GridLayout>
-          </LayoutTransition>
-        </DndProvider>
+              </GridLayout>
+            </LayoutTransition>
+          </DndProvider>
+        )}
       </div>
 
       {/* 위젯 라이브러리 사이드바 */}
@@ -341,6 +403,15 @@ export function DashboardContainer({
         isOpen={isShortcutHelpOpen}
         onClose={() => setIsShortcutHelpOpen(false)}
       />
+
+      {/* 모바일 플로팅 액션 버튼 */}
+      {deviceType === 'mobile' && isEditMode && (
+        <FloatingActionButton
+          onAddWidget={handleAddWidget}
+          onSave={handleSaveLayout}
+          onSettings={() => setIsShortcutHelpOpen(true)}
+        />
+      )}
     </div>
   )
 }

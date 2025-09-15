@@ -91,7 +91,13 @@ class WidgetRegistryClass {
   // 위젯 메타데이터 가져오기
   getMetadata(type: WidgetType): WidgetMetadata | null {
     const widget = this.widgets.get(type)
-    return widget ? widget.metadata : null
+    if (!widget) return null
+    
+    // category를 metadata에 포함시켜 반환
+    return {
+      ...widget.metadata,
+      category: widget.category
+    }
   }
 
   // 위젯 전체 정보 가져오기

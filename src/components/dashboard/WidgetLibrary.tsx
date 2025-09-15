@@ -237,7 +237,7 @@ export function WidgetLibrary({ isOpen, onClose, onAddWidget }: WidgetLibraryPro
                           variant={isAdded ? "ghost" : "primary"}
                           size="sm"
                           className={cn(
-                            "px-3 py-1 text-sm rounded transition-colors flex items-center gap-1",
+                            "min-h-[44px] min-w-[44px] px-3 py-2 text-sm rounded transition-colors flex items-center gap-1",
                             isAdded
                               ? "bg-[var(--color-gray-300)] dark:bg-[var(--color-gray-600)] text-[var(--color-gray-500)] cursor-not-allowed"
                               : "bg-[var(--color-blue-500)] text-white hover:bg-[var(--color-blue-600)]"

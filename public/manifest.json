@@ -1,49 +1,94 @@
 {
-  "name": "Weave - AI 기반 비즈니스 ERP",
+  "name": "Weave Dashboard",
   "short_name": "Weave",
-  "description": "독립 비즈니스를 위한 개인화 AI 기반 ERP 시스템",
-  "start_url": "/dashboard",
-  "display": "standalone",
-  "background_color": "#ffffff",
+  "description": "통합 비즈니스 대시보드 시스템",
   "theme_color": "#3B82F6",
-  "orientation": "portrait-primary",
+  "background_color": "#ffffff",
+  "display": "standalone",
+  "orientation": "portrait",
+  "scope": "/",
+  "start_url": "/dashboard",
   "icons": [
     {
-      "src": "/logo.png",
-      "sizes": "512x512",
+      "src": "/icons/icon-72x72.png",
+      "sizes": "72x72",
       "type": "image/png",
-      "purpose": "any"
+      "purpose": "maskable any"
     },
     {
-      "src": "/logo.png",
+      "src": "/icons/icon-96x96.png",
+      "sizes": "96x96",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-128x128.png",
+      "sizes": "128x128",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-144x144.png",
+      "sizes": "144x144",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-152x152.png",
+      "sizes": "152x152",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-192x192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "maskable"
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-384x384.png",
+      "sizes": "384x384",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable any"
     }
   ],
-  "screenshots": [],
   "categories": ["business", "productivity", "finance"],
-  "lang": "ko-KR",
-  "dir": "ltr",
-  "prefer_related_applications": false,
   "shortcuts": [
     {
       "name": "새 프로젝트",
       "short_name": "프로젝트",
-      "description": "새 프로젝트 생성",
-      "url": "/projects/new"
+      "description": "새 프로젝트 만들기",
+      "url": "/projects/new",
+      "icons": [{ "src": "/icons/project.png", "sizes": "96x96" }]
     },
     {
-      "name": "인보이스",
-      "short_name": "인보이스",
-      "description": "인보이스 관리",
-      "url": "/invoices"
-    },
-    {
-      "name": "AI 챗봇",
-      "short_name": "AI",
-      "description": "AI 업무 비서",
-      "url": "/chat"
+      "name": "세무 계산기",
+      "short_name": "세무",
+      "description": "세무 계산기 열기",
+      "url": "/tax-management",
+      "icons": [{ "src": "/icons/tax.png", "sizes": "96x96" }]
     }
-  ]
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshots/dashboard-wide.png",
+      "type": "image/png",
+      "sizes": "1920x1080",
+      "form_factor": "wide"
+    },
+    {
+      "src": "/screenshots/dashboard-mobile.png",
+      "type": "image/png",
+      "sizes": "390x844",
+      "form_factor": "narrow"
+    }
+  ],
+  "related_applications": [],
+  "prefer_related_applications": false
 }

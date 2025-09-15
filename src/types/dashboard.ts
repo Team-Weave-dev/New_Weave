@@ -56,6 +56,7 @@ export interface WidgetMetadata {
   name: string
   description: string
   icon?: string
+  category?: WidgetCategory  // 위젯 카테고리 (모바일 그룹화용)
   defaultSize: { width: number; height: number }
   minSize?: { width: number; height: number }
   maxSize?: { width: number; height: number }

@@ -1,234 +1,44 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Weave - 오프라인</title>
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: #333;
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-    }
-
-    .container {
-      background: white;
-      border-radius: 20px;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-      padding: 40px;
-      max-width: 500px;
-      width: 100%;
-      text-align: center;
-      animation: slideUp 0.5s ease-out;
-    }
-
-    @keyframes slideUp {
-      from {
-        opacity: 0;
-        transform: translateY(30px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    .icon {
-      width: 100px;
-      height: 100px;
-      margin: 0 auto 30px;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      animation: pulse 2s infinite;
-    }
-
-    @keyframes pulse {
-      0%, 100% {
-        transform: scale(1);
-      }
-      50% {
-        transform: scale(1.05);
-      }
-    }
-
-    .icon svg {
-      width: 50px;
-      height: 50px;
-      fill: white;
-    }
-
-    h1 {
-      font-size: 28px;
-      margin-bottom: 15px;
-      color: #1a202c;
-    }
-
-    p {
-      font-size: 16px;
-      color: #718096;
-      line-height: 1.6;
-      margin-bottom: 30px;
-    }
-
-    .status {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      padding: 10px 20px;
-      background: #f7fafc;
-      border-radius: 30px;
-      font-size: 14px;
-      color: #4a5568;
-      margin-bottom: 30px;
-    }
-
-    .status-dot {
-      width: 8px;
-      height: 8px;
-      background: #fc8181;
-      border-radius: 50%;
-      animation: blink 1.5s infinite;
-    }
-
-    @keyframes blink {
-      0%, 100% {
-        opacity: 1;
-      }
-      50% {
-        opacity: 0.3;
-      }
-    }
-
-    .features {
-      text-align: left;
-      margin-top: 30px;
-      padding-top: 30px;
-      border-top: 1px solid #e2e8f0;
-    }
-
-    .features h2 {
-      font-size: 16px;
-      color: #2d3748;
-      margin-bottom: 15px;
-      text-align: center;
-    }
-
-    .feature-item {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 12px;
-      padding: 12px;
-      background: #f7fafc;
-      border-radius: 10px;
-    }
-
-    .feature-icon {
-      width: 24px;
-      height: 24px;
-      background: #9f7aea;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-    }
-
-    .feature-icon svg {
-      width: 14px;
-      height: 14px;
-      fill: white;
-    }
-
-    .feature-text {
-      font-size: 14px;
-      color: #4a5568;
-    }
-
-    .retry-button {
-      display: inline-block;
-      padding: 12px 30px;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      text-decoration: none;
-      border-radius: 30px;
-      font-size: 16px;
-      font-weight: 500;
-      transition: transform 0.2s;
-      margin-top: 20px;
-    }
-
-    .retry-button:hover {
-      transform: translateY(-2px);
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>오프라인 - Weave Dashboard</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            max-width: 400px;
+        }
+        h1 { color: #1f2937; }
+        p { color: #6b7280; }
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+    </style>
 </head>
 <body>
-  <div class="container">
-    <div class="icon">
-      <svg viewBox="0 0 24 24">
-        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-      </svg>
+    <div class="container">
+        <h1>📡 오프라인 모드</h1>
+        <p>인터넷 연결이 없습니다. 연결을 확인해주세요.</p>
+        <button onclick="location.reload()">다시 시도</button>
     </div>
-    
-    <h1>오프라인 모드</h1>
-    
-    <div class="status">
-      <span class="status-dot"></span>
-      <span>인터넷 연결 없음</span>
-    </div>
-    
-    <p>
-      현재 인터넷에 연결되어 있지 않습니다.<br>
-      일부 기능은 오프라인에서도 사용 가능합니다.
-    </p>
-    
-    <div class="features">
-      <h2>오프라인에서 사용 가능한 기능</h2>
-      
-      <div class="feature-item">
-        <div class="feature-icon">
-          <svg viewBox="0 0 24 24">
-            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-          </svg>
-        </div>
-        <div class="feature-text">저장된 프로젝트 및 문서 보기</div>
-      </div>
-      
-      <div class="feature-item">
-        <div class="feature-icon">
-          <svg viewBox="0 0 24 24">
-            <path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm2 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
-          </svg>
-        </div>
-        <div class="feature-text">캐시된 데이터 접근</div>
-      </div>
-      
-      <div class="feature-item">
-        <div class="feature-icon">
-          <svg viewBox="0 0 24 24">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-          </svg>
-        </div>
-        <div class="feature-text">연결 복구 시 자동 동기화</div>
-      </div>
-    </div>
-    
-    <a href="javascript:location.reload()" class="retry-button">다시 시도</a>
-  </div>
 </body>
 </html>
