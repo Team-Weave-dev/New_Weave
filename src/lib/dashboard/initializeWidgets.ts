@@ -196,6 +196,15 @@ export function initializeWidgetRegistry() {
     'low'
   );
 
+  // 커스텀 위젯
+  WidgetRegistry.register(
+    'custom',
+    lazy(() => import('@/components/dashboard/widgets/CustomWidget').then(m => ({ default: m.CustomWidget }))),
+    widgetMetadata['custom'],
+    'custom',
+    'low'
+  );
+
   // 레지스트리 상태 출력 (디버깅)
   if (process.env.NODE_ENV === 'development') {
     WidgetRegistry.debug();

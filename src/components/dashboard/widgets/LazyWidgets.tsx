@@ -54,3 +54,9 @@ export const RecentActivityWidget = lazy(() =>
     default: module.RecentActivityWidget
   }))
 )
+
+export const CustomWidget = lazy(() => 
+  import('./CustomWidget').then(module => ({
+    default: module.CustomWidget
+  }))
+)
