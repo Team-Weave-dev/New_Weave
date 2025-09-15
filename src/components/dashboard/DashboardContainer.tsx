@@ -9,6 +9,7 @@ import Typography from '@/components/ui/Typography'
 import Button from '@/components/ui/Button'
 import { log } from '@/lib/logger'
 import { GridLayout, GridItem } from './GridLayout'
+import { useResponsiveGrid } from '@/lib/dashboard/responsive-grid'
 import { OptimizedWidgetWrapper } from './OptimizedWidgetWrapper'
 import { EditModeToolbar } from './EditModeToolbar'
 import { DndProvider } from './dnd/DndProvider'
@@ -57,6 +58,15 @@ export function DashboardContainer({
   
   const searchParams = useSearchParams()
   const { addToast } = useToast()
+  
+  // 반응형 그리드 훅 사용
+  const {
+    deviceType,
+    gridSize: responsiveGridSize,
+    isResponsiveMode,
+    toggleResponsiveMode,
+    setManualGridSize
+  } = useResponsiveGrid(currentLayout?.gridSize || '3x3')
   
   // 키보드 네비게이션 훅 사용
   useDashboardKeyboardNavigation()
@@ -255,10 +265,10 @@ export function DashboardContainer({
         <DndProvider>
           <LayoutTransition>
             <GridLayout
-              gridSize={currentLayout.gridSize}
+              gridSize={isResponsiveMode ? responsiveGridSize : currentLayout.gridSize}
               className="h-full"
-              gap={isEditMode ? 20 : 16}
-              padding={isEditMode ? 20 : 16}
+              gap={deviceType === 'mobile' ? 12 : isEditMode ? 20 : 16}
+              padding={deviceType === 'mobile' ? 12 : isEditMode ? 20 : 16}
             >
               {currentLayout.widgets.map((widget) => (
                 <AnimatedWidget

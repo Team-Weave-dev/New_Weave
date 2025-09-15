@@ -204,18 +204,18 @@ export function ProjectSummaryWidget({
   }
 
   return (
-    <Card className={cn("h-full p-4 flex flex-col bg-white shadow-sm hover:shadow-md transition-shadow", className)}>
+    <Card className={cn("h-full p-3 sm:p-4 flex flex-col bg-white shadow-sm hover:shadow-md transition-shadow", className)}>
       {/* 헤더 */}
-      <CardHeader className="pb-3 px-0">
+      <CardHeader className="pb-2 sm:pb-3 px-0">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="p-2 rounded-lg bg-[var(--color-brand-primary-start)]/10">
-              <Briefcase className="w-5 h-5 text-[var(--color-brand-primary-end)]" />
+            <div className="p-1.5 sm:p-2 rounded-lg bg-[var(--color-brand-primary-start)]/10">
+              <Briefcase className="w-4 h-4 sm:w-5 sm:h-5 text-[var(--color-brand-primary-end)]" />
             </div>
-            <CardTitle className={widgetColors.text.primary}>프로젝트 현황</CardTitle>
+            <CardTitle className={cn("text-base sm:text-lg", widgetColors.text.primary)}>프로젝트 현황</CardTitle>
           </div>
-          <span className="px-3 py-1 bg-[var(--color-brand-primary-start)]/10 rounded-full">
-            <Typography variant="caption" className="font-medium text-[var(--color-brand-primary-end)]">
+          <span className="px-2 py-0.5 sm:px-3 sm:py-1 bg-[var(--color-brand-primary-start)]/10 rounded-full">
+            <Typography variant="caption" className="font-medium text-[10px] sm:text-xs text-[var(--color-brand-primary-end)]">
               총 {data.total}개
             </Typography>
           </span>
@@ -223,47 +223,47 @@ export function ProjectSummaryWidget({
       </CardHeader>
 
       {/* 통계 카드 - 밝고 깔끔한 스타일 */}
-      <div className="grid grid-cols-2 gap-3 mb-4">
-        <div className="p-4 rounded-xl bg-[var(--color-brand-primary-start)]/5 border border-[var(--color-brand-primary-start)]/20">
-          <div className="flex items-center justify-between mb-2">
-            <div className="p-1.5 rounded-lg bg-white">
-              <Clock className="w-4 h-4 text-[var(--color-brand-primary-end)]" />
+      <div className="grid grid-cols-2 gap-2 sm:gap-3 mb-3 sm:mb-4">
+        <div className="p-3 sm:p-4 rounded-xl bg-[var(--color-brand-primary-start)]/5 border border-[var(--color-brand-primary-start)]/20">
+          <div className="flex items-center justify-between mb-1.5 sm:mb-2">
+            <div className="p-1 sm:p-1.5 rounded-lg bg-white">
+              <Clock className="w-3 h-3 sm:w-4 sm:h-4 text-[var(--color-brand-primary-end)]" />
             </div>
-            <Typography variant="caption" className="font-medium text-[var(--color-brand-primary-end)]">
+            <Typography variant="caption" className="font-medium text-[10px] sm:text-xs text-[var(--color-brand-primary-end)]">
               진행중
             </Typography>
           </div>
-          <Typography variant="h2" className={cn(widgetColors.text.primary, "font-bold")}>
+          <Typography variant="h2" className={cn("text-xl sm:text-2xl", widgetColors.text.primary, "font-bold")}>
             {data.inProgress}
           </Typography>
         </div>
 
-        <div className="p-4 rounded-xl bg-[var(--color-brand-secondary-start)]/5 border border-[var(--color-brand-secondary-start)]/20">
-          <div className="flex items-center justify-between mb-2">
-            <div className="p-1.5 rounded-lg bg-white">
-              <CheckCircle className="w-4 h-4 text-[var(--color-brand-secondary-end)]" />
+        <div className="p-3 sm:p-4 rounded-xl bg-[var(--color-brand-secondary-start)]/5 border border-[var(--color-brand-secondary-start)]/20">
+          <div className="flex items-center justify-between mb-1.5 sm:mb-2">
+            <div className="p-1 sm:p-1.5 rounded-lg bg-white">
+              <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 text-[var(--color-brand-secondary-end)]" />
             </div>
-            <Typography variant="caption" className="font-medium text-[var(--color-brand-secondary-end)]">
+            <Typography variant="caption" className="font-medium text-[10px] sm:text-xs text-[var(--color-brand-secondary-end)]">
               완료
             </Typography>
           </div>
-          <Typography variant="h2" className={cn(widgetColors.text.primary, "font-bold")}>
+          <Typography variant="h2" className={cn("text-xl sm:text-2xl", widgetColors.text.primary, "font-bold")}>
             {data.completed}
           </Typography>
         </div>
       </div>
 
       {/* 평균 진행률 - 깔끔한 프로그레스 바 */}
-      <div className="mb-4">
-        <div className="flex justify-between mb-2">
-          <Typography variant="body2" className={cn(widgetColors.text.secondary, "font-medium")}>
+      <div className="mb-3 sm:mb-4">
+        <div className="flex justify-between mb-1.5 sm:mb-2">
+          <Typography variant="body2" className={cn("text-xs sm:text-sm", widgetColors.text.secondary, "font-medium")}>
             평균 진행률
           </Typography>
-          <Typography variant="body2" className="font-bold text-[var(--color-brand-primary-end)]">
+          <Typography variant="body2" className="font-bold text-xs sm:text-sm text-[var(--color-brand-primary-end)]">
             {data.averageProgress}%
           </Typography>
         </div>
-        <div className="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden">
+        <div className="w-full bg-gray-100 rounded-full h-2 sm:h-2.5 overflow-hidden">
           <div
             className="h-full rounded-full transition-all duration-500 ease-out bg-[var(--color-brand-primary-end)]"
             style={{ width: `${data.averageProgress}%` }}
@@ -274,26 +274,26 @@ export function ProjectSummaryWidget({
       {/* 최근 프로젝트 목록 */}
       {data.recentProjects.length > 0 && (
         <div className="flex-1 overflow-hidden">
-          <Typography variant="body2" className={cn("font-medium mb-2", widgetColors.text.primary)}>
+          <Typography variant="body2" className={cn("font-medium text-sm sm:text-base mb-1.5 sm:mb-2", widgetColors.text.primary)}>
             최근 프로젝트
           </Typography>
-          <div className="space-y-2 overflow-y-auto max-h-48">
+          <div className="space-y-1.5 sm:space-y-2 overflow-y-auto max-h-48">
             {data.recentProjects.map((project) => (
               <div
                 key={project.id}
-                className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200 hover:shadow-sm hover:border-[var(--color-brand-primary-end)] transition-all cursor-pointer"
+                className="flex items-center justify-between p-2 sm:p-3 bg-gray-50 rounded-lg border border-gray-200 hover:shadow-sm hover:border-[var(--color-brand-primary-end)] transition-all cursor-pointer"
               >
                 <div className="flex-1 min-w-0">
-                  <Typography variant="body2" className={cn(widgetColors.text.primary, "font-semibold truncate")}>
+                  <Typography variant="body2" className={cn("text-sm sm:text-base", widgetColors.text.primary, "font-semibold truncate")}>
                     {project.name}
                   </Typography>
-                  <Typography variant="caption" className={cn(widgetColors.text.tertiary, "truncate")}>
+                  <Typography variant="caption" className={cn("text-xs sm:text-sm", widgetColors.text.tertiary, "truncate")}>
                     {project.client}
                   </Typography>
                 </div>
                 <div className="flex items-center gap-2 ml-2">
                   <span className={cn(
-                    "text-xs px-3 py-1.5 rounded-full font-medium",
+                    "text-[10px] sm:text-xs px-2 py-1 sm:px-3 sm:py-1.5 rounded-full font-medium",
                     getStatusColor(project.status)
                   )}>
                     {getStatusLabel(project.status)}
@@ -306,7 +306,7 @@ export function ProjectSummaryWidget({
                           style={{ width: `${project.progress}%` }}
                         />
                       </div>
-                      <Typography variant="caption" className="font-medium text-[var(--color-brand-primary-end)] min-w-[2.5rem] text-right">
+                      <Typography variant="caption" className="font-medium text-[10px] sm:text-xs text-[var(--color-brand-primary-end)] min-w-[2rem] sm:min-w-[2.5rem] text-right">
                         {project.progress}%
                       </Typography>
                     </div>

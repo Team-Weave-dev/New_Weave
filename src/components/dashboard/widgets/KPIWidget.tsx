@@ -333,18 +333,18 @@ export function KPIWidget({
   }
 
   return (
-    <Card className={cn("h-full p-4 flex flex-col", className)}>
+    <Card className={cn("h-full p-3 sm:p-4 flex flex-col", className)}>
       {/* 헤더 */}
-      <CardHeader className="pb-3">
+      <CardHeader className="pb-2 sm:pb-3 px-0">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <BarChart3 className={cn("w-5 h-5", widgetColors.primary.icon)} />
-            <CardTitle>KPI 대시보드</CardTitle>
+            <BarChart3 className={cn("w-4 h-4 sm:w-5 sm:h-5", widgetColors.primary.icon)} />
+            <CardTitle className="text-base sm:text-lg">KPI 대시보드</CardTitle>
           </div>
           <select
             value={period}
             onChange={(e) => setPeriod(e.target.value as PeriodType)}
-            className={cn("text-sm border rounded px-2 py-1", widgetColors.border.primary)}
+            className={cn("text-xs sm:text-sm border rounded px-1.5 py-0.5 sm:px-2 sm:py-1", widgetColors.border.primary)}
           >
             <option value="month">월간</option>
             <option value="quarter">분기</option>
@@ -354,44 +354,44 @@ export function KPIWidget({
       </CardHeader>
 
       {/* 요약 통계 */}
-      <div className="grid grid-cols-4 gap-2 mb-4">
+      <div className="grid grid-cols-4 gap-1 sm:gap-2 mb-3 sm:mb-4">
         <div className="text-center">
-          <Typography variant="caption" className={widgetColors.text.tertiary}>
+          <Typography variant="caption" className={cn("text-[10px] sm:text-xs", widgetColors.text.tertiary)}>
             전체
           </Typography>
-          <Typography variant="h4" className={widgetColors.text.primary}>
+          <Typography variant="h4" className={cn("text-base sm:text-xl", widgetColors.text.primary)}>
             {summary.total}
           </Typography>
         </div>
         <div className="text-center">
-          <Typography variant="caption" className={widgetColors.text.tertiary}>
+          <Typography variant="caption" className={cn("text-[10px] sm:text-xs", widgetColors.text.tertiary)}>
             달성
           </Typography>
-          <Typography variant="h4" className={widgetColors.status.success.text}>
+          <Typography variant="h4" className={cn("text-base sm:text-xl", widgetColors.status.success.text)}>
             {summary.achieving}
           </Typography>
         </div>
         <div className="text-center">
-          <Typography variant="caption" className={widgetColors.text.tertiary}>
+          <Typography variant="caption" className={cn("text-[10px] sm:text-xs", widgetColors.text.tertiary)}>
             개선
           </Typography>
-          <Typography variant="h4" className={widgetColors.primary.text}>
+          <Typography variant="h4" className={cn("text-base sm:text-xl", widgetColors.primary.text)}>
             {summary.improving}
           </Typography>
         </div>
         <div className="text-center">
-          <Typography variant="caption" className={widgetColors.text.tertiary}>
+          <Typography variant="caption" className={cn("text-[10px] sm:text-xs", widgetColors.text.tertiary)}>
             주의
           </Typography>
-          <Typography variant="h4" className={widgetColors.status.warning.text}>
+          <Typography variant="h4" className={cn("text-base sm:text-xl", widgetColors.status.warning.text)}>
             {summary.warning}
           </Typography>
         </div>
       </div>
 
       {/* KPI 카드 그리드 */}
-      <div className="flex-1 overflow-y-auto">
-        <div className="grid grid-cols-2 gap-3">
+      <div className="flex-1 overflow-y-auto min-h-0">
+        <div className="grid grid-cols-2 gap-2 sm:gap-3">
           {metrics.map(metric => {
             const colors = getColorClasses(metric.color)
             const Icon = metric.icon
@@ -400,17 +400,17 @@ export function KPIWidget({
               <div
                 key={metric.id}
                 className={cn(
-                  "p-3 rounded-lg border", widgetColors.border.primary,
+                  "p-2 sm:p-3 rounded-lg border", widgetColors.border.primary,
                   colors.bg
                 )}
               >
                 {/* 지표 헤더 */}
-                <div className="flex items-start justify-between mb-2">
-                  <div className="flex items-center gap-2">
-                    <div className={cn("p-1.5 rounded", colors.bg)}>
-                      <Icon className={cn("w-4 h-4", colors.icon)} />
+                <div className="flex items-start justify-between mb-1.5 sm:mb-2">
+                  <div className="flex items-center gap-1.5 sm:gap-2">
+                    <div className={cn("p-1 sm:p-1.5 rounded", colors.bg)}>
+                      <Icon className={cn("w-3 h-3 sm:w-4 sm:h-4", colors.icon)} />
                     </div>
-                    <Typography variant="caption" className={widgetColors.text.secondary}>
+                    <Typography variant="caption" className={cn("text-[10px] sm:text-xs", widgetColors.text.secondary)}>
                       {metric.name}
                     </Typography>
                   </div>
@@ -418,8 +418,8 @@ export function KPIWidget({
                 </div>
 
                 {/* 값과 변화율 */}
-                <div className="flex items-end justify-between mb-2">
-                  <Typography variant="h3" className={colors.text}>
+                <div className="flex items-end justify-between mb-1.5 sm:mb-2">
+                  <Typography variant="h3" className={cn("text-sm sm:text-lg", colors.text)}>
                     {formatValue(metric.value, metric.unit)}
                   </Typography>
                   <div className="flex items-center gap-1">
@@ -427,7 +427,7 @@ export function KPIWidget({
                     <Typography 
                       variant="caption" 
                       className={cn(
-                        "font-medium",
+                        "font-medium text-[10px] sm:text-xs",
                         metric.change > 0 ? widgetColors.status.success.text : metric.change < 0 ? widgetColors.status.error.text : widgetColors.text.muted
                       )}
                     >
@@ -439,11 +439,11 @@ export function KPIWidget({
                 {/* 목표 대비 달성률 */}
                 {metric.target && metric.achievement !== undefined && (
                   <div>
-                    <div className="flex items-center justify-between mb-1">
-                      <Typography variant="caption" className={widgetColors.text.tertiary}>
+                    <div className="flex items-center justify-between mb-0.5 sm:mb-1">
+                      <Typography variant="caption" className={cn("text-[10px] sm:text-xs", widgetColors.text.tertiary)}>
                         목표: {formatValue(metric.target, metric.unit)}
                       </Typography>
-                      <Typography variant="caption" className={cn("font-medium", widgetColors.text.secondary)}>
+                      <Typography variant="caption" className={cn("font-medium text-[10px] sm:text-xs", widgetColors.text.secondary)}>
                         {metric.achievement.toFixed(1)}%
                       </Typography>
                     </div>
@@ -466,18 +466,18 @@ export function KPIWidget({
 
       {/* 하단 요약 */}
       {config?.showSummary !== false && (
-        <div className={cn("mt-4 pt-3 border-t", widgetColors.border.primary)}>
+        <div className={cn("mt-3 pt-2 sm:mt-4 sm:pt-3 border-t", widgetColors.border.primary)}>
           <div className="flex justify-between items-center">
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3 sm:gap-4">
               <div className="flex items-center gap-1">
-                <TrendingUp className={cn("w-4 h-4", widgetColors.status.success.icon)} />
-                <Typography variant="caption" className={widgetColors.text.secondary}>
+                <TrendingUp className={cn("w-3 h-3 sm:w-4 sm:h-4", widgetColors.status.success.icon)} />
+                <Typography variant="caption" className={cn("text-[10px] sm:text-xs", widgetColors.text.secondary)}>
                   달성률 {summary.achievementRate}%
                 </Typography>
               </div>
               <div className="flex items-center gap-1">
-                <Activity className={cn("w-4 h-4", widgetColors.primary.icon)} />
-                <Typography variant="caption" className={widgetColors.text.secondary}>
+                <Activity className={cn("w-3 h-3 sm:w-4 sm:h-4", widgetColors.primary.icon)} />
+                <Typography variant="caption" className={cn("text-[10px] sm:text-xs", widgetColors.text.secondary)}>
                   개선율 {summary.improvementRate}%
                 </Typography>
               </div>

@@ -42,18 +42,18 @@ export function GridLayout({
 
   const getGridClassName = (size: GridSize) => {
     const classMap = {
-      '2x2': 'grid-cols-2',
-      '3x3': 'grid-cols-3',
-      '4x4': 'grid-cols-4',
-      '5x5': 'grid-cols-5',
+      '2x2': 'grid-cols-2',  // 모바일에서도 2x2 유지
+      '3x3': 'grid-cols-2 sm:grid-cols-3',  // 모바일 2열, 태블릿부터 3열
+      '4x4': 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-4',  // 모바일 2열, 태블릿 3열, 데스크톱 4열
+      '5x5': 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5',  // 점진적 증가
     }
-    return classMap[size] || 'grid-cols-3'
+    return classMap[size] || 'grid-cols-2 sm:grid-cols-3'  // 기본값도 모바일 2열
   }
 
   return (
     <div
       className={cn(
-        'grid w-full h-full',
+        'dashboard-grid grid w-full h-full auto-rows-fr',
         getGridClassName(gridSize),
         className
       )}

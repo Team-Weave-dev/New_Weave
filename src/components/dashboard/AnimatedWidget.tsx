@@ -91,6 +91,8 @@ export function AnimatedWidget({
         style={{
           gridColumn: `span ${position.width}`,
           gridRow: `span ${position.height}`,
+          ['--widget-width' as any]: position.width,
+          ['--widget-height' as any]: position.height,
         }}
         drag={false} // 드래그는 dnd-kit에서 처리
       >

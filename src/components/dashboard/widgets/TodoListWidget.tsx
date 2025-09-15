@@ -73,20 +73,20 @@ export function TodoListWidget({ className }: TodoListWidgetProps) {
   const completedTodos = todos.filter(todo => todo.completed)
 
   return (
-    <div className={cn("h-full p-4", widgetColors.bg.surface, className)}>
-      <div className="flex items-center justify-between mb-4">
+    <div className={cn("h-full flex flex-col p-3 sm:p-4", widgetColors.bg.surface, className)}>
+      <div className="flex items-center justify-between mb-3 sm:mb-4 flex-shrink-0">
         <div className="flex items-center gap-2">
-          <CheckSquare className={cn("h-5 w-5", widgetColors.secondary.icon)} />
-          <Typography variant="h3" className={widgetColors.text.primary}>
+          <CheckSquare className={cn("h-4 w-4 sm:h-5 sm:w-5", widgetColors.secondary.icon)} />
+          <Typography variant="h3" className={cn("text-base sm:text-lg", widgetColors.text.primary)}>
             할 일
           </Typography>
         </div>
         <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
-          <Plus className={cn("h-4 w-4", widgetColors.text.secondary)} />
+          <Plus className={cn("h-3 w-3 sm:h-4 sm:w-4", widgetColors.text.secondary)} />
         </Button>
       </div>
 
-      <div className="space-y-3 max-h-48 overflow-y-auto">
+      <div className="flex-1 space-y-3 overflow-y-auto min-h-0">
         {/* 미완료 항목 */}
         {incompleteTodos.map((todo) => (
           <div
@@ -110,12 +110,12 @@ export function TodoListWidget({ className }: TodoListWidgetProps) {
               )} />
             </Button>
             <div className="flex-1 min-w-0">
-              <Typography variant="body1" className={widgetColors.text.primary}>
+              <Typography variant="body1" className={cn("text-sm sm:text-base", widgetColors.text.primary)}>
                 {todo.title}
               </Typography>
               <div className="flex items-center gap-2 mt-1">
                 {getPriorityIcon(todo.priority)}
-                <Typography variant="body2" className={widgetColors.text.secondary}>
+                <Typography variant="body2" className={cn("text-xs sm:text-sm", widgetColors.text.secondary)}>
                   {todo.dueDate}
                 </Typography>
               </div>
@@ -166,8 +166,8 @@ export function TodoListWidget({ className }: TodoListWidgetProps) {
       </div>
 
       {/* 요약 */}
-      <div className={cn("mt-4 pt-3 border-t border-gray-200")}>
-        <Typography variant="body2" className={widgetColors.text.secondary}>
+      <div className={cn("mt-3 pt-2 sm:mt-4 sm:pt-3 border-t border-gray-200 flex-shrink-0")}>
+        <Typography variant="body2" className={cn("text-xs sm:text-sm", widgetColors.text.secondary)}>
           {incompleteTodos.length}개 남음, {completedTodos.length}개 완료
         </Typography>
       </div>

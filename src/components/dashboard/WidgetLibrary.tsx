@@ -122,7 +122,7 @@ export function WidgetLibrary({ isOpen, onClose, onAddWidget }: WidgetLibraryPro
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-y-0 right-0 w-96 bg-bg-primary border-l border-border-primary shadow-xl z-50 flex flex-col">
+    <div className="fixed inset-0 lg:inset-y-0 lg:right-0 lg:left-auto lg:w-96 bg-bg-primary lg:border-l border-border-primary shadow-xl z-50 flex flex-col">
       {/* 헤더 */}
       <div className="flex items-center justify-between p-4 border-b border-border-primary">
         <div className="flex items-center gap-2">

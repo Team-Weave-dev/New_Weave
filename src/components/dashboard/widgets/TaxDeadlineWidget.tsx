@@ -285,7 +285,7 @@ export function TaxDeadlineWidget({
                 <div
                   key={index}
                   className={cn(
-                    "aspect-square p-1 border rounded text-center relative",
+                    "aspect-square p-0.5 sm:p-1 border rounded text-center relative text-xs sm:text-sm",
                     isCurrentMonth 
                       ? "bg-white border-gray-200" 
                       : "bg-gray-50 border-gray-100",

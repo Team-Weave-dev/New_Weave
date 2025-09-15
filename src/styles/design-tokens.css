@@ -1,3 +1,52 @@
+/* Dashboard Grid 모바일 반응형 스타일 */
+@media (max-width: 640px) {
+  .dashboard-grid {
+    gap: 12px !important;
+    padding: 12px !important;
+  }
+  
+  .dashboard-grid > * {
+    grid-column: span 1 !important;
+    grid-row: span 1 !important;
+    min-height: 280px;
+    max-height: 380px;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 768px) {
+  .dashboard-grid {
+    gap: 14px !important;
+    padding: 14px !important;
+  }
+  
+  .dashboard-grid > * {
+    grid-column: span min(var(--widget-width, 1), 2) !important;
+    grid-row: span min(var(--widget-height, 1), 2) !important;
+  }
+}
+
+/* 모바일에서 위젯 내부 스타일 조정 */
+@media (max-width: 640px) {
+  /* 위젯 패딩 축소 */
+  .dashboard-grid .h-full > div {
+    padding: 12px !important;
+  }
+  
+  /* 타이틀 크기 축소 */
+  .dashboard-grid h3 {
+    font-size: 16px !important;
+  }
+  
+  /* 본문 텍스트 크기 */
+  .dashboard-grid .text-sm {
+    font-size: 13px !important;
+  }
+  
+  .dashboard-grid .text-xs {
+    font-size: 11px !important;
+  }
+}
+
 :root {
   /* ========================================
      Color System - Extended

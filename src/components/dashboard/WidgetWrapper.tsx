@@ -183,8 +183,8 @@ export function WidgetWrapper({
           <div className="flex items-center gap-2">
             {/* 드래그 핸들 */}
             {!locked && (
-              <div className="cursor-move p-1 hover:bg-gray-100 rounded">
-                <Move className="h-4 w-4 text-gray-500" />
+              <div className="cursor-move p-2 hover:bg-gray-100 rounded min-w-[44px] min-h-[44px] flex items-center justify-center">
+                <Move className="h-5 w-5 text-gray-500" />
               </div>
             )}
             
@@ -206,12 +206,12 @@ export function WidgetWrapper({
                 e.stopPropagation()
                 handleFullscreenToggle()
               }}
-              className="h-6 w-6 p-0"
+              className="min-w-[44px] min-h-[44px] p-0 flex items-center justify-center"
             >
               {isFullscreen ? (
-                <Minimize2 className="h-3 w-3" />
+                <Minimize2 className="h-5 w-5" />
               ) : (
-                <Maximize2 className="h-3 w-3" />
+                <Maximize2 className="h-5 w-5" />
               )}
             </Button>
 
@@ -224,9 +224,9 @@ export function WidgetWrapper({
                   e.stopPropagation()
                   onConfigure()
                 }}
-                className="h-6 w-6 p-0"
+                className="min-w-[44px] min-h-[44px] p-0 flex items-center justify-center"
               >
-                <Settings className="h-3 w-3" />
+                <Settings className="h-5 w-5" />
               </Button>
             )}
 
@@ -238,12 +238,12 @@ export function WidgetWrapper({
                 e.stopPropagation()
                 handleLockToggle()
               }}
-              className="h-6 w-6 p-0"
+              className="min-w-[44px] min-h-[44px] p-0 flex items-center justify-center"
             >
               {locked ? (
-                <Lock className="h-3 w-3 text-yellow-600" />
+                <Lock className="h-5 w-5 text-yellow-600" />
               ) : (
-                <Unlock className="h-3 w-3" />
+                <Unlock className="h-5 w-5" />
               )}
             </Button>
 
@@ -256,9 +256,9 @@ export function WidgetWrapper({
                   e.stopPropagation()
                   handleRemove()
                 }}
-                className="h-6 w-6 p-0 hover:bg-[var(--color-status-error)]/10"
+                className="min-w-[44px] min-h-[44px] p-0 hover:bg-[var(--color-status-error)]/10 flex items-center justify-center"
               >
-                <X className="h-3 w-3 text-[var(--color-status-error)]" />
+                <X className="h-5 w-5 text-[var(--color-status-error)]" />
               </Button>
             )}
           </div>

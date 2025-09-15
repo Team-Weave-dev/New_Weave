@@ -64,54 +64,54 @@ export function CalendarWidget({ className }: CalendarWidgetProps) {
   }
 
   return (
-    <div className={cn("h-full p-4", widgetColors.bg.surface, className)}>
-      <div className="flex items-center gap-2 mb-4">
-        <Calendar className={cn("h-5 w-5", widgetColors.primary.icon)} />
-        <Typography variant="h3" className={widgetColors.text.primary}>
+    <div className={cn("h-full flex flex-col p-3 sm:p-4", widgetColors.bg.surface, className)}>
+      <div className="flex items-center gap-2 mb-3 sm:mb-4 flex-shrink-0">
+        <Calendar className={cn("h-4 w-4 sm:h-5 sm:w-5", widgetColors.primary.icon)} />
+        <Typography variant="h3" className={cn("text-base sm:text-lg", widgetColors.text.primary)}>
           오늘 일정
         </Typography>
       </div>
 
       {/* 오늘 날짜 */}
-      <div className={cn("mb-4 p-3 rounded-lg", widgetColors.primary.bgLight)}>
-        <Typography variant="h2" className={widgetColors.primary.text}>
+      <div className={cn("mb-3 sm:mb-4 p-2 sm:p-3 rounded-lg flex-shrink-0", widgetColors.primary.bgLight)}>
+        <Typography variant="h2" className={cn("text-2xl sm:text-3xl", widgetColors.primary.text)}>
           {today.getDate()}
         </Typography>
-        <Typography variant="body2" className={cn(widgetColors.primary.text, "opacity-80")}>
+        <Typography variant="body2" className={cn("text-xs sm:text-sm", widgetColors.primary.text, "opacity-80")}>
           {todayStr}
         </Typography>
       </div>
 
       {/* 일정 목록 */}
-      <div className="space-y-3">
+      <div className="flex-1 space-y-2 sm:space-y-3 overflow-y-auto min-h-0">
         {todayEvents.length > 0 ? (
           todayEvents.map((event) => (
             <div
               key={event.id}
-              className={cn("flex items-start gap-3 p-3 rounded-lg border hover:shadow-sm transition-shadow", widgetColors.border.secondary)}
+              className={cn("flex items-start gap-2 sm:gap-3 p-2 sm:p-3 rounded-lg border hover:shadow-sm transition-shadow", widgetColors.border.secondary)}
             >
               <div className="flex-shrink-0">
                 <div className="flex items-center gap-1">
                   <Clock className={cn("w-3 h-3", widgetColors.text.tertiary)} />
-                  <Typography variant="body2" className={cn("font-medium", widgetColors.text.secondary)}>
+                  <Typography variant="body2" className={cn("font-medium text-xs sm:text-sm", widgetColors.text.secondary)}>
                     {event.time}
                   </Typography>
                 </div>
               </div>
               <div className="flex-1 min-w-0">
-                <Typography variant="body1" className={widgetColors.text.primary}>
+                <Typography variant="body1" className={cn("text-sm sm:text-base", widgetColors.text.primary)}>
                   {event.title}
                 </Typography>
                 {event.location && (
                   <div className="flex items-center gap-1 mt-1">
                     <MapPin className={cn("w-3 h-3", widgetColors.icon.muted)} />
-                    <Typography variant="body2" className={widgetColors.text.tertiary}>
+                    <Typography variant="body2" className={cn("text-xs sm:text-sm", widgetColors.text.tertiary)}>
                       {event.location}
                     </Typography>
                   </div>
                 )}
                 <div className="mt-2">
-                  <span className={cn("inline-block px-2 py-1 rounded-full text-xs font-medium", getEventColor(event.type))}>
+                  <span className={cn("inline-block px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-full text-[10px] sm:text-xs font-medium", getEventColor(event.type))}>
                     {event.type === 'meeting' && '미팅'}
                     {event.type === 'deadline' && '마감'}
                     {event.type === 'event' && '행사'}
@@ -123,7 +123,7 @@ export function CalendarWidget({ className }: CalendarWidgetProps) {
         ) : (
           <div className="text-center py-6">
             <Calendar className={cn("w-8 h-8 mx-auto mb-2", widgetColors.icon.muted)} />
-            <Typography variant="body1" className={widgetColors.text.tertiary}>
+            <Typography variant="body1" className={cn("text-sm sm:text-base", widgetColors.text.tertiary)}>
               오늘 예정된 일정이 없습니다
             </Typography>
           </div>
@@ -131,8 +131,8 @@ export function CalendarWidget({ className }: CalendarWidgetProps) {
       </div>
 
       {todayEvents.length > 0 && (
-        <div className={cn("mt-4 pt-3 border-t text-center", widgetColors.border.secondary)}>
-          <Typography variant="body2" className={widgetColors.text.tertiary}>
+        <div className={cn("mt-3 pt-2 sm:mt-4 sm:pt-3 border-t text-center flex-shrink-0", widgetColors.border.secondary)}>
+          <Typography variant="body2" className={cn("text-xs sm:text-sm", widgetColors.text.tertiary)}>
             총 {todayEvents.length}개 일정
           </Typography>
         </div>

@@ -51,7 +51,7 @@ export const getDeviceType = (width: number): DeviceType => {
  * 반응형 그리드 훅
  */
 export const useResponsiveGrid = (
-  defaultGridSize: '3x3' | '4x4' = '3x3'
+  defaultGridSize: '2x2' | '3x3' | '4x4' | '5x5' = '3x3'
 ) => {
   const [screenSize, setScreenSize] = useState<{
     width: number;
@@ -59,7 +59,7 @@ export const useResponsiveGrid = (
   }>({ width: 0, height: 0 });
 
   const [deviceType, setDeviceType] = useState<DeviceType>('desktop');
-  const [gridSize, setGridSize] = useState<'2x2' | '3x3' | '4x4'>(defaultGridSize);
+  const [gridSize, setGridSize] = useState<'2x2' | '3x3' | '4x4' | '5x5'>(defaultGridSize);
   const [isResponsiveMode, setIsResponsiveMode] = useState(false);
 
   // 화면 크기 업데이트
@@ -106,7 +106,7 @@ export const useResponsiveGrid = (
   }, [defaultGridSize]);
 
   // 수동 그리드 크기 설정 (반응형 모드 비활성화)
-  const setManualGridSize = useCallback((size: '2x2' | '3x3' | '4x4') => {
+  const setManualGridSize = useCallback((size: '2x2' | '3x3' | '4x4' | '5x5') => {
     setIsResponsiveMode(false);
     setGridSize(size);
   }, []);

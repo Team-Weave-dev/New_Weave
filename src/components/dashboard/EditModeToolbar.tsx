@@ -20,6 +20,8 @@ import {
   EyeOff,
   Layers,
   Share2,
+  Menu,
+  Settings,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { LayoutManager } from './LayoutManager'
@@ -39,6 +41,7 @@ export function EditModeToolbar({
   onSave,
   onCancel,
 }: EditModeToolbarProps) {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const {
     isEditMode,
     setEditMode,
@@ -121,12 +124,138 @@ export function EditModeToolbar({
   }
 
   return (
-    <div
-      className={cn(
-        'flex items-center justify-between gap-4 p-4 bg-[var(--color-primary-surface)] border-b border-[var(--color-primary-borderSecondary)]',
-        className
+    <>
+      {/* 모바일 메뉴 버튼 */}
+      <div className="lg:hidden fixed bottom-4 right-4 z-50">
+        <Button
+          variant="primary"
+          size="lg"
+          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          className="rounded-full w-14 h-14 shadow-lg"
+        >
+          {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+        </Button>
+      </div>
+
+      {/* 모바일 하단 시트 */}
+      {isMobileMenuOpen && (
+        <div className="lg:hidden fixed inset-x-0 bottom-0 z-40 bg-white rounded-t-2xl shadow-2xl p-4 space-y-4 max-h-[70vh] overflow-y-auto">
+          {/* 편집 모드 토글 */}
+          <Button
+            variant={isEditMode ? 'primary' : 'outline'}
+            size="lg"
+            onClick={() => {
+              handleToggleEditMode()
+              setIsMobileMenuOpen(false)
+            }}
+            className="w-full h-14 flex items-center justify-center gap-3"
+          >
+            {isEditMode ? <EyeOff className="h-5 w-5" /> : <Edit3 className="h-5 w-5" />}
+            <span className="text-base">{isEditMode ? '편집 종료' : '편집 모드'}</span>
+          </Button>
+
+          {isEditMode && (
+            <>
+              {/* 위젯 추가 */}
+              <Button
+                variant="outline"
+                size="lg"
+                onClick={() => {
+                  onAddWidget?.()
+                  setIsMobileMenuOpen(false)
+                }}
+                className="w-full h-14 flex items-center justify-center gap-3"
+              >
+                <Plus className="h-5 w-5" />
+                <span className="text-base">위젯 추가</span>
+              </Button>
+
+              {/* 그리드 크기 선택 */}
+              <div className="grid grid-cols-2 gap-2">
+                <Button
+                  variant={currentLayout?.gridSize === '3x3' ? 'primary' : 'outline'}
+                  size="lg"
+                  onClick={() => handleGridSizeChange('3x3')}
+                  className="h-14 flex items-center justify-center gap-2"
+                >
+                  <Grid3x3 className="h-5 w-5" />
+                  <span>3x3</span>
+                </Button>
+                <Button
+                  variant={currentLayout?.gridSize === '4x4' ? 'primary' : 'outline'}
+                  size="lg"
+                  onClick={() => handleGridSizeChange('4x4')}
+                  className="h-14 flex items-center justify-center gap-2"
+                >
+                  <Grid2x2 className="h-5 w-5" />
+                  <span>4x4</span>
+                </Button>
+              </div>
+
+              {/* 기타 액션 */}
+              <div className="grid grid-cols-2 gap-2">
+                <Button
+                  variant="outline"
+                  size="lg"
+                  onClick={() => {
+                    setIsLayoutManagerOpen(true)
+                    setIsMobileMenuOpen(false)
+                  }}
+                  className="h-14"
+                >
+                  <Layers className="h-5 w-5" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="lg"
+                  onClick={handleReset}
+                  className="h-14"
+                >
+                  <RotateCcw className="h-5 w-5" />
+                </Button>
+              </div>
+
+              {/* 저장/취소 */}
+              <div className="grid grid-cols-2 gap-2">
+                <Button
+                  variant="outline"
+                  size="lg"
+                  onClick={() => {
+                    handleCancel()
+                    setIsMobileMenuOpen(false)
+                  }}
+                  disabled={isSaving}
+                  className="h-14"
+                >
+                  <X className="h-5 w-5" />
+                  <span>취소</span>
+                </Button>
+                <Button
+                  variant="primary"
+                  size="lg"
+                  onClick={() => {
+                    handleSave()
+                    setIsMobileMenuOpen(false)
+                  }}
+                  disabled={isSaving}
+                  className="h-14"
+                >
+                  <Save className="h-5 w-5" />
+                  <span>{isSaving ? '저장 중...' : '저장'}</span>
+                </Button>
+              </div>
+            </>
+          )}
+        </div>
       )}
-    >
+
+      {/* 데스크톱 툴바 (기존 코드) */}
+      <div
+        className={cn(
+          'hidden lg:flex items-center justify-between gap-4 p-4 bg-[var(--color-primary-surface)] border-b border-[var(--color-primary-borderSecondary)]',
+          className
+        )}
+      >
       <div className="flex items-center gap-4">
         {/* 편집 모드 토글 */}
         <Button
@@ -297,6 +426,7 @@ export function EditModeToolbar({
         isOpen={isShareModalOpen}
         onClose={() => setIsShareModalOpen(false)}
       />
-    </div>
+      </div>
+    </>
   )
 }
