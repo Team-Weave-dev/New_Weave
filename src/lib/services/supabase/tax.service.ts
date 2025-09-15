@@ -1,4 +1,4 @@
-import { getSupabaseClient } from '@/lib/supabase/client'
+import { getSupabaseClientSafe } from '@/lib/supabase/client'
 import type { Database } from '@/lib/supabase/database.types'
 
 type TaxRecord = Database['public']['Tables']['tax_records']['Row']
@@ -6,10 +6,20 @@ type TaxRecordInsert = Database['public']['Tables']['tax_records']['Insert']
 type TaxRecordUpdate = Database['public']['Tables']['tax_records']['Update']
 
 export class TaxService {
-  private supabase = getSupabaseClient()
+  private supabase = getSupabaseClientSafe()
 
   // 세무 기록 생성
   async createTaxRecord(record: Omit<TaxRecordInsert, 'id' | 'created_at' | 'updated_at'>) {
+    if (!this.supabase) {
+      // Mock 데이터 반환
+      return {
+        id: 'mock-' + Date.now(),
+        ...record,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      } as TaxRecord
+    }
+    
     const insertData: any = record;
     const { data, error } = await this.supabase
       .from('tax_records')
@@ -23,6 +33,11 @@ export class TaxService {
 
   // 세무 기록 목록 조회
   async getTaxRecords(userId: string, year?: number, quarter?: number) {
+    if (!this.supabase) {
+      // Mock 데이터 반환
+      return []
+    }
+    
     let query = this.supabase
       .from('tax_records')
       .select(`
@@ -54,6 +69,11 @@ export class TaxService {
 
   // 특정 세무 기록 조회
   async getTaxRecordById(id: string) {
+    if (!this.supabase) {
+      // Mock 데이터 반환
+      return null
+    }
+    
     const { data, error } = await this.supabase
       .from('tax_records')
       .select(`
@@ -75,6 +95,11 @@ export class TaxService {
 
   // 세무 기록 업데이트
   async updateTaxRecord(id: string, updates: TaxRecordUpdate) {
+    if (!this.supabase) {
+      // Mock 데이터 반환
+      return { id, ...updates } as TaxRecord
+    }
+    
     const { data, error } = await (this.supabase
       .from('tax_records') as any)
       .update(updates)
@@ -88,6 +113,11 @@ export class TaxService {
 
   // 세무 기록 삭제
   async deleteTaxRecord(id: string) {
+    if (!this.supabase) {
+      // Mock 데이터 반환
+      return true
+    }
+    
     const { error } = await this.supabase
       .from('tax_records')
       .delete()
@@ -99,6 +129,10 @@ export class TaxService {
 
   // 사업자번호별 세무 기록 조회
   async getTaxRecordsByBusinessNumber(businessNumber: string, userId: string) {
+    if (!this.supabase) {
+      return []
+    }
+    
     const { data, error } = await this.supabase
       .from('tax_records')
       .select('*')
@@ -113,6 +147,10 @@ export class TaxService {
 
   // 클라이언트별 세무 기록 조회
   async getTaxRecordsByClient(clientId: string) {
+    if (!this.supabase) {
+      return []
+    }
+    
     const { data, error } = await this.supabase
       .from('tax_records')
       .select('*')
@@ -126,6 +164,10 @@ export class TaxService {
 
   // 마감일 임박 세무 신고 조회
   async getUpcomingTaxDeadlines(userId: string, days: number = 30) {
+    if (!this.supabase) {
+      return []
+    }
+    
     const futureDate = new Date()
     futureDate.setDate(futureDate.getDate() + days)
 
@@ -151,6 +193,23 @@ export class TaxService {
 
   // 연도별 세무 통계
   async getTaxStatsByYear(userId: string, year: number) {
+    if (!this.supabase) {
+      // Mock 통계 데이터 반환
+      return {
+        year,
+        total: 0,
+        totalAmount: 0,
+        byQuarter: {
+          1: { count: 0, amount: 0 },
+          2: { count: 0, amount: 0 },
+          3: { count: 0, amount: 0 },
+          4: { count: 0, amount: 0 }
+        },
+        byStatus: {},
+        byTaxType: {}
+      }
+    }
+    
     const { data, error } = await this.supabase
       .from('tax_records')
       .select('*')
@@ -199,6 +258,10 @@ export class TaxService {
 
   // 세무 달력 데이터 조회
   async getTaxCalendar(userId: string, year: number, month: number) {
+    if (!this.supabase) {
+      return []
+    }
+    
     const startDate = new Date(year, month - 1, 1)
     const endDate = new Date(year, month, 0)
 
@@ -222,6 +285,10 @@ export class TaxService {
 
   // 세무 신고 상태 업데이트
   async updateTaxStatus(id: string, status: string, filedDate?: string) {
+    if (!this.supabase) {
+      return { id, status, filed_date: filedDate } as TaxRecord
+    }
+    
     const updates: TaxRecordUpdate = {
       status,
       filed_date: filedDate
@@ -240,6 +307,13 @@ export class TaxService {
 
   // 실시간 구독 설정
   subscribeToChanges(userId: string, callback: (payload: any) => void) {
+    if (!this.supabase) {
+      // Mock 구독 반환
+      return {
+        unsubscribe: () => {}
+      }
+    }
+    
     return this.supabase
       .channel('tax_records_changes')
       .on(
