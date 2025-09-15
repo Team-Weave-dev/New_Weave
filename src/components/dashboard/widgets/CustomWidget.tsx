@@ -30,11 +30,11 @@ export function CustomWidget({
   return (
     <Card className={`h-full ${className}`}>
       <CardHeader className="pb-3">
-        <CardTitle className="flex items-center justify-between">
-          <Typography variant="h6" className="flex items-center gap-2">
+        <div className="flex items-center justify-between">
+          <CardTitle className="flex items-center gap-2">
             <span className="text-xl" style={{ color }}>📦</span>
             {title}
-          </Typography>
+          </CardTitle>
           {isEditMode && (
             <Button
               variant="ghost"
@@ -45,7 +45,7 @@ export function CustomWidget({
               <Edit2 className="h-4 w-4" />
             </Button>
           )}
-        </CardTitle>
+        </div>
       </CardHeader>
       <CardContent className="pt-0">
         <div className="space-y-4">
