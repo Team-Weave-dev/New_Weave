@@ -192,7 +192,7 @@ export function RevenueChartWidget({
       case 'line':
         return (
           <LineChart {...chartProps}>
-            <CartesianGrid strokeDasharray="3 3" stroke="var(--color-primary-borderSecondary)" />
+            <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
             <XAxis dataKey="month" tick={{ fontSize: 12 }} />
             <YAxis tick={{ fontSize: 12 }} tickFormatter={formatCurrency} />
             <Tooltip content={<CustomTooltip />} />
@@ -200,7 +200,7 @@ export function RevenueChartWidget({
             <Line 
               type="monotone" 
               dataKey="revenue" 
-              stroke="var(--color-brand-primary-end)" 
+              stroke="#60a5fa" 
               strokeWidth={2}
               name="매출"
               dot={{ r: 3 }}
@@ -208,7 +208,7 @@ export function RevenueChartWidget({
             <Line 
               type="monotone" 
               dataKey="profit" 
-              stroke="var(--color-brand-secondary-start)" 
+              stroke="#14b8a6" 
               strokeWidth={2}
               name="순익"
               dot={{ r: 3 }}
@@ -218,14 +218,14 @@ export function RevenueChartWidget({
       case 'bar':
         return (
           <BarChart {...chartProps}>
-            <CartesianGrid strokeDasharray="3 3" stroke="var(--color-primary-borderSecondary)" />
+            <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
             <XAxis dataKey="month" tick={{ fontSize: 12 }} />
             <YAxis tick={{ fontSize: 12 }} tickFormatter={formatCurrency} />
             <Tooltip content={<CustomTooltip />} />
             <Legend />
-            <Bar dataKey="revenue" fill="var(--color-brand-primary-end)" name="매출" />
-            <Bar dataKey="expense" fill="var(--color-status-error)" name="지출" />
-            <Bar dataKey="profit" fill="var(--color-brand-secondary-start)" name="순익" />
+            <Bar dataKey="revenue" fill="#60a5fa" name="매출" />
+            <Bar dataKey="expense" fill="#ef4444" name="지출" />
+            <Bar dataKey="profit" fill="#14b8a6" name="순익" />
           </BarChart>
         )
       case 'area':
@@ -234,15 +234,15 @@ export function RevenueChartWidget({
           <AreaChart {...chartProps}>
             <defs>
               <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="var(--color-brand-primary-end)" stopOpacity={0.8}/>
-                <stop offset="95%" stopColor="var(--color-brand-primary-end)" stopOpacity={0.1}/>
+                <stop offset="5%" stopColor="#60a5fa" stopOpacity={0.8}/>
+                <stop offset="95%" stopColor="#60a5fa" stopOpacity={0.1}/>
               </linearGradient>
               <linearGradient id="colorProfit" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="var(--color-brand-secondary-start)" stopOpacity={0.8}/>
-                <stop offset="95%" stopColor="var(--color-brand-secondary-start)" stopOpacity={0.1}/>
+                <stop offset="5%" stopColor="#14b8a6" stopOpacity={0.8}/>
+                <stop offset="95%" stopColor="#14b8a6" stopOpacity={0.1}/>
               </linearGradient>
             </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="var(--color-primary-borderSecondary)" />
+            <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
             <XAxis dataKey="month" tick={{ fontSize: 12 }} />
             <YAxis tick={{ fontSize: 12 }} tickFormatter={formatCurrency} />
             <Tooltip content={<CustomTooltip />} />
@@ -250,7 +250,7 @@ export function RevenueChartWidget({
             <Area 
               type="monotone" 
               dataKey="revenue" 
-              stroke="var(--color-brand-primary-end)" 
+              stroke="#60a5fa" 
               fillOpacity={1} 
               fill="url(#colorRevenue)"
               name="매출"
@@ -258,7 +258,7 @@ export function RevenueChartWidget({
             <Area 
               type="monotone" 
               dataKey="profit" 
-              stroke="var(--color-brand-secondary-start)" 
+              stroke="#14b8a6" 
               fillOpacity={1} 
               fill="url(#colorProfit)"
               name="순익"
