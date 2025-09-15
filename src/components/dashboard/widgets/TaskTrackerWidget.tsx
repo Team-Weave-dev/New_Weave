@@ -22,6 +22,7 @@ import Button from '@/components/ui/Button'
 import type { WidgetProps } from '@/types/dashboard'
 import { cn } from '@/lib/utils'
 import { getSupabaseClientSafe } from '@/lib/supabase/client'
+import { widgetColors } from '@/lib/dashboard/widget-colors'
 
 interface Task {
   id: string
@@ -269,10 +270,10 @@ export function TaskTrackerWidget({
   // 우선순위 색상
   const getPriorityColor = (priority: Task['priority']) => {
     switch (priority) {
-      case 'urgent': return 'text-[var(--color-status-error)] bg-[var(--color-status-error)]/10'
-      case 'high': return 'text-[var(--color-status-warning)] bg-[var(--color-status-warning)]/10'
-      case 'medium': return 'text-[var(--color-accent-orange)] bg-[var(--color-accent-orange)]/10'
-      case 'low': return 'text-[var(--color-text-secondary)] bg-[var(--color-primary-surfaceSecondary)]'
+      case 'urgent': return cn(widgetColors.status.error.text, widgetColors.status.error.bgLight)
+      case 'high': return cn(widgetColors.status.warning.text, widgetColors.status.warning.bgLight)
+      case 'medium': return cn(widgetColors.primary.text, widgetColors.primary.bgLight)
+      case 'low': return cn(widgetColors.text.secondary, widgetColors.bg.surfaceSecondary)
     }
   }
 
@@ -332,8 +333,8 @@ export function TaskTrackerWidget({
       {/* 헤더 */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <CheckCircle2 className="w-5 h-5 text-[var(--color-accent-blue)]" />
-          <Typography variant="h3" className="text-[var(--color-text-primary)]">
+          <CheckCircle2 className={cn("w-5 h-5", widgetColors.primary.icon)} />
+          <Typography variant="h3" className={widgetColors.text.primary}>
             작업 관리
           </Typography>
         </div>
@@ -352,7 +353,7 @@ export function TaskTrackerWidget({
           <Typography variant="caption" className="text-gray-500">
             전체
           </Typography>
-          <Typography variant="h4" className="text-[var(--color-text-primary)]">
+          <Typography variant="h4" className={widgetColors.text.primary}>
             {stats.total}
           </Typography>
         </div>
@@ -360,7 +361,7 @@ export function TaskTrackerWidget({
           <Typography variant="caption" className="text-gray-500">
             완료
           </Typography>
-          <Typography variant="h4" className="text-[var(--color-status-success)]">
+          <Typography variant="h4" className={widgetColors.status.success.text}>
             {stats.completed}
           </Typography>
         </div>
@@ -368,7 +369,7 @@ export function TaskTrackerWidget({
           <Typography variant="caption" className="text-gray-500">
             긴급
           </Typography>
-          <Typography variant="h4" className="text-[var(--color-status-error)]">
+          <Typography variant="h4" className={widgetColors.status.error.text}>
             {stats.urgent}
           </Typography>
         </div>
@@ -376,7 +377,7 @@ export function TaskTrackerWidget({
           <Typography variant="caption" className="text-gray-500">
             지연
           </Typography>
-          <Typography variant="h4" className="text-[var(--color-status-warning)]">
+          <Typography variant="h4" className={widgetColors.status.warning.text}>
             {stats.overdue}
           </Typography>
         </div>
@@ -477,9 +478,9 @@ export function TaskTrackerWidget({
                   className="mt-0.5 flex-shrink-0"
                 >
                   {task.completed ? (
-                    <CheckCircle2 className="w-4 h-4 text-[var(--color-status-success)]" />
+                    <CheckCircle2 className={cn("w-4 h-4", widgetColors.status.success.icon)} />
                   ) : (
-                    <Circle className="w-4 h-4 text-gray-400 hover:text-gray-600" />
+                    <Circle className={cn("w-4 h-4", widgetColors.icon.muted, "hover:text-gray-600")} />
                   )}
                 </button>
                 
@@ -528,8 +529,8 @@ export function TaskTrackerWidget({
                       <span className={cn(
                         "flex items-center gap-1 text-xs",
                         new Date(task.dueDate) < new Date() && !task.completed
-                          ? "text-[var(--color-status-error)]"
-                          : "text-gray-500 dark:text-gray-400"
+                          ? widgetColors.status.error.text
+                          : widgetColors.text.tertiary
                       )}>
                         <Calendar className="w-3 h-3" />
                         {new Date(task.dueDate).toLocaleDateString('ko-KR', {
@@ -557,7 +558,7 @@ export function TaskTrackerWidget({
                 <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                   <button
                     onClick={() => deleteTask(task.id)}
-                    className="p-1 text-gray-400 hover:text-[var(--color-status-error)] transition-colors"
+                    className={cn("p-1 transition-colors", widgetColors.icon.muted, "hover:" + widgetColors.status.error.text)}
                   >
                     <Trash2 className="w-3 h-3" />
                   </button>

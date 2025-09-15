@@ -3,6 +3,8 @@
 import React from 'react'
 import { Activity, FileText, Users, DollarSign, MessageSquare, Bell } from 'lucide-react'
 import Typography from '@/components/ui/Typography'
+import { cn } from '@/lib/utils'
+import { widgetColors } from '@/lib/dashboard/widget-colors'
 
 interface ActivityItem {
   id: string
@@ -63,25 +65,25 @@ export function RecentActivityWidget({ className }: RecentActivityWidgetProps) {
   const getActivityIcon = (type: ActivityItem['type']) => {
     switch (type) {
       case 'project':
-        return <FileText className="w-4 h-4 text-[var(--color-status-info)]" />
+        return <FileText className={cn("w-4 h-4", widgetColors.status.info.icon)} />
       case 'client':
-        return <Users className="w-4 h-4 text-[var(--color-status-success)]" />
+        return <Users className={cn("w-4 h-4", widgetColors.status.success.icon)} />
       case 'invoice':
-        return <DollarSign className="w-4 h-4 text-[var(--color-status-progress)]" />
+        return <DollarSign className={cn("w-4 h-4", widgetColors.primary.icon)} />
       case 'message':
-        return <MessageSquare className="w-4 h-4 text-[var(--color-status-warning)]" />
+        return <MessageSquare className={cn("w-4 h-4", widgetColors.status.warning.icon)} />
       case 'notification':
-        return <Bell className="w-4 h-4 text-[var(--color-status-error)]" />
+        return <Bell className={cn("w-4 h-4", widgetColors.status.error.icon)} />
       default:
-        return <Activity className="w-4 h-4 text-[var(--color-text-tertiary)]" />
+        return <Activity className={cn("w-4 h-4", widgetColors.text.tertiary)} />
     }
   }
 
   return (
-    <div className={`h-full bg-[var(--color-primary-surface)] p-4 ${className || ''}`}>
+    <div className={cn("h-full p-4", widgetColors.bg.surface, className)}>
       <div className="flex items-center gap-2 mb-4">
-        <Activity className="h-5 w-5 text-[var(--color-status-warning)]" />
-        <Typography variant="h3" className="text-[var(--color-text-primary)]">
+        <Activity className={cn("h-5 w-5", widgetColors.secondary.icon)} />
+        <Typography variant="h3" className={widgetColors.text.primary}>
           최근 활동
         </Typography>
       </div>
@@ -90,7 +92,7 @@ export function RecentActivityWidget({ className }: RecentActivityWidgetProps) {
         {activities.map((activity, index) => (
           <div
             key={activity.id}
-            className="flex items-start gap-3 p-3 hover:bg-[var(--color-primary-surfaceHover)] rounded-lg transition-colors cursor-pointer"
+            className={cn("flex items-start gap-3 p-3 rounded-lg transition-colors cursor-pointer", "hover:" + widgetColors.bg.hover)}
           >
             {/* 아이콘 */}
             <div className="flex-shrink-0 mt-1">
@@ -100,20 +102,20 @@ export function RecentActivityWidget({ className }: RecentActivityWidgetProps) {
             {/* 내용 */}
             <div className="flex-1 min-w-0">
               <div className="flex items-start justify-between mb-1">
-                <Typography variant="body1" className="font-medium text-gray-900">
+                <Typography variant="body1" className={cn("font-medium", widgetColors.text.primary)}>
                   {activity.title}
                 </Typography>
-                <Typography variant="body2" className="text-gray-500 flex-shrink-0 ml-2">
+                <Typography variant="body2" className={cn("flex-shrink-0 ml-2", widgetColors.text.tertiary)}>
                   {activity.time}
                 </Typography>
               </div>
               
-              <Typography variant="body2" className="text-gray-600 leading-relaxed">
+              <Typography variant="body2" className={cn("leading-relaxed", widgetColors.text.secondary)}>
                 {activity.description}
               </Typography>
               
               {activity.user && (
-                <Typography variant="body2" className="text-gray-500 mt-1">
+                <Typography variant="body2" className={cn("mt-1", widgetColors.text.tertiary)}>
                   by {activity.user}
                 </Typography>
               )}
@@ -121,15 +123,15 @@ export function RecentActivityWidget({ className }: RecentActivityWidgetProps) {
 
             {/* 연결선 (마지막 항목 제외) */}
             {index !== activities.length - 1 && (
-              <div className="absolute left-6 mt-8 w-px h-4 bg-gray-200"></div>
+              <div className={cn("absolute left-6 mt-8 w-px h-4", widgetColors.border.secondary)}></div>
             )}
           </div>
         ))}
       </div>
 
       {/* 더보기 링크 */}
-      <div className="mt-4 pt-3 border-t border-gray-200 text-center">
-        <button className="text-sm text-blue-600 hover:text-blue-800 font-medium">
+      <div className={cn("mt-4 pt-3 border-t text-center", widgetColors.border.secondary)}>
+        <button className={cn("text-sm font-medium", widgetColors.primary.text, widgetColors.primary.textHover)}>
           모든 활동 보기
         </button>
       </div>

@@ -1,91 +1,92 @@
 /**
  * 위젯 색상 시스템 정의
  * 프로젝트 브랜드 컬러 기반 통일된 색상 체계
+ * CSS 변수를 활용하여 테마 전환 지원
  */
 
 export const widgetColors = {
-  // Primary 색상 (Blue 그라데이션 기반)
+  // Primary 색상 (Blue 그라데이션 기반) - CSS 변수 활용
   primary: {
-    text: 'text-blue-600 dark:text-blue-400',
-    textHover: 'hover:text-blue-700 dark:hover:text-blue-300',
-    bg: 'bg-blue-600 dark:bg-blue-500',
-    bgLight: 'bg-blue-50 dark:bg-blue-900/20',
-    bgGradient: 'bg-gradient-to-r from-blue-600 to-blue-400',
-    border: 'border-blue-600 dark:border-blue-400',
-    borderLight: 'border-blue-200 dark:border-blue-800',
-    icon: 'text-blue-500 dark:text-blue-400',
+    text: 'text-[var(--color-brand-primary-start)] dark:text-[var(--color-brand-primary-end)]',
+    textHover: 'hover:text-[var(--color-brand-primary-start)] dark:hover:text-[var(--color-brand-primary-end)]',
+    bg: 'bg-[var(--color-brand-primary-start)] dark:bg-[var(--color-brand-primary-end)]',
+    bgLight: 'bg-[var(--color-brand-primary-start)]/10 dark:bg-[var(--color-brand-primary-end)]/20',
+    bgGradient: 'bg-gradient-to-r from-[var(--color-brand-primary-start)] to-[var(--color-brand-primary-end)]',
+    border: 'border-[var(--color-brand-primary-start)] dark:border-[var(--color-brand-primary-end)]',
+    borderLight: 'border-[var(--color-brand-primary-start)]/20 dark:border-[var(--color-brand-primary-end)]/20',
+    icon: 'text-[var(--color-brand-primary-end)]',
   },
   
-  // Secondary 색상 (Teal 그라데이션 기반)
+  // Secondary 색상 (Teal 그라데이션 기반) - CSS 변수 활용
   secondary: {
-    text: 'text-teal-600 dark:text-teal-400',
-    textHover: 'hover:text-teal-700 dark:hover:text-teal-300',
-    bg: 'bg-teal-600 dark:bg-teal-500',
-    bgLight: 'bg-teal-50 dark:bg-teal-900/20',
-    bgGradient: 'bg-gradient-to-r from-teal-500 to-cyan-400',
-    border: 'border-teal-600 dark:border-teal-400',
-    borderLight: 'border-teal-200 dark:border-teal-800',
-    icon: 'text-teal-500 dark:text-teal-400',
+    text: 'text-[var(--color-brand-secondary-start)] dark:text-[var(--color-brand-secondary-end)]',
+    textHover: 'hover:text-[var(--color-brand-secondary-start)] dark:hover:text-[var(--color-brand-secondary-end)]',
+    bg: 'bg-[var(--color-brand-secondary-start)] dark:bg-[var(--color-brand-secondary-end)]',
+    bgLight: 'bg-[var(--color-brand-secondary-start)]/10 dark:bg-[var(--color-brand-secondary-end)]/20',
+    bgGradient: 'bg-gradient-to-r from-[var(--color-brand-secondary-start)] to-[var(--color-brand-secondary-end)]',
+    border: 'border-[var(--color-brand-secondary-start)] dark:border-[var(--color-brand-secondary-end)]',
+    borderLight: 'border-[var(--color-brand-secondary-start)]/20 dark:border-[var(--color-brand-secondary-end)]/20',
+    icon: 'text-[var(--color-brand-secondary-end)]',
   },
   
-  // 상태 색상
+  // 상태 색상 - globals.css의 CSS 변수 참조
   status: {
     success: {
-      text: 'text-green-600 dark:text-green-400',
-      bg: 'bg-green-600 dark:bg-green-500',
-      bgLight: 'bg-green-50 dark:bg-green-900/20',
-      icon: 'text-green-500 dark:text-green-400',
+      text: 'text-[var(--color-status-success)]',
+      bg: 'bg-[var(--color-status-success)]',
+      bgLight: 'bg-[var(--color-status-success)]/10',
+      icon: 'text-[var(--color-status-success)]',
     },
     warning: {
-      text: 'text-amber-600 dark:text-amber-400',
-      bg: 'bg-amber-600 dark:bg-amber-500',
-      bgLight: 'bg-amber-50 dark:bg-amber-900/20',
-      icon: 'text-amber-500 dark:text-amber-400',
+      text: 'text-[var(--color-status-warning)]',
+      bg: 'bg-[var(--color-status-warning)]',
+      bgLight: 'bg-[var(--color-status-warning)]/10',
+      icon: 'text-[var(--color-status-warning)]',
     },
     error: {
-      text: 'text-red-600 dark:text-red-400',
-      bg: 'bg-red-600 dark:bg-red-500',
-      bgLight: 'bg-red-50 dark:bg-red-900/20',
-      icon: 'text-red-500 dark:text-red-400',
+      text: 'text-[var(--color-status-error)]',
+      bg: 'bg-[var(--color-status-error)]',
+      bgLight: 'bg-[var(--color-status-error)]/10',
+      icon: 'text-[var(--color-status-error)]',
     },
     info: {
-      text: 'text-cyan-600 dark:text-cyan-400',
-      bg: 'bg-cyan-600 dark:bg-cyan-500',
-      bgLight: 'bg-cyan-50 dark:bg-cyan-900/20',
-      icon: 'text-cyan-500 dark:text-cyan-400',
+      text: 'text-[var(--color-status-info)]',
+      bg: 'bg-[var(--color-status-info)]',
+      bgLight: 'bg-[var(--color-status-info)]/10',
+      icon: 'text-[var(--color-status-info)]',
     },
   },
   
-  // 텍스트 색상
+  // 텍스트 색상 - globals.css의 CSS 변수 참조
   text: {
-    primary: 'text-gray-900 dark:text-gray-100',
-    secondary: 'text-gray-600 dark:text-gray-400',
-    tertiary: 'text-gray-500 dark:text-gray-500',
-    muted: 'text-gray-400 dark:text-gray-600',
-    accent: 'text-blue-600 dark:text-blue-400',
+    primary: 'text-[var(--color-text-primary)]',
+    secondary: 'text-[var(--color-text-secondary)]',
+    tertiary: 'text-[var(--color-text-tertiary)]',
+    muted: 'text-[var(--color-text-muted)]',
+    accent: 'text-[var(--color-text-accent)]',
   },
   
-  // 배경 색상
+  // 배경 색상 - globals.css의 CSS 변수 참조
   bg: {
-    primary: 'bg-white dark:bg-gray-900',
-    surface: 'bg-white dark:bg-gray-800',
-    surfaceSecondary: 'bg-gray-50 dark:bg-gray-800',
-    hover: 'bg-gray-100 dark:bg-gray-700',
-    pressed: 'bg-gray-200 dark:bg-gray-600',
+    primary: 'bg-[var(--color-primary-background)]',
+    surface: 'bg-[var(--color-primary-surface)]',
+    surfaceSecondary: 'bg-[var(--color-primary-surfaceSecondary)]',
+    hover: 'bg-[var(--color-primary-surfaceHover)]',
+    pressed: 'bg-[var(--color-primary-surfacePressed)]',
   },
   
-  // 테두리 색상
+  // 테두리 색상 - globals.css의 CSS 변수 참조
   border: {
-    primary: 'border-gray-200 dark:border-gray-700',
-    secondary: 'border-gray-100 dark:border-gray-800',
+    primary: 'border-[var(--color-primary-border)]',
+    secondary: 'border-[var(--color-primary-borderSecondary)]',
   },
   
   // 아이콘 색상
   icon: {
-    default: 'text-gray-500 dark:text-gray-400',
-    primary: 'text-blue-500 dark:text-blue-400',
-    secondary: 'text-teal-500 dark:text-teal-400',
-    muted: 'text-gray-400 dark:text-gray-600',
+    default: 'text-[var(--color-text-secondary)]',
+    primary: 'text-[var(--color-brand-primary-end)]',
+    secondary: 'text-[var(--color-brand-secondary-end)]',
+    muted: 'text-[var(--color-text-muted)]',
   },
 }
 

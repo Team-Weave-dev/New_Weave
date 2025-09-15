@@ -17,6 +17,7 @@ import Typography from '@/components/ui/Typography'
 import Button from '@/components/ui/Button'
 import type { WidgetProps } from '@/types/dashboard'
 import { cn } from '@/lib/utils'
+import { widgetColors } from '@/lib/dashboard/widget-colors'
 
 type TaxType = 'vat' | 'income' | 'corporate' | 'capital-gains'
 type CalculationMode = 'include' | 'exclude' // 부가세 포함/별도
@@ -231,8 +232,8 @@ export function TaxCalculatorWidget({
       {/* 헤더 */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <Calculator className="w-5 h-5 text-[var(--color-accent-blue)]" />
-          <Typography variant="h3" className="text-[var(--color-text-primary)]">
+          <Calculator className={cn("w-5 h-5", widgetColors.secondary.icon)} />
+          <Typography variant="h3" className={widgetColors.text.primary}>
             세무 계산기
           </Typography>
         </div>
@@ -255,8 +256,8 @@ export function TaxCalculatorWidget({
             className={cn(
               "px-3 py-2 text-sm rounded-lg border transition-colors",
               selectedTaxType === 'vat'
-                ? "bg-[var(--color-accent-blue)] text-white border-[var(--color-accent-blue)]"
-                : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-700"
+                ? cn(widgetColors.secondary.bg, "text-white", widgetColors.secondary.border)
+                : cn(widgetColors.bg.surface, widgetColors.text.secondary, widgetColors.border.secondary)
             )}
           >
             부가가치세
@@ -266,8 +267,8 @@ export function TaxCalculatorWidget({
             className={cn(
               "px-3 py-2 text-sm rounded-lg border transition-colors",
               selectedTaxType === 'income'
-                ? "bg-[var(--color-accent-blue)] text-white border-[var(--color-accent-blue)]"
-                : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-700"
+                ? cn(widgetColors.secondary.bg, "text-white", widgetColors.secondary.border)
+                : cn(widgetColors.bg.surface, widgetColors.text.secondary, widgetColors.border.secondary)
             )}
           >
             소득세
@@ -277,8 +278,8 @@ export function TaxCalculatorWidget({
             className={cn(
               "px-3 py-2 text-sm rounded-lg border transition-colors",
               selectedTaxType === 'corporate'
-                ? "bg-[var(--color-accent-blue)] text-white border-[var(--color-accent-blue)]"
-                : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-700"
+                ? cn(widgetColors.secondary.bg, "text-white", widgetColors.secondary.border)
+                : cn(widgetColors.bg.surface, widgetColors.text.secondary, widgetColors.border.secondary)
             )}
           >
             법인세
@@ -288,8 +289,8 @@ export function TaxCalculatorWidget({
             className={cn(
               "px-3 py-2 text-sm rounded-lg border transition-colors",
               selectedTaxType === 'capital-gains'
-                ? "bg-[var(--color-accent-blue)] text-white border-[var(--color-accent-blue)]"
-                : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-700"
+                ? cn(widgetColors.secondary.bg, "text-white", widgetColors.secondary.border)
+                : cn(widgetColors.bg.surface, widgetColors.text.secondary, widgetColors.border.secondary)
             )}
           >
             양도소득세
@@ -309,8 +310,8 @@ export function TaxCalculatorWidget({
               className={cn(
                 "flex-1 px-3 py-1.5 text-sm rounded border transition-colors",
                 vatMode === 'exclude'
-                  ? "bg-[var(--color-accent-blue)]/10 text-[var(--color-accent-blue)] border-[var(--color-accent-blue)]/30"
-                  : "bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 border-gray-300 dark:border-gray-700"
+                  ? cn(widgetColors.secondary.bgLight, widgetColors.secondary.text, widgetColors.secondary.borderLight)
+                  : cn(widgetColors.bg.surface, widgetColors.text.tertiary, widgetColors.border.secondary)
               )}
             >
               부가세 별도
@@ -320,8 +321,8 @@ export function TaxCalculatorWidget({
               className={cn(
                 "flex-1 px-3 py-1.5 text-sm rounded border transition-colors",
                 vatMode === 'include'
-                  ? "bg-[var(--color-accent-blue)]/10 text-[var(--color-accent-blue)] border-[var(--color-accent-blue)]/30"
-                  : "bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 border-gray-300 dark:border-gray-700"
+                  ? cn(widgetColors.secondary.bgLight, widgetColors.secondary.text, widgetColors.secondary.borderLight)
+                  : cn(widgetColors.bg.surface, widgetColors.text.tertiary, widgetColors.border.secondary)
               )}
             >
               부가세 포함
@@ -354,20 +355,20 @@ export function TaxCalculatorWidget({
       {calculation && (
         <div className="flex-1 space-y-3">
           {/* 주요 결과 */}
-          <div className="p-3 bg-[var(--color-accent-blue)]/10 rounded-lg">
+          <div className={cn("p-3 rounded-lg", widgetColors.secondary.bgLight)}>
             <div className="flex items-center justify-between mb-2">
-              <Typography variant="caption" className="text-[var(--color-accent-blue)]">
+              <Typography variant="caption" className={widgetColors.secondary.text}>
                 세금
               </Typography>
-              <Typography variant="h3" className="text-[var(--color-text-primary)]">
+              <Typography variant="h3" className={widgetColors.text.primary}>
                 {formatCurrency(calculation.taxAmount)}
               </Typography>
             </div>
             <div className="flex items-center justify-between">
-              <Typography variant="caption" className="text-[var(--color-accent-blue)]">
+              <Typography variant="caption" className={widgetColors.secondary.text}>
                 {selectedTaxType === 'vat' ? '합계' : '세후 금액'}
               </Typography>
-              <Typography variant="h4" className="text-[var(--color-text-primary)]">
+              <Typography variant="h4" className={widgetColors.text.primary}>
                 {formatCurrency(calculation.totalAmount)}
               </Typography>
             </div>

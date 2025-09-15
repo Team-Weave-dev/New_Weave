@@ -6,6 +6,7 @@ import { Card } from '@/components/ui/Card'
 import Typography from '@/components/ui/Typography'
 import type { WidgetProps } from '@/types/dashboard'
 import { cn } from '@/lib/utils'
+import { widgetColors } from '@/lib/dashboard/widget-colors'
 
 interface TaxDeadline {
   id: string
@@ -19,11 +20,11 @@ interface TaxDeadline {
 
 // 세무 타입별 색상
 const taxTypeColors = {
-  vat: 'bg-[var(--color-accent-blue)]/10 text-[var(--color-accent-blue)]',
-  income: 'bg-[var(--color-status-success)]/10 text-[var(--color-status-success)]',
-  corporate: 'bg-[var(--color-accent-purple)]/10 text-[var(--color-accent-purple)]',
-  withholding: 'bg-[var(--color-accent-orange)]/10 text-[var(--color-accent-orange)]',
-  other: 'bg-[var(--color-primary-surfaceSecondary)] text-[var(--color-text-secondary)]'
+  vat: cn(widgetColors.primary.bgLight, widgetColors.primary.text),
+  income: cn(widgetColors.status.success.bgLight, widgetColors.status.success.text),
+  corporate: cn(widgetColors.secondary.bgLight, widgetColors.secondary.text),
+  withholding: cn(widgetColors.status.warning.bgLight, widgetColors.status.warning.text),
+  other: cn(widgetColors.bg.surfaceSecondary, widgetColors.text.secondary)
 }
 
 // 세무 타입 레이블
@@ -203,8 +204,8 @@ export function TaxDeadlineWidget({
       {/* 헤더 */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <Calendar className="w-5 h-5 text-[var(--color-accent-blue)]" />
-          <Typography variant="h3" className="text-[var(--color-text-primary)]">
+          <Calendar className={cn("w-5 h-5", widgetColors.secondary.icon)} />
+          <Typography variant="h3" className={widgetColors.text.primary}>
             세무 캘린더
           </Typography>
         </div>
@@ -234,8 +235,8 @@ export function TaxDeadlineWidget({
           className={cn(
             "flex-1 py-1 px-2 rounded text-sm",
             viewMode === 'month' 
-              ? "bg-[var(--color-accent-blue)] text-white" 
-              : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400"
+              ? cn(widgetColors.secondary.bg, "text-white")
+              : cn(widgetColors.bg.surfaceSecondary, widgetColors.text.tertiary)
           )}
         >
           월간
@@ -245,8 +246,8 @@ export function TaxDeadlineWidget({
           className={cn(
             "flex-1 py-1 px-2 rounded text-sm",
             viewMode === 'list' 
-              ? "bg-[var(--color-accent-blue)] text-white" 
-              : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400"
+              ? cn(widgetColors.secondary.bg, "text-white")
+              : cn(widgetColors.bg.surfaceSecondary, widgetColors.text.tertiary)
           )}
         >
           목록
@@ -261,9 +262,9 @@ export function TaxDeadlineWidget({
             {dayNames.map(day => (
               <div key={day} className="text-center">
                 <Typography variant="caption" className={cn(
-                  "text-gray-500",
-                  day === '일' && "text-[var(--color-status-error)]",
-                  day === '토' && "text-[var(--color-accent-blue)]"
+                  widgetColors.text.tertiary,
+                  day === '일' && widgetColors.status.error.text,
+                  day === '토' && widgetColors.primary.text
                 )}>
                   {day}
                 </Typography>
@@ -288,23 +289,23 @@ export function TaxDeadlineWidget({
                     isCurrentMonth 
                       ? "bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700" 
                       : "bg-gray-50 dark:bg-gray-950 border-gray-100 dark:border-gray-800",
-                    isToday && "ring-2 ring-[var(--color-accent-blue)]",
-                    dayDeadlines.length > 0 && "bg-[var(--color-status-error)]/10"
+                    isToday && cn("ring-2", "ring-" + widgetColors.secondary.border.split('-')[1]),
+                    dayDeadlines.length > 0 && widgetColors.status.error.bgLight
                   )}
                 >
                   <Typography 
                     variant="caption" 
                     className={cn(
-                      isCurrentMonth ? "text-gray-900 dark:text-gray-100" : "text-gray-400",
-                      day.getDay() === 0 && "text-[var(--color-status-error)]",
-                      day.getDay() === 6 && "text-[var(--color-accent-blue)]"
+                      isCurrentMonth ? widgetColors.text.primary : widgetColors.text.muted,
+                      day.getDay() === 0 && widgetColors.status.error.text,
+                      day.getDay() === 6 && widgetColors.primary.text
                     )}
                   >
                     {day.getDate()}
                   </Typography>
                   {dayDeadlines.length > 0 && (
                     <div className="absolute bottom-0 left-0 right-0 px-1">
-                      <div className="w-full h-1 bg-[var(--color-status-error)] rounded-full" />
+                      <div className={cn("w-full h-1 rounded-full", widgetColors.status.error.bg)} />
                     </div>
                   )}
                 </div>
@@ -333,9 +334,9 @@ export function TaxDeadlineWidget({
                     key={deadline.id}
                     className={cn(
                       "p-3 rounded-lg border",
-                      isOverdue && "border-[var(--color-status-error)] bg-[var(--color-status-error)]/10",
-                      isUrgent && "border-[var(--color-status-warning)] bg-[var(--color-status-warning)]/10",
-                      !isOverdue && !isUrgent && "border-gray-200 dark:border-gray-700"
+                      isOverdue && cn(widgetColors.status.error.bgLight, widgetColors.border.primary),
+                      isUrgent && cn(widgetColors.status.warning.bgLight, widgetColors.border.primary),
+                      !isOverdue && !isUrgent && widgetColors.border.secondary
                     )}
                   >
                     <div className="flex items-start justify-between">
@@ -366,13 +367,13 @@ export function TaxDeadlineWidget({
                             variant="caption" 
                             className={cn(
                               "block",
-                              isUrgent ? "text-[var(--color-status-warning)] font-medium" : "text-gray-500"
+                              isUrgent ? cn(widgetColors.status.warning.text, "font-medium") : widgetColors.text.tertiary
                             )}
                           >
                             D-{daysUntil}
                           </Typography>
                         ) : (
-                          <Typography variant="caption" className="block text-[var(--color-status-error)] font-medium">
+                          <Typography variant="caption" className={cn("block font-medium", widgetColors.status.error.text)}>
                             {Math.abs(daysUntil)}일 지남
                           </Typography>
                         )}
@@ -390,7 +391,7 @@ export function TaxDeadlineWidget({
       {!isEditMode && deadlines.length > 0 && (
         <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
           <div className="flex items-center gap-2">
-            <AlertCircle className="w-4 h-4 text-[var(--color-status-warning)]" />
+            <AlertCircle className={cn("w-4 h-4", widgetColors.status.warning.icon)} />
             <Typography variant="caption" className="text-gray-600 dark:text-gray-400">
               다가오는 일정: {deadlines.filter(d => {
                 const days = getDaysUntil(d.date)
