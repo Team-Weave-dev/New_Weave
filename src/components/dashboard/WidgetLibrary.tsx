@@ -1,7 +1,7 @@
 'use client'
 
-import React, { useState, useMemo, useEffect } from 'react'
-import { X, Search, Plus, Grid3x3, Briefcase, Calculator, TrendingUp, CheckSquare, Package, Folder, Calendar, BarChart3, Box } from 'lucide-react'
+import React, { useState, useMemo, useEffect, Suspense, lazy } from 'react'
+import { X, Search, Plus, Grid3x3, Briefcase, Calculator, TrendingUp, CheckSquare, Package, Folder, Calendar, BarChart3, Box, Eye, EyeOff, Info } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
 import Typography from '@/components/ui/Typography'
 import Button from '@/components/ui/Button'
@@ -48,6 +48,8 @@ const widgetIcons: Record<string, React.ReactNode> = {
 export function WidgetLibrary({ isOpen, onClose, onAddWidget }: WidgetLibraryProps) {
   const [selectedCategory, setSelectedCategory] = useState<WidgetCategory | 'all'>('all')
   const [searchQuery, setSearchQuery] = useState('')
+  const [previewWidget, setPreviewWidget] = useState<WidgetType | null>(null)
+  const [showPreview, setShowPreview] = useState(false)
   const [availableWidgets, setAvailableWidgets] = useState<Array<{
     type: WidgetType
     metadata: WidgetMetadata
@@ -121,6 +123,12 @@ export function WidgetLibrary({ isOpen, onClose, onAddWidget }: WidgetLibraryPro
 
   if (!isOpen) return null
 
+  // 동적 위젯 로드 (미리보기용)
+  const loadPreviewWidget = (type: WidgetType) => {
+    const Component = WidgetRegistry.getComponent(type)
+    return Component
+  }
+
   return (
     <div className="fixed inset-0 lg:inset-y-0 lg:right-0 lg:left-auto lg:w-96 bg-bg-primary lg:border-l border-border-primary shadow-xl z-50 flex flex-col">
       {/* 헤더 */}
@@ -131,14 +139,25 @@ export function WidgetLibrary({ isOpen, onClose, onAddWidget }: WidgetLibraryPro
             위젯 라이브러리
           </Typography>
         </div>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={onClose}
-          className="p-1 hover:bg-[var(--color-gray-100)] dark:hover:bg-[var(--color-gray-800)] rounded h-auto"
-        >
-          <X className="w-5 h-5" />
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setShowPreview(!showPreview)}
+            className="p-2 hover:bg-gray-100 rounded"
+            title={showPreview ? '미리보기 끄기' : '미리보기 보기'}
+          >
+            {showPreview ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onClose}
+            className="p-1 hover:bg-[var(--color-gray-100)] dark:hover:bg-[var(--color-gray-800)] rounded h-auto"
+          >
+            <X className="w-5 h-5" />
+          </Button>
+        </div>
       </div>
 
       {/* 검색 바 */}
@@ -204,21 +223,33 @@ export function WidgetLibrary({ isOpen, onClose, onAddWidget }: WidgetLibraryPro
                 <Card
                   key={widget.type}
                   className={cn(
-                    "p-4 cursor-pointer transition-all",
+                    "p-4 cursor-pointer transition-all relative",
                     isAdded 
                       ? "bg-[var(--color-gray-100)] dark:bg-[var(--color-gray-800)] opacity-60" 
-                      : "hover:shadow-lg hover:border-[var(--color-blue-300)] dark:hover:border-[var(--color-blue-700)]"
+                      : "hover:shadow-lg hover:border-[var(--color-blue-300)] dark:hover:border-[var(--color-blue-700)]",
+                    previewWidget === widget.type && showPreview ? "ring-2 ring-blue-500" : ""
                   )}
-                  onClick={() => !isAdded && onAddWidget(widget.type, widget.metadata)}
+                  onClick={() => {
+                    if (!isAdded) {
+                      setPreviewWidget(widget.type)
+                    }
+                  }}
+                  onMouseEnter={() => setPreviewWidget(widget.type)}
                 >
                   <div className="flex items-start gap-4">
                     <div className="p-3 bg-[var(--color-gray-100)] dark:bg-[var(--color-gray-800)] rounded-lg">
                       {widgetIcons[widget.metadata.icon || 'box'] || <Box className="w-8 h-8" />}
                     </div>
                     <div className="flex-1">
-                      <Typography variant="h4" className="font-medium text-txt-primary mb-1">
-                        {widget.metadata.name}
-                      </Typography>
+                      <div className="flex items-start justify-between mb-1">
+                        <Typography variant="h4" className="font-medium text-txt-primary">
+                          {widget.metadata.name}
+                        </Typography>
+                        <div className="flex items-center gap-1 text-xs text-gray-500">
+                          <Info className="w-3 h-3" />
+                          <span>{widget.metadata.defaultSize.width}×{widget.metadata.defaultSize.height}</span>
+                        </div>
+                      </div>
                       <Typography variant="body2" className="text-txt-secondary mb-2">
                         {widget.metadata.description}
                       </Typography>
@@ -237,7 +268,7 @@ export function WidgetLibrary({ isOpen, onClose, onAddWidget }: WidgetLibraryPro
                           variant={isAdded ? "ghost" : "primary"}
                           size="sm"
                           className={cn(
-                            "min-h-[44px] min-w-[44px] px-3 py-2 text-sm rounded transition-colors flex items-center gap-1",
+                            "min-h-[40px] min-w-[40px] px-3 py-2 text-sm rounded transition-colors flex items-center gap-1",
                             isAdded
                               ? "bg-[var(--color-gray-300)] dark:bg-[var(--color-gray-600)] text-[var(--color-gray-500)] cursor-not-allowed"
                               : "bg-[var(--color-blue-500)] text-white hover:bg-[var(--color-blue-600)]"
@@ -247,6 +278,7 @@ export function WidgetLibrary({ isOpen, onClose, onAddWidget }: WidgetLibraryPro
                             e.stopPropagation()
                             if (!isAdded) {
                               onAddWidget(widget.type, widget.metadata)
+                              onClose()
                             }
                           }}
                         >
@@ -264,8 +296,27 @@ export function WidgetLibrary({ isOpen, onClose, onAddWidget }: WidgetLibraryPro
       </div>
 
       {/* 푸터 */}
-      <div className="p-4 border-t border-border-primary text-center text-sm text-txt-secondary">
-        {availableWidgets.length}개 위젯 사용 가능
+      <div className="p-4 border-t border-border-primary">
+        <div className="text-center text-sm text-txt-secondary mb-2">
+          {availableWidgets.length}개 위젯 사용 가능
+        </div>
+        {showPreview && previewWidget && (
+          <div className="mt-3 p-3 bg-gray-50 rounded-lg">
+            <div className="text-xs text-gray-600 mb-2 font-semibold">미리보기</div>
+            <div className="bg-white rounded border border-gray-200 p-2 h-32 overflow-hidden">
+              <Suspense fallback={
+                <div className="flex items-center justify-center h-full">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+                </div>
+              }>
+                {/* 미리보기 컨텐츠 */}
+                <div className="text-xs text-gray-500 text-center">
+                  {availableWidgets.find(w => w.type === previewWidget)?.metadata.name}
+                </div>
+              </Suspense>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )

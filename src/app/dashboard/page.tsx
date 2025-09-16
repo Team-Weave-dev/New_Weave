@@ -204,8 +204,8 @@ export default function DashboardPage() {
                     대시보드 편집 모드
                   </h3>
                   <p className="text-sm text-blue-700">
-                    위젯을 드래그하여 위치를 변경하거나, 새로운 위젯을 추가할 수 있습니다.
-                    편집을 완료하면 자동으로 저장됩니다.
+                    실제 위젯을 보면서 편집할 수 있습니다. 위젯을 드래그하여 위치를 변경하거나, 
+                    크기를 조절하고, 새로운 위젯을 추가하세요.
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
@@ -234,8 +234,15 @@ export default function DashboardPage() {
         </div>
 
         {/* 대시보드 위젯 컨테이너 */}
-        <div className="bg-white rounded-lg border border-gray-200 min-h-[600px]">
-          <DashboardContainerWrapper showToolbar={true} />
+        <div className="bg-white rounded-lg border border-gray-200 min-h-[600px] relative">
+          {/* 편집 모드 인디케이터 */}
+          {isEditMode && (
+            <div className="absolute top-2 right-2 z-30 bg-blue-600 text-white px-3 py-1 rounded-full text-xs font-medium shadow-lg flex items-center gap-2">
+              <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
+              편집 모드 활성화
+            </div>
+          )}
+          <DashboardContainerWrapper showToolbar={isEditMode} />
         </div>
         
         {/* 온보딩 모달 */}

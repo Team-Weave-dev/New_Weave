@@ -5,7 +5,8 @@ import { cn } from '@/lib/utils'
 
 interface ResizeHandleProps {
   position: 'top' | 'right' | 'bottom' | 'left' | 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right'
-  onResize: (deltaX: number, deltaY: number) => void
+  onMouseDown?: (e: React.MouseEvent) => void
+  onResize?: (deltaX: number, deltaY: number) => void
   onResizeEnd?: () => void
   disabled?: boolean
   className?: string
@@ -13,6 +14,7 @@ interface ResizeHandleProps {
 
 export function ResizeHandle({ 
   position, 
+  onMouseDown,
   onResize, 
   onResizeEnd,
   disabled = false,
@@ -27,9 +29,16 @@ export function ResizeHandle({
     e.preventDefault()
     e.stopPropagation()
     
+    // 외부에서 전달받은 onMouseDown이 있으면 사용
+    if (onMouseDown) {
+      onMouseDown(e)
+      return
+    }
+    
+    // 기존 로직 사용
     setIsResizing(true)
     setStartPos({ x: e.clientX, y: e.clientY })
-  }, [disabled])
+  }, [disabled, onMouseDown])
 
   const handleMouseMove = useCallback((e: MouseEvent) => {
     if (!isResizing) return
@@ -72,7 +81,9 @@ export function ResizeHandle({
         break
     }
 
-    onResize(actualDeltaX, actualDeltaY)
+    if (onResize) {
+      onResize(actualDeltaX, actualDeltaY)
+    }
     setStartPos({ x: e.clientX, y: e.clientY })
   }, [isResizing, startPos, position, onResize])
 
@@ -123,21 +134,21 @@ export function ResizeHandle({
   const getPositionClasses = () => {
     switch (position) {
       case 'top':
-        return 'top-0 left-2 right-2 h-1 cursor-ns-resize'
+        return 'top-0 left-4 right-4 h-3 cursor-ns-resize'
       case 'right':
-        return 'top-2 right-0 bottom-2 w-1 cursor-ew-resize'
+        return 'top-4 right-0 bottom-4 w-3 cursor-ew-resize'
       case 'bottom':
-        return 'bottom-0 left-2 right-2 h-1 cursor-ns-resize'
+        return 'bottom-0 left-4 right-4 h-3 cursor-ns-resize'
       case 'left':
-        return 'left-0 top-2 bottom-2 w-1 cursor-ew-resize'
+        return 'left-0 top-4 bottom-4 w-3 cursor-ew-resize'
       case 'top-left':
-        return 'top-0 left-0 w-3 h-3 cursor-nwse-resize'
+        return 'top-0 left-0 w-6 h-6 cursor-nwse-resize'
       case 'top-right':
-        return 'top-0 right-0 w-3 h-3 cursor-nesw-resize'
+        return 'top-0 right-0 w-6 h-6 cursor-nesw-resize'
       case 'bottom-left':
-        return 'bottom-0 left-0 w-3 h-3 cursor-nesw-resize'
+        return 'bottom-0 left-0 w-6 h-6 cursor-nesw-resize'
       case 'bottom-right':
-        return 'bottom-0 right-0 w-3 h-3 cursor-nwse-resize'
+        return 'bottom-0 right-0 w-6 h-6 cursor-nwse-resize'
       default:
         return ''
     }
@@ -146,17 +157,48 @@ export function ResizeHandle({
   if (disabled) return null
 
   return (
-    <div
-      className={cn(
-        'absolute z-30 hover:bg-[var(--color-blue-500)] transition-colors',
-        getPositionClasses(),
-        {
-          'bg-[var(--color-blue-500)]': isResizing,
-          'bg-transparent': !isResizing,
-        },
-        className
-      )}
-      onMouseDown={handleMouseDown}
-    />
+    <>
+      <div
+        className={cn(
+          'absolute z-30 transition-all duration-200 group',
+          getPositionClasses(),
+          {
+            'bg-blue-500': isResizing,
+            'bg-blue-400 hover:bg-blue-500': !isResizing && !position.includes('-'),
+            'bg-transparent': !isResizing && position.includes('-'),
+            'opacity-100': isResizing,
+            'opacity-60 hover:opacity-100': !isResizing,
+          },
+          className
+        )}
+        onMouseDown={handleMouseDown}
+      >
+        {/* 코너 핸들에 시각적 인디케이터 추가 */}
+        {position.includes('-') && (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className={cn(
+              'w-3 h-3 rounded-full border-2 transition-all duration-200',
+              isResizing ? 'bg-blue-600 border-white scale-125' : 'bg-white border-blue-400 group-hover:scale-110 group-hover:bg-blue-500 group-hover:border-white'
+            )} />
+          </div>
+        )}
+      </div>
+      
+      {/* 호버 영역 확장 (사용성 개선) */}
+      <div
+        className={cn(
+          'absolute z-29',
+          position === 'top' && 'top-[-6px] left-2 right-2 h-[18px] cursor-ns-resize',
+          position === 'right' && 'top-2 right-[-6px] bottom-2 w-[18px] cursor-ew-resize',
+          position === 'bottom' && 'bottom-[-6px] left-2 right-2 h-[18px] cursor-ns-resize',
+          position === 'left' && 'left-[-6px] top-2 bottom-2 w-[18px] cursor-ew-resize',
+          position === 'top-left' && 'top-[-8px] left-[-8px] w-[24px] h-[24px] cursor-nwse-resize',
+          position === 'top-right' && 'top-[-8px] right-[-8px] w-[24px] h-[24px] cursor-nesw-resize',
+          position === 'bottom-left' && 'bottom-[-8px] left-[-8px] w-[24px] h-[24px] cursor-nesw-resize',
+          position === 'bottom-right' && 'bottom-[-8px] right-[-8px] w-[24px] h-[24px] cursor-nwse-resize'
+        )}
+        onMouseDown={handleMouseDown}
+      />
+    </>
   )
 }

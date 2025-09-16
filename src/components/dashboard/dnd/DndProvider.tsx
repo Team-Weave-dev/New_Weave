@@ -28,6 +28,7 @@ import { createPortal } from 'react-dom'
 import { createGridCollisionDetection } from './customCollisionDetection'
 import { findNearestValidPosition, reflowWidgets } from '@/lib/dashboard/collisionDetection'
 import { DragPreview } from './DragPreview'
+import { cn } from '@/lib/utils'
 
 interface DndProviderProps {
   children: ReactNode
@@ -46,6 +47,8 @@ export function DndProvider({ children }: DndProviderProps) {
   
   const [activeId, setActiveId] = useState<UniqueIdentifier | null>(null)
   const [draggedWidget, setDraggedWidget] = useState<any>(null)
+  const [dragPreviewPosition, setDragPreviewPosition] = useState<{x: number, y: number} | null>(null)
+  const [isValidDropPosition, setIsValidDropPosition] = useState(true)
 
   // 센서 설정 - 포인터와 키보드 지원
   const sensors = useSensors(
@@ -83,9 +86,47 @@ export function DndProvider({ children }: DndProviderProps) {
 
   // 드래그 이동 핸들러 (실시간 프리뷰)
   const handleDragMove = useCallback((event: DragMoveEvent) => {
-    // 실시간 위치 업데이트 (성능 최적화 필요)
-    // P2-03에서 프리뷰 개선
-  }, [])
+    const { delta, active } = event
+    if (!currentLayout || !active) return
+    
+    const activeWidget = currentLayout.widgets.find(w => w.id === active.id)
+    if (!activeWidget) return
+    
+    // 픽셀을 그리드 좌표로 변환
+    const cellSize = 150
+    const gap = 16
+    const deltaX = Math.round(delta.x / (cellSize + gap))
+    const deltaY = Math.round(delta.y / (cellSize + gap))
+    
+    // 새 위치 계산
+    const newPosition = {
+      x: Math.max(0, activeWidget.position.x + deltaX),
+      y: Math.max(0, activeWidget.position.y + deltaY),
+    }
+    
+    // 그리드 경계 확인
+    const gridColumns = currentLayout.gridSize === '2x2' ? 2 :
+                       currentLayout.gridSize === '3x3' ? 3 :
+                       currentLayout.gridSize === '4x4' ? 4 : 5
+    const maxX = gridColumns - activeWidget.position.width
+    const maxY = gridColumns - activeWidget.position.height
+    
+    newPosition.x = Math.min(newPosition.x, maxX)
+    newPosition.y = Math.min(newPosition.y, maxY)
+    
+    setDragPreviewPosition(newPosition)
+    
+    // 충돌 검사
+    const otherWidgets = currentLayout.widgets.filter(w => w.id !== active.id)
+    const hasCollision = otherWidgets.some(w => {
+      return !(newPosition.x + activeWidget.position.width <= w.position.x ||
+               w.position.x + w.position.width <= newPosition.x ||
+               newPosition.y + activeWidget.position.height <= w.position.y ||
+               w.position.y + w.position.height <= newPosition.y)
+    })
+    
+    setIsValidDropPosition(!hasCollision)
+  }, [currentLayout])
 
   // 드래그 종료 핸들러
   const handleDragEnd = useCallback((event: DragEndEvent) => {
@@ -162,12 +203,16 @@ export function DndProvider({ children }: DndProviderProps) {
     
     setActiveId(null)
     setDraggedWidget(null)
+    setDragPreviewPosition(null)
+    setIsValidDropPosition(true)
   }, [currentLayout, moveWidget, swapWidgets])
 
   // 드래그 취소 핸들러
   const handleDragCancel = useCallback(() => {
     setActiveId(null)
     setDraggedWidget(null)
+    setDragPreviewPosition(null)
+    setIsValidDropPosition(true)
   }, [])
 
   // 편집 모드가 아니면 DnD 비활성화
@@ -221,8 +266,20 @@ export function DndProvider({ children }: DndProviderProps) {
                 width: `${draggedWidget.position.width * 150}px`,
                 height: `${draggedWidget.position.height * 150}px`,
               }}
+              className={cn(
+                'transition-all duration-200',
+                isValidDropPosition ? 'opacity-90' : 'opacity-50'
+              )}
             >
               <DragPreview widget={draggedWidget} />
+              {/* 드롭 가능 여부 표시 */}
+              {!isValidDropPosition && (
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                  <div className="bg-red-600 text-white px-3 py-2 rounded-lg text-sm font-medium shadow-lg">
+                    이 위치에 놓을 수 없습니다
+                  </div>
+                </div>
+              )}
             </div>
           ) : null}
         </DragOverlay>,

@@ -10,10 +10,13 @@ import {
   Settings, 
   Move,
   Maximize2,
-  Minimize2 
+  Minimize2,
+  Expand,
+  Square,
+  RectangleHorizontal,
+  RectangleVertical
 } from 'lucide-react'
 import Button from '@/components/ui/Button'
-import { ResizeHandle } from './ResizeHandle'
 import { WidgetRegistry } from '@/lib/dashboard/WidgetRegistry'
 
 interface WidgetWrapperProps {
@@ -55,8 +58,7 @@ export function WidgetWrapper({
   
   const [isHovered, setIsHovered] = useState(false)
   const [isFullscreen, setIsFullscreen] = useState(false)
-  const [isResizing, setIsResizing] = useState(false)
-  const [tempSize, setTempSize] = useState<{ width: number; height: number } | null>(null)
+  const [showSizeMenu, setShowSizeMenu] = useState(false)
   
   const isSelected = selectedWidgetId === id
   
@@ -73,6 +75,34 @@ export function WidgetWrapper({
   // 현재 위젯 크기
   const currentWidget = currentLayout?.widgets.find(w => w.id === id)
   const currentSize = currentWidget?.position || { width: 1, height: 1 }
+  
+  // 위젯 크기 타입 정의
+  const sizeTypes = [
+    { width: 1, height: 1, label: '1×1', icon: Square },
+    { width: 2, height: 1, label: '2×1', icon: RectangleHorizontal },
+    { width: 1, height: 2, label: '1×2', icon: RectangleVertical },
+    { width: 2, height: 2, label: '2×2', icon: Expand },
+  ]
+
+  // 크기 변경 핸들러
+  const handleSizeChange = useCallback((newWidth: number, newHeight: number) => {
+    if (!currentWidget) return
+    
+    // 그리드 경계 체크
+    const maxAllowedWidth = gridColumns - currentWidget.position.x
+    const maxAllowedHeight = gridColumns - currentWidget.position.y
+    
+    const finalWidth = Math.min(newWidth, maxAllowedWidth)
+    const finalHeight = Math.min(newHeight, maxAllowedHeight)
+    
+    resizeWidget(id, { width: finalWidth, height: finalHeight })
+    setShowSizeMenu(false)
+  }, [currentWidget, gridColumns, resizeWidget, id])
+
+  // 현재 크기 타입 찾기
+  const currentSizeType = sizeTypes.find(
+    type => type.width === currentSize.width && type.height === currentSize.height
+  ) || sizeTypes[0]
 
   const handleRemove = () => {
     if (onRemove) {
@@ -96,55 +126,18 @@ export function WidgetWrapper({
     setIsFullscreen(!isFullscreen)
   }
 
-  // 리사이즈 핸들러
-  const handleResize = useCallback((position: string) => (deltaX: number, deltaY: number) => {
-    if (!currentWidget) return
-    
-    const gridCellWidth = 100 / gridColumns // 그리드 셀 너비 (퍼센트)
-    const gridCellHeight = 100 / gridColumns // 그리드 셀 높이 (퍼센트)
-    
-    // 픽셀을 그리드 단위로 변환
-    const deltaGridX = Math.round(deltaX / (window.innerWidth * gridCellWidth / 100))
-    const deltaGridY = Math.round(deltaY / (window.innerHeight * gridCellHeight / 100))
-    
-    if (deltaGridX === 0 && deltaGridY === 0) return
-    
-    let newWidth = currentSize.width
-    let newHeight = currentSize.height
-    
-    // 위치에 따라 크기 조정
-    if (position.includes('right')) {
-      newWidth = Math.max(minSize.width, Math.min(currentSize.width + deltaGridX, maxSize.width))
-    }
-    if (position.includes('left')) {
-      newWidth = Math.max(minSize.width, Math.min(currentSize.width + deltaGridX, maxSize.width))
-    }
-    if (position.includes('bottom')) {
-      newHeight = Math.max(minSize.height, Math.min(currentSize.height + deltaGridY, maxSize.height))
-    }
-    if (position.includes('top')) {
-      newHeight = Math.max(minSize.height, Math.min(currentSize.height + deltaGridY, maxSize.height))
-    }
-    
-    // 그리드 경계 체크
-    const maxAllowedWidth = gridColumns - currentWidget.position.x
-    const maxAllowedHeight = gridColumns - currentWidget.position.y
-    newWidth = Math.min(newWidth, maxAllowedWidth)
-    newHeight = Math.min(newHeight, maxAllowedHeight)
-    
-    setTempSize({ width: newWidth, height: newHeight })
-    setIsResizing(true)
-  }, [currentWidget, currentSize, gridColumns, minSize, maxSize])
+  const displaySize = currentSize
 
-  const handleResizeEnd = useCallback(() => {
-    if (tempSize && currentWidget) {
-      resizeWidget(id, tempSize)
+  // 메뉴 외부 클릭 시 닫기
+  React.useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (showSizeMenu && !(e.target as Element).closest('.size-menu-container')) {
+        setShowSizeMenu(false)
+      }
     }
-    setTempSize(null)
-    setIsResizing(false)
-  }, [id, tempSize, currentWidget, resizeWidget])
-
-  const displaySize = tempSize || currentSize
+    document.addEventListener('click', handleClickOutside)
+    return () => document.removeEventListener('click', handleClickOutside)
+  }, [showSizeMenu])
 
   return (
     <div
@@ -170,8 +163,8 @@ export function WidgetWrapper({
           className={cn(
             'absolute inset-0 z-10 pointer-events-none transition-opacity duration-200',
             {
-              'bg-blue-500/10': isSelected,
-              'bg-gray-500/5': !isSelected && isHovered,
+              'bg-blue-500/5': isSelected,
+              'bg-gray-500/3': !isSelected && isHovered,
             }
           )}
         />
@@ -179,25 +172,87 @@ export function WidgetWrapper({
 
       {/* 헤더 (편집 모드에서만 표시) */}
       {isEditMode && (isHovered || isSelected) && (
-        <div className="absolute top-0 left-0 right-0 z-20 flex items-center justify-between bg-white/90 backdrop-blur-sm p-2 border-b border-gray-200">
+        <div className="absolute top-0 left-0 right-0 z-20 flex items-center justify-between bg-white/90 backdrop-blur-sm p-1 border-b border-gray-200/50 transition-all duration-200">
           <div className="flex items-center gap-2">
             {/* 드래그 핸들 */}
             {!locked && (
-              <div className="cursor-move p-2 hover:bg-gray-100 rounded min-w-[44px] min-h-[44px] flex items-center justify-center">
-                <Move className="h-5 w-5 text-gray-500" />
+              <div className="cursor-move p-1 hover:bg-gray-100 rounded min-w-[32px] min-h-[32px] flex items-center justify-center transition-colors">
+                <Move className="h-3 w-3 text-gray-500" />
               </div>
             )}
             
-            {/* 위젯 제목 */}
-            {title && (
-              <span className="text-sm font-medium text-gray-700">
-                {title}
+            {/* 위젯 제목 및 크기 정보 */}
+            <div className="flex items-center gap-2">
+              {title && (
+                <span className="text-xs font-medium text-gray-600">
+                  {title}
+                </span>
+              )}
+              <span className="text-xs text-gray-400">
+                {currentSizeType.label}
               </span>
-            )}
+            </div>
           </div>
 
           {/* 액션 버튼들 */}
           <div className="flex items-center gap-1">
+            {/* 크기 변경 버튼 */}
+            {!locked && (
+              <div className="relative size-menu-container">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setShowSizeMenu(!showSizeMenu)
+                  }}
+                  className="min-w-[32px] min-h-[32px] p-0 flex items-center justify-center hover:bg-gray-100 transition-colors"
+                  title="크기 변경"
+                >
+                  <Expand className="h-3 w-3" />
+                </Button>
+                
+                {/* 크기 선택 메뉴 */}
+                {showSizeMenu && (
+                  <div className="absolute top-full right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg p-1 z-50 min-w-[120px]">
+                    {sizeTypes.map((type) => {
+                      const Icon = type.icon
+                      const isActive = type.width === currentSize.width && type.height === currentSize.height
+                      const isDisabled = currentWidget && (
+                        type.width > gridColumns - currentWidget.position.x || 
+                        type.height > gridColumns - currentWidget.position.y
+                      )
+                      
+                      return (
+                        <button
+                          key={type.label}
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleSizeChange(type.width, type.height)
+                          }}
+                          disabled={isDisabled}
+                          className={cn(
+                            "flex items-center gap-2 w-full px-3 py-2 text-xs rounded transition-colors",
+                            {
+                              "bg-blue-50 text-blue-600": isActive,
+                              "hover:bg-gray-100": !isActive && !isDisabled,
+                              "opacity-50 cursor-not-allowed": isDisabled,
+                            }
+                          )}
+                        >
+                          <Icon className="h-3 w-3" />
+                          <span>{type.label}</span>
+                          {isActive && (
+                            <span className="ml-auto text-blue-600">✓</span>
+                          )}
+                        </button>
+                      )
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
+            
             {/* 전체화면 토글 */}
             <Button
               variant="ghost"
@@ -206,12 +261,13 @@ export function WidgetWrapper({
                 e.stopPropagation()
                 handleFullscreenToggle()
               }}
-              className="min-w-[44px] min-h-[44px] p-0 flex items-center justify-center"
+              className="min-w-[32px] min-h-[32px] p-0 flex items-center justify-center hover:bg-gray-100 transition-colors"
+              title={isFullscreen ? '전체화면 종료' : '전체화면'}
             >
               {isFullscreen ? (
-                <Minimize2 className="h-5 w-5" />
+                <Minimize2 className="h-3 w-3" />
               ) : (
-                <Maximize2 className="h-5 w-5" />
+                <Maximize2 className="h-3 w-3" />
               )}
             </Button>
 
@@ -224,9 +280,10 @@ export function WidgetWrapper({
                   e.stopPropagation()
                   onConfigure()
                 }}
-                className="min-w-[44px] min-h-[44px] p-0 flex items-center justify-center"
+                className="min-w-[32px] min-h-[32px] p-0 flex items-center justify-center hover:bg-gray-100 transition-colors"
+                title="위젯 설정"
               >
-                <Settings className="h-5 w-5" />
+                <Settings className="h-3 w-3" />
               </Button>
             )}
 
@@ -238,12 +295,13 @@ export function WidgetWrapper({
                 e.stopPropagation()
                 handleLockToggle()
               }}
-              className="min-w-[44px] min-h-[44px] p-0 flex items-center justify-center"
+              className="min-w-[32px] min-h-[32px] p-0 flex items-center justify-center hover:bg-gray-100 transition-colors"
+              title={locked ? '잠금 해제' : '위치 잠금'}
             >
               {locked ? (
-                <Lock className="h-5 w-5 text-yellow-600" />
+                <Lock className="h-3 w-3 text-yellow-600" />
               ) : (
-                <Unlock className="h-5 w-5" />
+                <Unlock className="h-3 w-3" />
               )}
             </Button>
 
@@ -254,11 +312,14 @@ export function WidgetWrapper({
                 size="sm"
                 onClick={(e) => {
                   e.stopPropagation()
-                  handleRemove()
+                  if (window.confirm('이 위젯을 삭제하시겠습니까?')) {
+                    handleRemove()
+                  }
                 }}
-                className="min-w-[44px] min-h-[44px] p-0 hover:bg-[var(--color-status-error)]/10 flex items-center justify-center"
+                className="min-w-[32px] min-h-[32px] p-0 hover:bg-red-50 transition-colors"
+                title="위젯 삭제"
               >
-                <X className="h-5 w-5 text-[var(--color-status-error)]" />
+                <X className="h-3 w-3 text-red-500 hover:text-red-600" />
               </Button>
             )}
           </div>
@@ -270,8 +331,7 @@ export function WidgetWrapper({
         className={cn(
           'h-full w-full overflow-auto',
           {
-            'pt-10': isEditMode && (isHovered || isSelected), // 헤더 공간 확보
-            'pointer-events-none': isEditMode && !isSelected,
+            'pt-8': isEditMode && (isHovered || isSelected), // 헤더 공간 확보
           }
         )}
       >
@@ -295,34 +355,12 @@ export function WidgetWrapper({
         </div>
       )}
 
-      {/* 리사이즈 핸들 (편집 모드에서만 표시) */}
-      {isEditMode && isSelected && !locked && !isFullscreen && (
-        <>
-          <ResizeHandle
-            position="right"
-            onResize={handleResize('right')}
-            onResizeEnd={handleResizeEnd}
-            disabled={locked}
-          />
-          <ResizeHandle
-            position="bottom"
-            onResize={handleResize('bottom')}
-            onResizeEnd={handleResizeEnd}
-            disabled={locked}
-          />
-          <ResizeHandle
-            position="bottom-right"
-            onResize={handleResize('bottom-right')}
-            onResizeEnd={handleResizeEnd}
-            disabled={locked}
-          />
-        </>
-      )}
-
-      {/* 크기 조정 중 프리뷰 */}
-      {isResizing && tempSize && (
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-40 bg-black/75 text-white px-2 py-1 rounded text-xs">
-          {displaySize.width} × {displaySize.height}
+      {/* 크기 타입 표시 (편집 모드에서만) */}
+      {isEditMode && !isHovered && !isSelected && (
+        <div className="absolute bottom-2 right-2 z-10">
+          <div className="bg-gray-600 text-white px-2 py-1 rounded text-xs font-medium opacity-50">
+            {currentSizeType.label}
+          </div>
         </div>
       )}
     </div>

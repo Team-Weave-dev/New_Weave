@@ -53,7 +53,7 @@ export function GridLayout({
   return (
     <div
       className={cn(
-        'dashboard-grid grid w-full h-full auto-rows-fr',
+        'dashboard-grid dashboard-grid-container grid w-full h-full auto-rows-fr',
         getGridClassName(gridSize),
         className
       )}
