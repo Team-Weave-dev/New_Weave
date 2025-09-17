@@ -234,29 +234,36 @@ export function reflowWidgets(
 
 /**
  * 그리드 좌표를 픽셀 좌표로 변환
+ * @deprecated Use gridToPixel from gridCalculations.ts instead
  */
 export function gridToPixel(
   gridPosition: { x: number; y: number },
   cellSize: number,
-  gap: number
+  gap: number,
+  padding: number = 0
 ): { x: number; y: number } {
   return {
-    x: gridPosition.x * (cellSize + gap),
-    y: gridPosition.y * (cellSize + gap),
+    x: padding + gridPosition.x * (cellSize + gap),
+    y: padding + gridPosition.y * (cellSize + gap),
   }
 }
 
 /**
  * 픽셀 좌표를 그리드 좌표로 변환
+ * @deprecated Use pixelToGrid from gridCalculations.ts instead
  */
 export function pixelToGrid(
   pixelPosition: { x: number; y: number },
   cellSize: number,
-  gap: number
+  gap: number,
+  padding: number = 0
 ): { x: number; y: number } {
+  const adjustedX = Math.max(0, pixelPosition.x - padding)
+  const adjustedY = Math.max(0, pixelPosition.y - padding)
+  
   return {
-    x: Math.round(pixelPosition.x / (cellSize + gap)),
-    y: Math.round(pixelPosition.y / (cellSize + gap)),
+    x: Math.round(adjustedX / (cellSize + gap)),
+    y: Math.round(adjustedY / (cellSize + gap)),
   }
 }
 

@@ -30,14 +30,19 @@ import { findNearestValidPosition, reflowWidgets } from '@/lib/dashboard/collisi
 import { DragPreview } from './DragPreview'
 import { cn } from '@/lib/utils'
 import { useLazyLoad } from '@/hooks/useIntersectionObserver'
+import { useGridCellSize } from '@/hooks/useGridCellSize'
+import { 
+  deltaToGridUnits, 
+  constrainToGrid, 
+  calculateWidgetSize,
+  getGridColumns 
+} from '@/lib/dashboard/gridCalculations'
 
 interface DndProviderProps {
   children: ReactNode
 }
 
 export function DndProvider({ children }: DndProviderProps) {
-  const containerRef = useRef<HTMLDivElement>(null)
-  const isVisible = useLazyLoad(containerRef)
   const { 
     currentLayout, 
     moveWidget,
@@ -47,6 +52,17 @@ export function DndProvider({ children }: DndProviderProps) {
     selectWidget,
     selectedWidgetId 
   } = useDashboardStore()
+  
+  // 동적 셀 크기 계산
+  const gap = 16
+  const padding = 16
+  const { cellSize, containerRef } = useGridCellSize({
+    gridSize: currentLayout?.gridSize || '3x3',
+    gap,
+    padding
+  })
+  
+  const isVisible = useLazyLoad(containerRef)
   
   const [activeId, setActiveId] = useState<UniqueIdentifier | null>(null)
   const [draggedWidget, setDraggedWidget] = useState<any>(null)
@@ -95,27 +111,18 @@ export function DndProvider({ children }: DndProviderProps) {
     const activeWidget = currentLayout.widgets.find(w => w.id === active.id)
     if (!activeWidget) return
     
-    // 픽셀을 그리드 좌표로 변환
-    const cellSize = 150
-    const gap = 16
-    const deltaX = Math.round(delta.x / (cellSize + gap))
-    const deltaY = Math.round(delta.y / (cellSize + gap))
+    // 픽셀을 그리드 좌표로 변환 (동적 셀 크기 사용)
+    const { gridDeltaX, gridDeltaY } = deltaToGridUnits(delta.x, delta.y, cellSize, gap)
     
     // 새 위치 계산
-    const newPosition = {
-      x: Math.max(0, activeWidget.position.x + deltaX),
-      y: Math.max(0, activeWidget.position.y + deltaY),
-    }
-    
-    // 그리드 경계 확인
-    const gridColumns = currentLayout.gridSize === '2x2' ? 2 :
-                       currentLayout.gridSize === '3x3' ? 3 :
-                       currentLayout.gridSize === '4x4' ? 4 : 5
-    const maxX = gridColumns - activeWidget.position.width
-    const maxY = gridColumns - activeWidget.position.height
-    
-    newPosition.x = Math.min(newPosition.x, maxX)
-    newPosition.y = Math.min(newPosition.y, maxY)
+    const gridColumns = getGridColumns(currentLayout.gridSize)
+    const newPosition = constrainToGrid(
+      activeWidget.position.x + gridDeltaX,
+      activeWidget.position.y + gridDeltaY,
+      activeWidget.position.width,
+      activeWidget.position.height,
+      gridColumns
+    )
     
     setDragPreviewPosition(newPosition)
     
@@ -129,7 +136,7 @@ export function DndProvider({ children }: DndProviderProps) {
     })
     
     setIsValidDropPosition(!hasCollision)
-  }, [currentLayout])
+  }, [currentLayout, cellSize, gap])
 
   // 드래그 종료 핸들러
   const handleDragEnd = useCallback((event: DragEndEvent) => {
@@ -148,29 +155,24 @@ export function DndProvider({ children }: DndProviderProps) {
       return
     }
 
-    // 픽셀을 그리드 좌표로 변환
-    const cellSize = 150 // 기본 셀 크기
-    const gap = 16
-    const deltaX = Math.round(delta.x / (cellSize + gap))
-    const deltaY = Math.round(delta.y / (cellSize + gap))
+    // 픽셀을 그리드 좌표로 변환 (동적 셀 크기 사용)
+    const { gridDeltaX, gridDeltaY } = deltaToGridUnits(delta.x, delta.y, cellSize, gap)
 
     // 새 위치 계산
+    const gridColumns = getGridColumns(currentLayout.gridSize)
+    const constrainedPosition = constrainToGrid(
+      activeWidget.position.x + gridDeltaX,
+      activeWidget.position.y + gridDeltaY,
+      activeWidget.position.width,
+      activeWidget.position.height,
+      gridColumns
+    )
+    
     const newPosition = {
-      x: Math.max(0, activeWidget.position.x + deltaX),
-      y: Math.max(0, activeWidget.position.y + deltaY),
+      ...constrainedPosition,
       width: activeWidget.position.width,
       height: activeWidget.position.height,
     }
-
-    // 그리드 경계 확인
-    const gridColumns = currentLayout.gridSize === '2x2' ? 2 :
-                       currentLayout.gridSize === '3x3' ? 3 :
-                       currentLayout.gridSize === '4x4' ? 4 : 5
-    const maxX = gridColumns - activeWidget.position.width
-    const maxY = gridColumns - activeWidget.position.height
-
-    newPosition.x = Math.min(newPosition.x, maxX)
-    newPosition.y = Math.min(newPosition.y, maxY)
 
     // 충돌 확인
     const otherWidgets = currentLayout.widgets.filter(w => w.id !== active.id)
@@ -208,7 +210,7 @@ export function DndProvider({ children }: DndProviderProps) {
     setDraggedWidget(null)
     setDragPreviewPosition(null)
     setIsValidDropPosition(true)
-  }, [currentLayout, moveWidget, swapWidgets])
+  }, [currentLayout, moveWidget, swapWidgets, cellSize, gap])
 
   // 드래그 취소 핸들러
   const handleDragCancel = useCallback(() => {
@@ -227,13 +229,13 @@ export function DndProvider({ children }: DndProviderProps) {
     .filter(w => !w.locked)
     .map(w => w.id) || []
 
-  // 커스텀 충돌 감지 전략 생성
+  // 커스텀 충돌 감지 전략 생성 (동적 셀 크기 사용)
   const collisionDetection = currentLayout 
     ? createGridCollisionDetection({
         widgets: currentLayout.widgets,
         gridSize: currentLayout.gridSize,
-        cellSize: 150, // 기본 셀 크기
-        gap: 16,
+        cellSize: cellSize,
+        gap: gap,
       })
     : closestCenter
 
@@ -266,8 +268,8 @@ export function DndProvider({ children }: DndProviderProps) {
           {activeId && draggedWidget ? (
             <div 
               style={{
-                width: `${draggedWidget.position.width * 150}px`,
-                height: `${draggedWidget.position.height * 150}px`,
+                width: `${calculateWidgetSize(draggedWidget.position.width, 1, cellSize, gap).width}px`,
+                height: `${calculateWidgetSize(1, draggedWidget.position.height, cellSize, gap).height}px`,
               }}
               className={cn(
                 'transition-all duration-200',
