@@ -164,6 +164,10 @@ export function VirtualizedGridLayout({
   // 행 수 계산
   const rowCount = Math.ceil(widgets.length / config.columns)
 
+  // 컨테이너 크기 감지를 위한 state (조건문 밖으로 이동)
+  const [containerSize, setContainerSize] = useState({ width: 0, height: 0 })
+  const containerRef = useRef<HTMLDivElement>(null)
+
   // 스크롤 최적화
   const handleScroll = useCallback(({ scrollTop }: { scrollTop: number }) => {
     // 스크롤 위치에 따른 추가 최적화 로직
@@ -182,6 +186,30 @@ export function VirtualizedGridLayout({
   }, [])
 
   handleScroll.lastScrollTop = 0
+
+  // ResizeObserver로 컨테이너 크기 감지
+  useEffect(() => {
+    const container = containerRef.current
+    if (!container) return
+
+    const resizeObserver = new ResizeObserver((entries) => {
+      const entry = entries[0]
+      if (entry) {
+        const { width, height } = entry.contentRect
+        setContainerSize({ width, height })
+      }
+    })
+
+    resizeObserver.observe(container)
+    
+    // 초기 크기 설정
+    const rect = container.getBoundingClientRect()
+    setContainerSize({ width: rect.width, height: rect.height })
+
+    return () => {
+      resizeObserver.disconnect()
+    }
+  }, [])
 
   // 일반 렌더링 (가상화 없이)
   if (!shouldVirtualize) {
@@ -221,34 +249,6 @@ export function VirtualizedGridLayout({
       </div>
     )
   }
-
-  // 컨테이너 크기 감지를 위한 state
-  const [containerSize, setContainerSize] = useState({ width: 0, height: 0 })
-  const containerRef = useRef<HTMLDivElement>(null)
-
-  // ResizeObserver로 컨테이너 크기 감지
-  useEffect(() => {
-    const container = containerRef.current
-    if (!container) return
-
-    const resizeObserver = new ResizeObserver((entries) => {
-      const entry = entries[0]
-      if (entry) {
-        const { width, height } = entry.contentRect
-        setContainerSize({ width, height })
-      }
-    })
-
-    resizeObserver.observe(container)
-    
-    // 초기 크기 설정
-    const rect = container.getBoundingClientRect()
-    setContainerSize({ width: rect.width, height: rect.height })
-
-    return () => {
-      resizeObserver.disconnect()
-    }
-  }, [])
 
   // 가상화 렌더링
   return (
