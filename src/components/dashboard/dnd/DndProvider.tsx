@@ -45,6 +45,8 @@ import {
   gridToPixelPrecise,
   type GridConfig
 } from '@/lib/dashboard/gridCoordinates'
+import { useA11yAnnouncements } from '@/hooks/useA11yAnnouncements'
+import { DashboardLiveRegion } from '@/components/dashboard/a11y/LiveRegion'
 
 interface DndProviderProps {
   children: ReactNode
@@ -68,6 +70,9 @@ export function DndProvider({ children }: DndProviderProps) {
     cancelDrag,
     rollbackDrag
   } = useDashboardStore()
+  
+  // 접근성 알림 훅
+  const { announcements, announceWidget, announceError, announceWarning } = useA11yAnnouncements()
   
   // GridContext에서 그리드 정보 가져오기 (optional)
   const gridContextData = useGridContext()
@@ -306,12 +311,14 @@ export function DndProvider({ children }: DndProviderProps) {
 
   // 드래그 취소 핸들러
   const handleDragCancel = useCallback(() => {
+    const widgetName = draggedWidget?.type || '위젯'
     setActiveId(null)
     setDraggedWidget(null)
     setDragPreviewPosition(null)
     setIsValidDropPosition(true)
     cancelDrag()
-  }, [cancelDrag])
+    announceWidget('drag-cancel', widgetName)
+  }, [cancelDrag, draggedWidget, announceWidget])
 
   // 편집 모드가 아니거나 아직 보이지 않으면 DnD 비활성화
   if (!isEditMode || !isVisible) {
@@ -333,16 +340,17 @@ export function DndProvider({ children }: DndProviderProps) {
     : closestCenter
 
   return (
-    <DndContext
-      sensors={sensors}
-      collisionDetection={collisionDetection}
-      onDragStart={handleDragStart}
-      onDragOver={handleDragOver}
-      onDragMove={handleDragMove}
-      onDragEnd={handleDragEnd}
-      onDragCancel={handleDragCancel}
-      modifiers={[restrictToWindowEdges]}
-    >
+    <>
+      <DndContext
+        sensors={sensors}
+        collisionDetection={collisionDetection}
+        onDragStart={handleDragStart}
+        onDragOver={handleDragOver}
+        onDragMove={handleDragMove}
+        onDragEnd={handleDragEnd}
+        onDragCancel={handleDragCancel}
+        modifiers={[restrictToWindowEdges]}
+      >
       <SortableContext 
         items={widgetIds}
         strategy={rectSortingStrategy}
@@ -396,6 +404,9 @@ export function DndProvider({ children }: DndProviderProps) {
         </AnimatedDragOverlay>,
         document.body
       )}
-    </DndContext>
+      </DndContext>
+      {/* 스크린리더용 라이브 리전 */}
+      <DashboardLiveRegion announcements={announcements} />
+    </>
   )
 }

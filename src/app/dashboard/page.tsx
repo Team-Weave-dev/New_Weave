@@ -8,6 +8,9 @@ import { DashboardContainerWrapper } from '@/components/dashboard/DashboardConta
 import { OnboardingModal } from '@/components/dashboard/OnboardingModal';
 import { TemplateManager } from '@/components/dashboard/TemplateManager';
 import { SkipLinks } from '@/components/accessibility/SkipLinks';
+import { EditModeHelp } from '@/components/dashboard/a11y/EditModeHelp';
+import { useA11yAnnouncements } from '@/hooks/useA11yAnnouncements';
+import { DashboardLiveRegion } from '@/components/dashboard/a11y/LiveRegion';
 import Typography from '@/components/ui/Typography';
 import Button from '@/components/ui/Button';
 import { useDashboardStore } from '@/lib/stores/useDashboardStore';
@@ -48,6 +51,7 @@ import { FloatingActionButton } from '@/components/dashboard/mobile/FloatingActi
 import { MobileBottomSheet } from '@/components/dashboard/mobile/MobileBottomSheet';
 import { MobileWidgetOptions } from '@/components/dashboard/mobile/MobileWidgetOptions';
 import { WidgetLibrary } from '@/components/dashboard/WidgetLibrary';
+import { KeyboardShortcuts } from '@/components/dashboard/KeyboardShortcuts';
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -75,6 +79,9 @@ export default function DashboardPage() {
     canUndo,
     canRedo,
   } = useDashboardStore();
+  
+  // 접근성 알림 훅
+  const { announcements, announceWidget, announceHelp } = useA11yAnnouncements();
 
   // 모바일 감지
   useEffect(() => {
@@ -94,7 +101,10 @@ export default function DashboardPage() {
       ctrlKey: true,
       handler: () => {
         setEditMode(!isEditMode);
-        announceMessage(isEditMode ? '편집 모드 종료' : '편집 모드 시작', 'polite');
+        announceWidget(isEditMode ? 'edit-off' : 'edit-on');
+        if (!isEditMode) {
+          announceHelp('키보드 단축키: Tab키로 위젯 이동, 스페이스바로 선택, 화살표 키로 위치 조정');
+        }
       },
       preventDefault: true
     },
@@ -528,6 +538,15 @@ export default function DashboardPage() {
             />
           </>
         )}
+        
+        {/* 키보드 단축키 도움말 (편집 모드에서만 표시) */}
+        {isEditMode && <KeyboardShortcuts />}
+        
+        {/* 접근성 도움말 컴포넌트 */}
+        <EditModeHelp isEditMode={isEditMode} />
+        
+        {/* 스크린리더용 라이브 리전 */}
+        <DashboardLiveRegion announcements={announcements} />
       </WorkspacePageContainer>
     </AppLayout>
   );

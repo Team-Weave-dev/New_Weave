@@ -38,6 +38,7 @@ interface DashboardStore {
   layouts: DashboardLayout[]
   isEditMode: boolean
   selectedWidgetId: string | null
+  focusedWidgetId: string | null  // 키보드 포커스를 위한 상태
   
   // Getters
   widgets: Widget[]
@@ -81,6 +82,7 @@ interface DashboardStore {
   setEditMode: (editMode: boolean) => void
   selectWidget: (widgetId: string | null) => void
   setSelectedWidgetId: (widgetId: string | null) => void
+  setFocusedWidget: (widgetId: string | null) => void  // 키보드 포커스 설정
   
   // Grid Actions
   setGridSize: (gridSize: GridSize) => void
@@ -117,6 +119,7 @@ export const useDashboardStore = create<DashboardStore>()(
       layouts: [],
       isEditMode: false,
       selectedWidgetId: null,
+      focusedWidgetId: null,
       
       // Getters
       get widgets() {
@@ -555,7 +558,7 @@ export const useDashboardStore = create<DashboardStore>()(
       
       // Edit Mode Actions
       setEditMode: (editMode) => {
-        set(() => ({ isEditMode: editMode, selectedWidgetId: null }))
+        set(() => ({ isEditMode: editMode, selectedWidgetId: null, focusedWidgetId: null }))
       },
       
       selectWidget: (widgetId) => {
@@ -564,6 +567,10 @@ export const useDashboardStore = create<DashboardStore>()(
       
       setSelectedWidgetId: (widgetId) => {
         set({ selectedWidgetId: widgetId })
+      },
+      
+      setFocusedWidget: (widgetId) => {
+        set({ focusedWidgetId: widgetId })
       },
       
       // Grid Actions

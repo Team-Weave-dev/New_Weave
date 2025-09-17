@@ -23,6 +23,9 @@ import { ResizeGhost } from './ResizeGhost'
 import { hasCollisionWithWidgets } from '@/lib/dashboard/collisionDetection'
 import { HoverEffect } from './animations/HoverEffect'
 import { RippleEffect } from './animations/RippleEffect'
+import { useKeyboardNavigation } from '@/hooks/useKeyboardNavigation'
+import { useA11yAnnouncements } from '@/hooks/useA11yAnnouncements'
+import { LiveRegion } from './a11y/LiveRegion'
 
 interface WidgetWrapperProps {
   id: string
@@ -58,7 +61,9 @@ export function WidgetWrapper({
     removeWidget,
     lockWidget,
     resizeWidget,
-    currentLayout
+    currentLayout,
+    focusedWidgetId,
+    setFocusedWidget
   } = useDashboardStore()
   
   const [isHovered, setIsHovered] = useState(false)
@@ -71,6 +76,11 @@ export function WidgetWrapper({
   const containerRef = useRef<HTMLDivElement>(null)
   
   const isSelected = selectedWidgetId === id
+  const isFocused = focusedWidgetId === id
+  
+  // 접근성 알림 훅
+  const { announceWidget, announceError, announceHelp } = useA11yAnnouncements()
+  const [liveMessage, setLiveMessage] = useState<string | null>(null)
   
   // 위젯 메타데이터 가져오기
   const widgetMetadata = type ? WidgetRegistry.getMetadata(type as any) : null
@@ -141,15 +151,18 @@ export function WidgetWrapper({
     } else {
       removeWidget(id)
     }
+    announceWidget('remove', title || type)
   }
 
   const handleLockToggle = () => {
     lockWidget(id, !locked)
+    announceWidget(!locked ? 'lock' : 'unlock', title || type)
   }
 
   const handleSelect = () => {
     if (isEditMode && !locked && !isResizing) {
       selectWidget(isSelected ? null : id)
+      announceWidget(isSelected ? 'deselect' : 'select', title || type)
     }
   }
   
@@ -237,6 +250,11 @@ export function WidgetWrapper({
     )
     setIsColliding(collision)
     
+    // 충돌 시 스크린리더 알림
+    if (collision && !isColliding) {
+      announceWidget('collision')
+    }
+    
     // 실제 위젯 크기 업데이트
     if (newX !== currentWidget.position.x || newY !== currentWidget.position.y) {
       // 위치가 변경된 경우 (left, top 리사이즈)
@@ -259,15 +277,29 @@ export function WidgetWrapper({
   }, [currentWidget, locked, cellSize, minSize, maxSize, gridColumns, resizeWidget, id, currentLayout])
   
   const handleResizeEnd = useCallback(() => {
+    if (isResizing && tempSize) {
+      announceWidget('resize', title || type)
+    }
     setIsResizing(false)
     setTempSize(null)
     setTempPosition(null)
     setIsColliding(false)
-  }, [])
+  }, [isResizing, tempSize, title, type, announceWidget])
 
   const handleFullscreenToggle = () => {
     setIsFullscreen(!isFullscreen)
+    announceWidget(!isFullscreen ? 'fullscreen-on' : 'fullscreen-off', title || type)
   }
+
+  // 키보드 네비게이션 훅
+  const { isFocused: keyboardFocused, handleTabNavigation } = useKeyboardNavigation({
+    widgetId: id,
+    isLocked: locked,
+    isSelected,
+    onRemove: handleRemove,
+    onConfigure,
+    onFullscreen: handleFullscreenToggle,
+  })
 
   const displaySize = currentSize
 
@@ -293,12 +325,32 @@ export function WidgetWrapper({
           'opacity-50': isDragging,
           'cursor-move': isEditMode && !locked && !isResizing,
           'fixed inset-4 z-50': isFullscreen,
+          'ring-2 ring-blue-400 ring-offset-2': isFocused && isEditMode, // 키보드 포커스 표시
         },
         className
       )}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onClick={handleSelect}
+      onFocus={() => {
+        if (isEditMode) {
+          setFocusedWidget(id)
+          // 포커스 시 도움말 제공
+          announceHelp(`${title || type || '위젯'}. 스페이스바로 선택, Delete로 삭제, 화살표 키로 이동, Shift+화살표로 크기 조정`)
+        }
+      }}
+      onBlur={() => isEditMode && setFocusedWidget(null)}
+      tabIndex={isEditMode ? 0 : -1}
+      role={isEditMode ? 'application' : 'region'}
+      aria-roledescription={isEditMode ? '편집 가능한 위젯' : '대시보드 위젯'}
+      aria-label={`${title || type || '위젯'} ${currentSizeType.label} 크기`}
+      aria-selected={isEditMode ? isSelected : undefined}
+      aria-describedby={isEditMode ? `widget-desc-${id}` : undefined}
+      aria-disabled={locked}
+      aria-grabbed={isDragging}
+      data-widget-id={id}
+      data-widget-type={type}
+      data-widget-locked={locked}
     >
       {/* 편집 모드 오버레이 */}
       {isEditMode && (
@@ -319,7 +371,13 @@ export function WidgetWrapper({
           <div className="flex items-center gap-2">
             {/* 드래그 핸들 */}
             {!locked && (
-              <div className="cursor-move p-1 hover:bg-gray-100 rounded min-w-[32px] min-h-[32px] flex items-center justify-center transition-colors">
+              <div 
+                className="cursor-move p-1 hover:bg-gray-100 rounded min-w-[32px] min-h-[32px] flex items-center justify-center transition-colors"
+                role="button"
+                tabIndex={0}
+                aria-label="위젯 드래그 핸들"
+                aria-roledescription="드래그하여 위젯 이동"
+              >
                 <Move className="h-3 w-3 text-gray-500" />
               </div>
             )}
@@ -351,13 +409,19 @@ export function WidgetWrapper({
                   }}
                   className="min-w-[32px] min-h-[32px] p-0 flex items-center justify-center hover:bg-gray-100 transition-colors"
                   title="크기 변경"
+                  aria-label="위젯 크기 변경 메뉴 열기"
+                  aria-expanded={showSizeMenu}
+                  aria-haspopup="menu"
                 >
                   <Expand className="h-3 w-3" />
                 </Button>
                 
                 {/* 크기 선택 메뉴 */}
                 {showSizeMenu && (
-                  <div className="absolute top-full right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg p-1 z-50 min-w-[120px]">
+                  <div 
+                    className="absolute top-full right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg p-1 z-50 min-w-[120px]"
+                    role="menu"
+                    aria-label="위젯 크기 선택">
                     {sizeTypes.map((type) => {
                       const Icon = type.icon
                       const isActive = type.width === currentSize.width && type.height === currentSize.height
@@ -374,6 +438,10 @@ export function WidgetWrapper({
                             handleSizeChange(type.width, type.height)
                           }}
                           disabled={isDisabled}
+                          role="menuitem"
+                          aria-label={`크기 ${type.label}로 변경`}
+                          aria-disabled={isDisabled}
+                          aria-current={isActive ? 'true' : undefined}
                           className={cn(
                             "flex items-center gap-2 w-full px-3 py-2 text-xs rounded transition-colors",
                             {
@@ -480,6 +548,35 @@ export function WidgetWrapper({
       >
         {children}
       </div>
+
+      {/* 스크린리더용 설명 및 상태 정보 */}
+      {isEditMode && (
+        <div id={`widget-desc-${id}`} className="sr-only">
+          <div>{description || `${title || type} 위젯`}</div>
+          <div>현재 크기: {currentSizeType.label}</div>
+          <div>상태: {locked ? '잠김' : '편집 가능'}</div>
+          {isSelected && <div>선택됨</div>}
+          {isFocused && <div>포커스됨</div>}
+          <div role="region" aria-label="키보드 단축키">
+            <ul>
+              <li>스페이스바: 위젯 선택/선택 해제</li>
+              <li>Delete 또는 Backspace: 위젯 삭제</li>
+              <li>화살표 키: 위젯 이동</li>
+              <li>Shift + 화살표 키: 위젯 크기 조정</li>
+              <li>L: 위젯 잠금/잠금 해제</li>
+              <li>F: 전체화면 토글</li>
+              <li>Escape: 선택 해제</li>
+            </ul>
+          </div>
+        </div>
+      )}
+
+      {/* 키보드 포커스 인디케이터 */}
+      {isFocused && isEditMode && !isSelected && (
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute inset-0 border-2 border-blue-400 border-dashed rounded-lg" />
+        </div>
+      )}
 
       {/* 선택 인디케이터 */}
       {isSelected && isEditMode && (
@@ -652,5 +749,15 @@ export function WidgetWrapper({
   }
 
   // 편집 모드일 때는 애니메이션 없이 반환
-  return widgetContent
+  return (
+    <>
+      {widgetContent}
+      {/* 스크린리더 알림용 라이브 리전 */}
+      <LiveRegion 
+        message={liveMessage} 
+        politeness={isColliding ? 'assertive' : 'polite'}
+        clearAfter={3000}
+      />
+    </>
+  )
 }
