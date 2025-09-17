@@ -57,7 +57,15 @@ export function DndProvider({ children }: DndProviderProps) {
     reflowWidgets,
     selectWidget,
     selectedWidgetId,
-    isEditMode
+    isEditMode,
+    // 드래그 상태 관리
+    dragState,
+    startDrag,
+    updateDrag,
+    validateDropTarget,
+    endDrag,
+    cancelDrag,
+    rollbackDrag
   } = useDashboardStore()
   
   // GridContext에서 그리드 정보 가져오기 (optional)
@@ -128,8 +136,10 @@ export function DndProvider({ children }: DndProviderProps) {
       setActiveId(active.id)
       setDraggedWidget(widget)
       selectWidget(active.id as string)
+      // 새로운 드래그 상태 관리 시작
+      startDrag(widget.id, widget.position)
     }
-  }, [currentLayout, isEditMode, selectWidget])
+  }, [currentLayout, isEditMode, selectWidget, startDrag])
 
   // 드래그 중 핸들러 (드롭 가능 영역 하이라이트)
   const handleDragOver = useCallback((event: DragOverEvent) => {
@@ -178,11 +188,14 @@ export function DndProvider({ children }: DndProviderProps) {
     setDragPreviewPosition(testPosition)
     setIsValidDropPosition(!collisionResult.hasCollision)
     
+    // 새로운 드래그 상태 업데이트
+    updateDrag({ x: newPosition.x, y: newPosition.y })
+    
     // 스왑 가능한 위젯이 있으면 시각적 힌트 제공 가능
     if (collisionResult.swappableWidget) {
       // 스왑 가능 시각화 (추후 구현)
     }
-  }, [currentLayout, cellSize, gap, collisionDetector])
+  }, [currentLayout, cellSize, gap, collisionDetector, updateDrag])
 
   // 드래그 종료 핸들러
   const handleDragEnd = useCallback((event: DragEndEvent) => {
@@ -191,6 +204,7 @@ export function DndProvider({ children }: DndProviderProps) {
     if (!active || !currentLayout || !collisionDetector) {
       setActiveId(null)
       setDraggedWidget(null)
+      cancelDrag()
       return
     }
 
@@ -198,6 +212,7 @@ export function DndProvider({ children }: DndProviderProps) {
     if (!activeWidget) {
       setActiveId(null)
       setDraggedWidget(null)
+      cancelDrag()
       return
     }
 
@@ -226,35 +241,52 @@ export function DndProvider({ children }: DndProviderProps) {
       activeWidget.id
     )
 
-    if (!collisionResult.hasCollision) {
-      // 충돌이 없으면 이동
-      moveWidget(activeWidget.id, newPosition)
-    } else if (collisionResult.swappableWidget) {
-      // 스왑 가능한 위젯이 있으면 교환
-      swapWidgets(activeWidget.id, collisionResult.swappableWidget.id)
-    } else if (collisionResult.suggestedPosition) {
-      // 제안된 대체 위치로 이동
-      moveWidget(activeWidget.id, collisionResult.suggestedPosition)
-    } else if (over && over.id !== active.id) {
-      // over 위젯과 스왑 시도
-      const targetWidget = currentLayout.widgets.find(w => w.id === over.id)
-      if (targetWidget && !targetWidget.locked) {
-        swapWidgets(activeWidget.id, targetWidget.id)
+    try {
+      if (!collisionResult.hasCollision) {
+        // 충돌이 없으면 이동
+        moveWidget(activeWidget.id, newPosition)
+        endDrag(newPosition)
+      } else if (collisionResult.swappableWidget) {
+        // 스왑 가능한 위젯이 있으면 교환
+        swapWidgets(activeWidget.id, collisionResult.swappableWidget.id)
+        endDrag()
+      } else if (collisionResult.suggestedPosition) {
+        // 제안된 대체 위치로 이동
+        moveWidget(activeWidget.id, collisionResult.suggestedPosition)
+        endDrag(collisionResult.suggestedPosition)
+      } else if (over && over.id !== active.id) {
+        // over 위젯과 스왑 시도
+        const targetWidget = currentLayout.widgets.find(w => w.id === over.id)
+        if (targetWidget && !targetWidget.locked) {
+          swapWidgets(activeWidget.id, targetWidget.id)
+          endDrag()
+        } else {
+          // 스왑 실패 시 원래 위치로
+          cancelDrag()
+        }
+      } else {
+        // 밀어내기 시도
+        const updatedWidgets = collisionDetector.pushWidgets(activeWidget, newPosition)
+        if (updatedWidgets.length > 0) {
+          // 밀어내기 성공 시 위젯 재배치
+          reflowWidgets()
+          endDrag()
+        } else {
+          // 모든 시도 실패 시 원래 위치로
+          cancelDrag()
+        }
       }
-    } else {
-      // 밀어내기 시도
-      const updatedWidgets = collisionDetector.pushWidgets(activeWidget, newPosition)
-      if (updatedWidgets.length > 0) {
-        // 밀어내기 성공 시 위젯 재배치
-        reflowWidgets()
-      }
+    } catch (error) {
+      // 오류 발생 시 롤백
+      console.error('Drag operation failed:', error)
+      rollbackDrag()
     }
     
     setActiveId(null)
     setDraggedWidget(null)
     setDragPreviewPosition(null)
     setIsValidDropPosition(true)
-  }, [currentLayout, moveWidget, swapWidgets, reflowWidgets, cellSize, gap, collisionDetector])
+  }, [currentLayout, moveWidget, swapWidgets, reflowWidgets, cellSize, gap, collisionDetector, endDrag, cancelDrag, rollbackDrag])
 
   // 드래그 취소 핸들러
   const handleDragCancel = useCallback(() => {
@@ -262,7 +294,8 @@ export function DndProvider({ children }: DndProviderProps) {
     setDraggedWidget(null)
     setDragPreviewPosition(null)
     setIsValidDropPosition(true)
-  }, [])
+    cancelDrag()
+  }, [cancelDrag])
 
   // 편집 모드가 아니거나 아직 보이지 않으면 DnD 비활성화
   if (!isEditMode || !isVisible) {

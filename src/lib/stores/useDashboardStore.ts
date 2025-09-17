@@ -6,12 +6,42 @@ import { migrateWidgetTypes } from '@/lib/dashboard/widgetTypeMapping'
 // Re-export types for backward compatibility
 export type { GridSize, WidgetPosition, Widget, DashboardLayout }
 
+// 드래그 상태 인터페이스
+interface DragState {
+  isDragging: boolean
+  draggedWidgetId: string | null
+  dragStartPosition: WidgetPosition | null
+  dragCurrentPosition: { x: number; y: number } | null
+  dropTargetPosition: WidgetPosition | null
+  isValidDrop: boolean
+  collisionInfo: {
+    hasCollision: boolean
+    collidingWidgetIds: string[]
+    suggestedPosition?: WidgetPosition
+  } | null
+}
+
+// 드래그 히스토리 인터페이스
+interface DragHistoryItem {
+  timestamp: number
+  widgetId: string
+  from: WidgetPosition
+  to: WidgetPosition
+  success: boolean
+  rollbackData?: Widget[]
+}
+
 interface DashboardStore {
   // State
   currentLayout: DashboardLayout | null
   layouts: DashboardLayout[]
   isEditMode: boolean
   selectedWidgetId: string | null
+  
+  // 드래그 상태
+  dragState: DragState
+  dragHistory: DragHistoryItem[]
+  maxDragHistory: number
   
   // Layout Actions
   setCurrentLayout: (layout: DashboardLayout) => void
@@ -51,6 +81,15 @@ interface DashboardStore {
   reset: () => void
   saveToLocalStorage: () => void
   loadFromLocalStorage: () => void
+  
+  // 드래그 액션
+  startDrag: (widgetId: string, startPosition: WidgetPosition) => void
+  updateDrag: (currentPosition: { x: number; y: number }) => void
+  validateDropTarget: (targetPosition: WidgetPosition) => boolean
+  endDrag: (targetPosition?: WidgetPosition) => void
+  cancelDrag: () => void
+  rollbackDrag: () => void
+  clearDragHistory: () => void
 }
 
 const initialLayout: DashboardLayout = {
@@ -74,6 +113,19 @@ export const useDashboardStore = create<DashboardStore>()(
       redoHistory: [],
       canUndo: false,
       canRedo: false,
+      
+      // 드래그 상태 초기값
+      dragState: {
+        isDragging: false,
+        draggedWidgetId: null,
+        dragStartPosition: null,
+        dragCurrentPosition: null,
+        dropTargetPosition: null,
+        isValidDrop: false,
+        collisionInfo: null,
+      },
+      dragHistory: [],
+      maxDragHistory: 50,
       
       // Layout Actions
       setCurrentLayout: (layout) => {
@@ -235,10 +287,14 @@ export const useDashboardStore = create<DashboardStore>()(
           if (!state.currentLayout) return state
           
           const before = state.currentLayout.widgets
-          const after = state.currentLayout.widgets.map((widget) =>
-            widget.id === widgetId
-              ? { ...widget, position: newPosition }
-              : widget
+          const widget = before.find(w => w.id === widgetId)
+          if (!widget) return state
+          
+          // Optimistic update
+          const after = state.currentLayout.widgets.map((w) =>
+            w.id === widgetId
+              ? { ...w, position: newPosition }
+              : w
           )
           
           // 히스토리에 액션 저장
@@ -246,6 +302,16 @@ export const useDashboardStore = create<DashboardStore>()(
             type: 'move',
             data: { before, after, widgetId, position: newPosition },
             timestamp: Date.now(),
+          }
+          
+          // 드래그 히스토리 추가
+          const dragHistoryItem: DragHistoryItem = {
+            timestamp: Date.now(),
+            widgetId,
+            from: widget.position,
+            to: newPosition,
+            success: true,
+            rollbackData: before,
           }
           
           return {
@@ -258,6 +324,7 @@ export const useDashboardStore = create<DashboardStore>()(
             redoHistory: [],
             canUndo: true,
             canRedo: false,
+            dragHistory: [...state.dragHistory, dragHistoryItem].slice(-state.maxDragHistory),
           }
         })
       },
@@ -681,6 +748,179 @@ export const useDashboardStore = create<DashboardStore>()(
           
           return state
         })
+      },
+      
+      // 드래그 액션
+      startDrag: (widgetId: string, startPosition: WidgetPosition) => {
+        set((state) => ({
+          dragState: {
+            ...state.dragState,
+            isDragging: true,
+            draggedWidgetId: widgetId,
+            dragStartPosition: startPosition,
+            dragCurrentPosition: null,
+            dropTargetPosition: null,
+            isValidDrop: false,
+            collisionInfo: null,
+          },
+          selectedWidgetId: widgetId,
+        }))
+      },
+      
+      updateDrag: (currentPosition: { x: number; y: number }) => {
+        set((state) => {
+          if (!state.dragState.isDragging || !state.currentLayout) return state
+          
+          // 그리드 좌표로 변환
+          const gridColumns = state.currentLayout.gridSize === '2x2' ? 2 :
+                             state.currentLayout.gridSize === '3x3' ? 3 :
+                             state.currentLayout.gridSize === '4x4' ? 4 : 5
+          
+          const gridX = Math.floor(currentPosition.x)
+          const gridY = Math.floor(currentPosition.y)
+          
+          const draggedWidget = state.currentLayout.widgets.find(
+            w => w.id === state.dragState.draggedWidgetId
+          )
+          if (!draggedWidget) return state
+          
+          const targetPosition: WidgetPosition = {
+            x: Math.max(0, Math.min(gridX, gridColumns - draggedWidget.position.width)),
+            y: Math.max(0, Math.min(gridY, gridColumns - draggedWidget.position.height)),
+            width: draggedWidget.position.width,
+            height: draggedWidget.position.height,
+          }
+          
+          // 충돌 감지
+          const otherWidgets = state.currentLayout.widgets.filter(
+            w => w.id !== state.dragState.draggedWidgetId && !w.locked
+          )
+          
+          const collidingWidgets: string[] = []
+          otherWidgets.forEach(widget => {
+            const isColliding = 
+              targetPosition.x < widget.position.x + widget.position.width &&
+              targetPosition.x + targetPosition.width > widget.position.x &&
+              targetPosition.y < widget.position.y + widget.position.height &&
+              targetPosition.y + targetPosition.height > widget.position.y
+            
+            if (isColliding) {
+              collidingWidgets.push(widget.id)
+            }
+          })
+          
+          return {
+            dragState: {
+              ...state.dragState,
+              dragCurrentPosition: currentPosition,
+              dropTargetPosition: targetPosition,
+              isValidDrop: collidingWidgets.length === 0,
+              collisionInfo: {
+                hasCollision: collidingWidgets.length > 0,
+                collidingWidgetIds: collidingWidgets,
+                suggestedPosition: collidingWidgets.length > 0 ? 
+                  state.dragState.dragStartPosition : undefined,
+              },
+            },
+          }
+        })
+      },
+      
+      validateDropTarget: (targetPosition: WidgetPosition) => {
+        const state = get()
+        if (!state.currentLayout || !state.dragState.draggedWidgetId) return false
+        
+        const otherWidgets = state.currentLayout.widgets.filter(
+          w => w.id !== state.dragState.draggedWidgetId
+        )
+        
+        // 충돌 검사
+        for (const widget of otherWidgets) {
+          if (widget.locked) continue
+          
+          const isColliding = 
+            targetPosition.x < widget.position.x + widget.position.width &&
+            targetPosition.x + targetPosition.width > widget.position.x &&
+            targetPosition.y < widget.position.y + widget.position.height &&
+            targetPosition.y + targetPosition.height > widget.position.y
+          
+          if (isColliding) return false
+        }
+        
+        return true
+      },
+      
+      endDrag: (targetPosition?: WidgetPosition) => {
+        const state = get()
+        if (!state.dragState.isDragging || !state.dragState.draggedWidgetId) {
+          set({ dragState: { ...state.dragState, isDragging: false, draggedWidgetId: null } })
+          return
+        }
+        
+        const finalPosition = targetPosition || state.dragState.dropTargetPosition
+        
+        if (finalPosition && state.dragState.isValidDrop) {
+          // 위치 업데이트 (optimistic update)
+          get().moveWidget(state.dragState.draggedWidgetId, finalPosition)
+        } else if (state.dragState.dragStartPosition) {
+          // 원래 위치로 롤백
+          get().moveWidget(state.dragState.draggedWidgetId, state.dragState.dragStartPosition)
+        }
+        
+        // 드래그 상태 초기화
+        set({
+          dragState: {
+            isDragging: false,
+            draggedWidgetId: null,
+            dragStartPosition: null,
+            dragCurrentPosition: null,
+            dropTargetPosition: null,
+            isValidDrop: false,
+            collisionInfo: null,
+          },
+        })
+      },
+      
+      cancelDrag: () => {
+        const state = get()
+        if (state.dragState.dragStartPosition && state.dragState.draggedWidgetId) {
+          // 원래 위치로 롤백
+          get().moveWidget(state.dragState.draggedWidgetId, state.dragState.dragStartPosition)
+        }
+        
+        set({
+          dragState: {
+            isDragging: false,
+            draggedWidgetId: null,
+            dragStartPosition: null,
+            dragCurrentPosition: null,
+            dropTargetPosition: null,
+            isValidDrop: false,
+            collisionInfo: null,
+          },
+        })
+      },
+      
+      rollbackDrag: () => {
+        set((state) => {
+          if (state.dragHistory.length === 0 || !state.currentLayout) return state
+          
+          const lastDrag = state.dragHistory[state.dragHistory.length - 1]
+          if (!lastDrag.rollbackData) return state
+          
+          return {
+            currentLayout: {
+              ...state.currentLayout,
+              widgets: lastDrag.rollbackData,
+              updatedAt: new Date(),
+            },
+            dragHistory: state.dragHistory.slice(0, -1),
+          }
+        })
+      },
+      
+      clearDragHistory: () => {
+        set({ dragHistory: [] })
       },
     }),
     {
