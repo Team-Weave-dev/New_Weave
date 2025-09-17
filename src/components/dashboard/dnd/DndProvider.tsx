@@ -28,6 +28,7 @@ import { createPortal } from 'react-dom'
 import { createGridCollisionDetection } from './customCollisionDetection'
 import { findNearestValidPosition, reflowWidgets } from '@/lib/dashboard/collisionDetection'
 import { DragPreview } from './DragPreview'
+import { GridDropZones } from './GridDropZones'
 import { cn } from '@/lib/utils'
 import { useLazyLoad } from '@/hooks/useIntersectionObserver'
 import { useGridCellSize } from '@/hooks/useGridCellSize'
@@ -79,7 +80,7 @@ export function DndProvider({ children }: DndProviderProps) {
   
   const [activeId, setActiveId] = useState<UniqueIdentifier | null>(null)
   const [draggedWidget, setDraggedWidget] = useState<any>(null)
-  const [dragPreviewPosition, setDragPreviewPosition] = useState<{x: number, y: number} | null>(null)
+  const [dragPreviewPosition, setDragPreviewPosition] = useState<{x: number, y: number, width: number, height: number} | null>(null)
   const [isValidDropPosition, setIsValidDropPosition] = useState(true)
 
   // 센서 설정 - 포인터와 키보드 지원
@@ -137,7 +138,12 @@ export function DndProvider({ children }: DndProviderProps) {
       gridColumns
     )
     
-    setDragPreviewPosition(newPosition)
+    setDragPreviewPosition({
+      x: newPosition.x,
+      y: newPosition.y,
+      width: activeWidget.position.width,
+      height: activeWidget.position.height
+    })
     
     // 충돌 검사
     const otherWidgets = currentLayout.widgets.filter(w => w.id !== active.id)
@@ -235,7 +241,7 @@ export function DndProvider({ children }: DndProviderProps) {
 
   // 편집 모드가 아니거나 아직 보이지 않으면 DnD 비활성화
   if (!isEditMode || !isVisible) {
-    return <div ref={containerRef}>{children}</div>
+    return <div ref={containerRef} className="w-full h-full">{children}</div>
   }
 
   const widgetIds = currentLayout?.widgets
@@ -267,7 +273,20 @@ export function DndProvider({ children }: DndProviderProps) {
         items={widgetIds}
         strategy={rectSortingStrategy}
       >
-        {children}
+        <div ref={containerRef} className="relative w-full h-full">
+          {/* 드롭 가능 영역 시각화 */}
+          {activeId && currentLayout && (
+            <GridDropZones
+              widgets={currentLayout.widgets}
+              activeWidgetId={activeId as string}
+              dragPreviewPosition={dragPreviewPosition}
+              gridSize={currentLayout.gridSize}
+              cellSize={cellSize}
+              gap={gap}
+            />
+          )}
+          {children}
+        </div>
       </SortableContext>
       
       {/* 드래그 오버레이 */}
