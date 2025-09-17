@@ -14,6 +14,8 @@ export type WidgetType =
   | 'todo-list'
   | 'calendar'
   | 'recent-activity'
+  | 'time-tracker'
+  | 'pomodoro'
   | 'custom';
 
 // 한글 이름 -> 영문 타입 매핑
@@ -36,6 +38,9 @@ const WIDGET_TYPE_MAP: Record<string, WidgetType> = {
   '할 일 목록': 'todo-list',
   '할 일': 'todo-list', // 별칭
   '최근 활동': 'recent-activity',
+  '시간 추적기': 'time-tracker',
+  '뽀모도로 타이머': 'pomodoro',
+  '뽀모도로': 'pomodoro', // 별칭
   
   // 커스텀
   '커스텀': 'custom',
@@ -53,6 +58,8 @@ const REVERSE_TYPE_MAP: Record<WidgetType, string> = {
   'todo-list': '할 일 목록',
   'calendar': '캘린더',
   'recent-activity': '최근 활동',
+  'time-tracker': '시간 추적기',
+  'pomodoro': '뽀모도로 타이머',
   'custom': '커스텀',
 } as const;
 
@@ -67,6 +74,9 @@ const PASCAL_TO_KEBAB_MAP: Record<string, WidgetType> = {
   'TodoList': 'todo-list',
   'Calendar': 'calendar',
   'RecentActivity': 'recent-activity',
+  'TimeTracker': 'time-tracker',
+  'Pomodoro': 'pomodoro',
+  'PomodoroWidget': 'pomodoro',
   'Custom': 'custom',
 };
 
@@ -121,6 +131,8 @@ export function isValidWidgetType(type: string): boolean {
     'todo-list',
     'calendar',
     'recent-activity',
+    'time-tracker',
+    'pomodoro',
     'custom',
   ];
   

@@ -14,7 +14,10 @@ import {
   Flag,
   X,
   Edit2,
-  Trash2
+  Trash2,
+  Kanban,
+  List,
+  ChevronUp
 } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
 import Typography from '@/components/ui/Typography'
@@ -23,6 +26,28 @@ import type { WidgetProps } from '@/types/dashboard'
 import { cn } from '@/lib/utils'
 import { getSupabaseClientSafe } from '@/lib/supabase/client'
 import { widgetColors } from '@/lib/dashboard/widget-colors'
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+  DragOverEvent,
+  DragStartEvent,
+  DragOverlay,
+} from '@dnd-kit/core'
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable'
+import {
+  useSortable
+} from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 
 interface Task {
   id: string
@@ -36,10 +61,204 @@ interface Task {
   createdAt: Date
   completedAt?: Date
   tags?: string[]
+  status?: 'todo' | 'in-progress' | 'review' | 'done'
+  subtasks?: SubTask[]
+}
+
+interface SubTask {
+  id: string
+  title: string
+  completed: boolean
 }
 
 type SortOption = 'priority' | 'dueDate' | 'project' | 'status'
 type FilterOption = 'all' | 'today' | 'week' | 'overdue' | 'completed'
+type ViewMode = 'list' | 'kanban'
+
+// 칸반 카드 컴포넌트
+interface KanbanCardProps {
+  task: Task
+  onToggleComplete: (id: string) => void
+  onToggleSubtask: (taskId: string, subtaskId: string) => void
+  onDelete: (id: string) => void
+  getPriorityColor: (priority: Task['priority']) => string
+  getPriorityIcon: (priority: Task['priority']) => React.ReactNode
+}
+
+function KanbanCard({
+  task,
+  onToggleComplete,
+  onToggleSubtask,
+  onDelete,
+  getPriorityColor,
+  getPriorityIcon
+}: KanbanCardProps) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: task.id })
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  }
+
+  const [expanded, setExpanded] = useState(false)
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      {...listeners}
+      className={cn(
+        "bg-white p-3 rounded-lg shadow-sm border border-gray-200 cursor-move hover:shadow-md transition-shadow",
+        task.completed && "opacity-60"
+      )}
+    >
+      <div className="flex items-start justify-between mb-2">
+        <div className="flex items-start gap-2 flex-1">
+          <button
+            onClick={(e) => {
+              e.stopPropagation()
+              onToggleComplete(task.id)
+            }}
+            className="mt-0.5 flex-shrink-0"
+          >
+            {task.completed ? (
+              <CheckCircle2 className="w-4 h-4 text-green-500" />
+            ) : (
+              <Circle className="w-4 h-4 text-gray-400 hover:text-gray-600" />
+            )}
+          </button>
+          <div className="flex-1">
+            <Typography 
+              variant="body2" 
+              className={cn(
+                "text-gray-900 font-medium",
+                task.completed && "line-through"
+              )}
+            >
+              {task.title}
+            </Typography>
+            {task.description && (
+              <Typography variant="caption" className="text-gray-500 mt-1">
+                {task.description}
+              </Typography>
+            )}
+          </div>
+        </div>
+        <div className={cn(
+          "flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-medium",
+          getPriorityColor(task.priority)
+        )}>
+          {getPriorityIcon(task.priority)}
+        </div>
+      </div>
+
+      {/* 서브태스크 */}
+      {task.subtasks && task.subtasks.length > 0 && (
+        <div className="mb-2">
+          <button
+            onClick={(e) => {
+              e.stopPropagation()
+              setExpanded(!expanded)
+            }}
+            className="flex items-center gap-1 text-xs text-gray-600 hover:text-gray-800"
+          >
+            {expanded ? <ChevronDown className="w-3 h-3" /> : <ChevronUp className="w-3 h-3" />}
+            <span>
+              {task.subtasks.filter(st => st.completed).length}/{task.subtasks.length} 완료
+            </span>
+          </button>
+          {expanded && (
+            <div className="mt-1 space-y-1">
+              {task.subtasks.map(subtask => (
+                <div key={subtask.id} className="flex items-center gap-2">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      onToggleSubtask(task.id, subtask.id)
+                    }}
+                    className="flex-shrink-0"
+                  >
+                    {subtask.completed ? (
+                      <CheckCircle2 className="w-3 h-3 text-green-500" />
+                    ) : (
+                      <Circle className="w-3 h-3 text-gray-400 hover:text-gray-600" />
+                    )}
+                  </button>
+                  <Typography
+                    variant="caption"
+                    className={cn(
+                      "text-gray-700",
+                      subtask.completed && "line-through text-gray-500"
+                    )}
+                  >
+                    {subtask.title}
+                  </Typography>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* 메타 정보 */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          {task.projectName && (
+            <span className="text-xs text-gray-500">
+              {task.projectName}
+            </span>
+          )}
+          {task.dueDate && (
+            <span className={cn(
+              "flex items-center gap-1 text-xs",
+              new Date(task.dueDate) < new Date() && !task.completed
+                ? "text-red-500"
+                : "text-gray-500"
+            )}>
+              <Calendar className="w-3 h-3" />
+              {new Date(task.dueDate).toLocaleDateString('ko-KR', {
+                month: 'short',
+                day: 'numeric'
+              })}
+            </span>
+          )}
+        </div>
+        <button
+          onClick={(e) => {
+            e.stopPropagation()
+            onDelete(task.id)
+          }}
+          className="p-1 text-gray-400 hover:text-red-500 transition-colors"
+        >
+          <Trash2 className="w-3 h-3" />
+        </button>
+      </div>
+
+      {/* 태그 */}
+      {task.tags && task.tags.length > 0 && (
+        <div className="flex gap-1 mt-2 flex-wrap">
+          {task.tags.map(tag => (
+            <span
+              key={tag}
+              className="px-1.5 py-0.5 text-xs bg-gray-100 text-gray-600 rounded"
+            >
+              {tag}
+            </span>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
 
 export function TaskTrackerWidget({
   id,
@@ -56,7 +275,17 @@ export function TaskTrackerWidget({
   const [sortBy, setSortBy] = useState<SortOption>('priority')
   const [filterBy, setFilterBy] = useState<FilterOption>('all')
   const [selectedProject, setSelectedProject] = useState<string>('all')
+  const [viewMode, setViewMode] = useState<ViewMode>('list')
+  const [activeId, setActiveId] = useState<string | null>(null)
+  const [expandedTasks, setExpandedTasks] = useState<Set<string>>(new Set())
   const supabase = getSupabaseClientSafe()
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  )
 
   // 초기 데이터 로드
   useEffect(() => {
@@ -82,7 +311,13 @@ export function TaskTrackerWidget({
             projectId: 'proj1',
             projectName: '웹사이트 리뉴얼',
             createdAt: new Date(Date.now() - 86400000),
-            tags: ['문서', '긴급']
+            tags: ['문서', '긴급'],
+            status: 'in-progress',
+            subtasks: [
+              { id: 'sub1-1', title: '요구사항 분석', completed: true },
+              { id: 'sub1-2', title: '견적 작성', completed: false },
+              { id: 'sub1-3', title: '최종 검토', completed: false }
+            ]
           },
           {
             id: '2',
@@ -93,7 +328,8 @@ export function TaskTrackerWidget({
             projectId: 'proj1',
             projectName: '웹사이트 리뉴얼',
             createdAt: new Date(Date.now() - 172800000),
-            tags: ['미팅']
+            tags: ['미팅'],
+            status: 'todo'
           },
           {
             id: '3',
@@ -105,7 +341,8 @@ export function TaskTrackerWidget({
             projectName: '모바일 앱 개발',
             createdAt: new Date(Date.now() - 259200000),
             completedAt: new Date(Date.now() - 86400000),
-            tags: ['보고서']
+            tags: ['보고서'],
+            status: 'done'
           },
           {
             id: '4',
@@ -116,7 +353,12 @@ export function TaskTrackerWidget({
             projectId: 'proj2',
             projectName: '모바일 앱 개발',
             createdAt: new Date(Date.now() - 86400000),
-            tags: ['디자인', '피드백']
+            tags: ['디자인', '피드백'],
+            status: 'review',
+            subtasks: [
+              { id: 'sub4-1', title: '메인 화면 검토', completed: true },
+              { id: 'sub4-2', title: '색상 테마 피드백', completed: false }
+            ]
           },
           {
             id: '5',
@@ -127,7 +369,8 @@ export function TaskTrackerWidget({
             projectId: 'proj3',
             projectName: '내부 프로세스 개선',
             createdAt: new Date(),
-            tags: ['미팅', '내부']
+            tags: ['미팅', '내부'],
+            status: 'todo'
           }
         ]
 
@@ -267,6 +510,84 @@ export function TaskTrackerWidget({
     setTasks(prev => prev.filter(task => task.id !== taskId))
   }
 
+  // 서브태스크 토글
+  const toggleSubtask = (taskId: string, subtaskId: string) => {
+    setTasks(prev => prev.map(task => {
+      if (task.id === taskId) {
+        return {
+          ...task,
+          subtasks: task.subtasks?.map(sub =>
+            sub.id === subtaskId ? { ...sub, completed: !sub.completed } : sub
+          )
+        }
+      }
+      return task
+    }))
+  }
+
+  // 태스크 확장 토글
+  const toggleTaskExpanded = (taskId: string) => {
+    setExpandedTasks(prev => {
+      const newSet = new Set(prev)
+      if (newSet.has(taskId)) {
+        newSet.delete(taskId)
+      } else {
+        newSet.add(taskId)
+      }
+      return newSet
+    })
+  }
+
+  // 칸반 보드 드래그 핸들러
+  const handleDragStart = (event: DragStartEvent) => {
+    setActiveId(event.active.id as string)
+  }
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event
+    
+    if (over && active.id !== over.id) {
+      const activeTask = tasks.find(t => t.id === active.id)
+      const overContainer = over.id as string
+      
+      if (activeTask && ['todo', 'in-progress', 'review', 'done'].includes(overContainer)) {
+        // 상태 변경
+        setTasks(prev => prev.map(task =>
+          task.id === active.id
+            ? { ...task, status: overContainer as Task['status'] }
+            : task
+        ))
+      } else {
+        // 같은 컬럼 내에서 순서 변경
+        const activeIndex = tasks.findIndex(t => t.id === active.id)
+        const overIndex = tasks.findIndex(t => t.id === over.id)
+        
+        if (activeIndex !== -1 && overIndex !== -1) {
+          setTasks(prev => arrayMove(prev, activeIndex, overIndex))
+        }
+      }
+    }
+    
+    setActiveId(null)
+  }
+
+  const handleDragOver = (event: DragOverEvent) => {
+    const { active, over } = event
+    
+    if (over && active.id !== over.id) {
+      const activeTask = tasks.find(t => t.id === active.id)
+      const overContainer = over.id as string
+      
+      if (activeTask && ['todo', 'in-progress', 'review', 'done'].includes(overContainer)) {
+        setTasks(prev => prev.map(task =>
+          task.id === active.id
+            ? { ...task, status: overContainer as Task['status'] }
+            : task
+        ))
+      }
+    }
+  }
+
   // 우선순위 색상
   const getPriorityColor = (priority: Task['priority']) => {
     switch (priority) {
@@ -338,13 +659,36 @@ export function TaskTrackerWidget({
             작업 관리
           </Typography>
         </div>
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={() => setShowAddTask(!showAddTask)}
-        >
-          <Plus className="w-4 h-4" />
-        </Button>
+        <div className="flex items-center gap-2">
+          {/* 뷰 모드 토글 */}
+          <div className="flex items-center bg-gray-100 rounded-lg p-1">
+            <button
+              onClick={() => setViewMode('list')}
+              className={cn(
+                "p-1 rounded transition-colors",
+                viewMode === 'list' ? 'bg-white shadow-sm' : 'hover:bg-gray-200'
+              )}
+            >
+              <List className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => setViewMode('kanban')}
+              className={cn(
+                "p-1 rounded transition-colors",
+                viewMode === 'kanban' ? 'bg-white shadow-sm' : 'hover:bg-gray-200'
+              )}
+            >
+              <Kanban className="w-4 h-4" />
+            </button>
+          </div>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => setShowAddTask(!showAddTask)}
+          >
+            <Plus className="w-4 h-4" />
+          </Button>
+        </div>
       </div>
 
       {/* 통계 */}
@@ -455,118 +799,242 @@ export function TaskTrackerWidget({
         </div>
       )}
 
-      {/* 작업 목록 */}
+      {/* 작업 목록 / 칸반 보드 */}
       <div className="flex-1 overflow-y-auto">
-        <div className="space-y-2">
-          {filteredAndSortedTasks.length === 0 ? (
-            <div className="text-center py-8">
-              <Typography variant="body2" className="text-gray-500">
-                작업이 없습니다
-              </Typography>
-            </div>
-          ) : (
-            filteredAndSortedTasks.map(task => (
-              <div
-                key={task.id}
-                className={cn(
-                  "group flex items-start gap-2 p-2 rounded-lg hover:bg-gray-50 transition-colors",
-                  task.completed && "opacity-60"
-                )}
-              >
-                <button
-                  onClick={() => toggleTaskComplete(task.id)}
-                  className="mt-0.5 flex-shrink-0"
-                >
-                  {task.completed ? (
-                    <CheckCircle2 className={cn("w-4 h-4", widgetColors.status.success.icon)} />
-                  ) : (
-                    <Circle className={cn("w-4 h-4", widgetColors.icon.muted, "hover:text-gray-600")} />
+        {viewMode === 'list' ? (
+          // 리스트 뷰
+          <div className="space-y-2">
+            {filteredAndSortedTasks.length === 0 ? (
+              <div className="text-center py-8">
+                <Typography variant="body2" className="text-gray-500">
+                  작업이 없습니다
+                </Typography>
+              </div>
+            ) : (
+              filteredAndSortedTasks.map(task => (
+                <div
+                  key={task.id}
+                  className={cn(
+                    "group p-2 rounded-lg hover:bg-gray-50 transition-colors",
+                    task.completed && "opacity-60"
                   )}
-                </button>
-                
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex-1">
-                      <Typography 
-                        variant="body2" 
-                        className={cn(
-                          "text-gray-900",
-                          task.completed && "line-through"
-                        )}
-                      >
-                        {task.title}
-                      </Typography>
-                      {task.description && (
-                        <Typography variant="caption" className="text-gray-500">
-                          {task.description}
-                        </Typography>
+                >
+                  <div className="flex items-start gap-2">
+                    <button
+                      onClick={() => toggleTaskComplete(task.id)}
+                      className="mt-0.5 flex-shrink-0"
+                    >
+                      {task.completed ? (
+                        <CheckCircle2 className={cn("w-4 h-4", widgetColors.status.success.icon)} />
+                      ) : (
+                        <Circle className={cn("w-4 h-4", widgetColors.icon.muted, "hover:text-gray-600")} />
                       )}
+                    </button>
+                    
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            {task.subtasks && task.subtasks.length > 0 && (
+                              <button
+                                onClick={() => toggleTaskExpanded(task.id)}
+                                className="p-0.5 hover:bg-gray-200 rounded"
+                              >
+                                {expandedTasks.has(task.id) ? (
+                                  <ChevronDown className="w-3 h-3" />
+                                ) : (
+                                  <ChevronUp className="w-3 h-3" />
+                                )}
+                              </button>
+                            )}
+                            <Typography 
+                              variant="body2" 
+                              className={cn(
+                                "text-gray-900",
+                                task.completed && "line-through"
+                              )}
+                            >
+                              {task.title}
+                            </Typography>
+                          </div>
+                          {task.description && (
+                            <Typography variant="caption" className="text-gray-500 ml-5">
+                              {task.description}
+                            </Typography>
+                          )}
+                        </div>
+                        
+                        {/* 우선순위 배지 */}
+                        <div className={cn(
+                          "flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-medium",
+                          getPriorityColor(task.priority)
+                        )}>
+                          {getPriorityIcon(task.priority)}
+                          <span className="hidden sm:inline">
+                            {task.priority === 'urgent' && '긴급'}
+                            {task.priority === 'high' && '높음'}
+                            {task.priority === 'medium' && '보통'}
+                            {task.priority === 'low' && '낮음'}
+                          </span>
+                        </div>
+                      </div>
+                      
+                      {/* 서브태스크 */}
+                      {expandedTasks.has(task.id) && task.subtasks && task.subtasks.length > 0 && (
+                        <div className="ml-6 mt-2 space-y-1">
+                          {task.subtasks.map(subtask => (
+                            <div key={subtask.id} className="flex items-center gap-2">
+                              <button
+                                onClick={() => toggleSubtask(task.id, subtask.id)}
+                                className="flex-shrink-0"
+                              >
+                                {subtask.completed ? (
+                                  <CheckCircle2 className="w-3 h-3 text-green-500" />
+                                ) : (
+                                  <Circle className="w-3 h-3 text-gray-400 hover:text-gray-600" />
+                                )}
+                              </button>
+                              <Typography
+                                variant="caption"
+                                className={cn(
+                                  "text-gray-700",
+                                  subtask.completed && "line-through text-gray-500"
+                                )}
+                              >
+                                {subtask.title}
+                              </Typography>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      
+                      {/* 메타 정보 */}
+                      <div className="flex items-center gap-3 mt-1">
+                        {task.projectName && (
+                          <span className="text-xs text-gray-500">
+                            {task.projectName}
+                          </span>
+                        )}
+                        {task.dueDate && (
+                          <span className={cn(
+                            "flex items-center gap-1 text-xs",
+                            new Date(task.dueDate) < new Date() && !task.completed
+                              ? widgetColors.status.error.text
+                              : widgetColors.text.tertiary
+                          )}>
+                            <Calendar className="w-3 h-3" />
+                            {new Date(task.dueDate).toLocaleDateString('ko-KR', {
+                              month: 'short',
+                              day: 'numeric'
+                            })}
+                          </span>
+                        )}
+                        {task.tags && task.tags.length > 0 && (
+                          <div className="flex gap-1">
+                            {task.tags.map(tag => (
+                              <span
+                                key={tag}
+                                className="px-1.5 py-0.5 text-xs bg-gray-100 text-gray-600 rounded"
+                              >
+                                {tag}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* 작업 액션 (호버 시 표시) */}
+                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button
+                        onClick={() => deleteTask(task.id)}
+                        className={cn("p-1 transition-colors", widgetColors.icon.muted, "hover:" + widgetColors.status.error.text)}
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        ) : (
+          // 칸반 보드 뷰
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragStart={handleDragStart}
+            onDragEnd={handleDragEnd}
+            onDragOver={handleDragOver}
+          >
+            <div className="flex gap-3 h-full overflow-x-auto pb-2">
+              {(['todo', 'in-progress', 'review', 'done'] as const).map(status => {
+                const columnTasks = filteredAndSortedTasks.filter(task => 
+                  task.status === status || (!task.status && status === 'todo')
+                )
+                
+                return (
+                  <div
+                    key={status}
+                    className="flex-1 min-w-[250px] flex flex-col"
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <Typography variant="body2" className="font-medium">
+                        {status === 'todo' && '할 일'}
+                        {status === 'in-progress' && '진행 중'}
+                        {status === 'review' && '검토'}
+                        {status === 'done' && '완료'}
+                      </Typography>
+                      <span className="text-xs text-gray-500 px-1.5 py-0.5 bg-gray-100 rounded">
+                        {columnTasks.length}
+                      </span>
                     </div>
                     
-                    {/* 우선순위 배지 */}
-                    <div className={cn(
-                      "flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-medium",
-                      getPriorityColor(task.priority)
-                    )}>
-                      {getPriorityIcon(task.priority)}
-                      <span className="hidden sm:inline">
-                        {task.priority === 'urgent' && '긴급'}
-                        {task.priority === 'high' && '높음'}
-                        {task.priority === 'medium' && '보통'}
-                        {task.priority === 'low' && '낮음'}
-                      </span>
-                    </div>
-                  </div>
-                  
-                  {/* 메타 정보 */}
-                  <div className="flex items-center gap-3 mt-1">
-                    {task.projectName && (
-                      <span className="text-xs text-gray-500">
-                        {task.projectName}
-                      </span>
-                    )}
-                    {task.dueDate && (
-                      <span className={cn(
-                        "flex items-center gap-1 text-xs",
-                        new Date(task.dueDate) < new Date() && !task.completed
-                          ? widgetColors.status.error.text
-                          : widgetColors.text.tertiary
-                      )}>
-                        <Calendar className="w-3 h-3" />
-                        {new Date(task.dueDate).toLocaleDateString('ko-KR', {
-                          month: 'short',
-                          day: 'numeric'
-                        })}
-                      </span>
-                    )}
-                    {task.tags && task.tags.length > 0 && (
-                      <div className="flex gap-1">
-                        {task.tags.map(tag => (
-                          <span
-                            key={tag}
-                            className="px-1.5 py-0.5 text-xs bg-gray-100 text-gray-600 rounded"
-                          >
-                            {tag}
-                          </span>
-                        ))}
+                    <SortableContext
+                      items={columnTasks.map(t => t.id)}
+                      strategy={verticalListSortingStrategy}
+                    >
+                      <div
+                        id={status}
+                        className="flex-1 space-y-2 p-2 bg-gray-50 rounded-lg overflow-y-auto"
+                      >
+                        {columnTasks.length === 0 ? (
+                          <div className="text-center py-4">
+                            <Typography variant="caption" className="text-gray-400">
+                              작업 없음
+                            </Typography>
+                          </div>
+                        ) : (
+                          columnTasks.map(task => (
+                            <KanbanCard
+                              key={task.id}
+                              task={task}
+                              onToggleComplete={toggleTaskComplete}
+                              onToggleSubtask={toggleSubtask}
+                              onDelete={deleteTask}
+                              getPriorityColor={getPriorityColor}
+                              getPriorityIcon={getPriorityIcon}
+                            />
+                          ))
+                        )}
                       </div>
-                    )}
+                    </SortableContext>
                   </div>
+                )
+              })}
+            </div>
+            
+            <DragOverlay>
+              {activeId ? (
+                <div className="bg-white shadow-lg rounded-lg p-3 opacity-80">
+                  <Typography variant="body2">
+                    {tasks.find(t => t.id === activeId)?.title}
+                  </Typography>
                 </div>
-
-                {/* 작업 액션 (호버 시 표시) */}
-                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <button
-                    onClick={() => deleteTask(task.id)}
-                    className={cn("p-1 transition-colors", widgetColors.icon.muted, "hover:" + widgetColors.status.error.text)}
-                  >
-                    <Trash2 className="w-3 h-3" />
-                  </button>
-                </div>
-              </div>
-            ))
-          )}
-        </div>
+              ) : null}
+            </DragOverlay>
+          </DndContext>
+        )}
       </div>
     </Card>
   )

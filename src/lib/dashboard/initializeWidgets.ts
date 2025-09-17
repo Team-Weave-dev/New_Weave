@@ -87,6 +87,16 @@ const widgetMetadata: Record<WidgetType, WidgetMetadata> = {
     maxSize: { width: 3, height: 3 },
     tags: ['캘린더', '일정', '이벤트'],
   },
+  'calendar-view': {
+    type: 'calendar-view',
+    name: '캘린더 뷰',
+    description: '일정과 이벤트를 캘린더 뷰로 표시',
+    icon: 'calendar-days',
+    defaultSize: { width: 3, height: 3 },
+    minSize: { width: 2, height: 2 },
+    maxSize: { width: 4, height: 4 },
+    tags: ['캘린더', '일정', '뷰'],
+  },
   'recent-activity': {
     type: 'recent-activity',
     name: '최근 활동',
@@ -97,6 +107,96 @@ const widgetMetadata: Record<WidgetType, WidgetMetadata> = {
     maxSize: { width: 2, height: 3 },
     tags: ['활동', '히스토리', '로그'],
   },
+  'event-list': {
+    type: 'event-list',
+    name: '이벤트 목록',
+    description: '일정과 이벤트를 목록 형태로 표시',
+    icon: 'list',
+    defaultSize: { width: 2, height: 2 },
+    minSize: { width: 2, height: 1 },
+    maxSize: { width: 4, height: 3 },
+    tags: ['일정', '이벤트', '목록'],
+  },
+  'time-tracker': {
+    type: 'time-tracker',
+    name: '시간 추적기',
+    description: '프로젝트별 시간 추적 및 리포트',
+    icon: 'clock',
+    defaultSize: { width: 2, height: 2 },
+    minSize: { width: 2, height: 2 },
+    maxSize: { width: 3, height: 3 },
+    tags: ['시간', '추적', '프로젝트', '타이머'],
+  },
+  'pomodoro': {
+    type: 'pomodoro',
+    name: '뽀모도로 타이머',
+    description: '집중력 향상을 위한 뽀모도로 기법 타이머',
+    icon: 'target',
+    defaultSize: { width: 2, height: 2 },
+    minSize: { width: 1, height: 2 },
+    maxSize: { width: 3, height: 3 },
+    tags: ['뽀모도로', '타이머', '집중', '생산성'],
+  },
+  'quick-notes': {
+    type: 'quick-notes',
+    name: '빠른 메모',
+    description: '간단한 메모와 아이디어 저장',
+    icon: 'file-text',
+    defaultSize: { width: 1, height: 2 },
+    minSize: { width: 1, height: 1 },
+    maxSize: { width: 2, height: 3 },
+    tags: ['메모', '노트', '아이디어', '태그'],
+  },
+  'weather': {
+    type: 'weather',
+    name: '날씨 정보',
+    description: '현재 위치 날씨 및 5일 예보',
+    icon: 'cloud',
+    defaultSize: { width: 2, height: 2 },
+    minSize: { width: 2, height: 2 },
+    maxSize: { width: 3, height: 3 },
+    tags: ['날씨', '예보', '기온', '습도'],
+  },
+  'expense-tracker': {
+    type: 'expense-tracker',
+    name: '지출 추적기',
+    description: '카테고리별 지출 관리 및 예산 설정',
+    icon: 'wallet',
+    defaultSize: { width: 2, height: 2 },
+    minSize: { width: 2, height: 2 },
+    maxSize: { width: 3, height: 3 },
+    tags: ['지출', '예산', '금융', '차트'],
+  },
+  'cash-flow': {
+    type: 'cash-flow',
+    name: '현금 흐름',
+    description: '수입/지출 현금 흐름 시각화',
+    icon: 'trending-up',
+    defaultSize: { width: 3, height: 2 },
+    minSize: { width: 2, height: 2 },
+    maxSize: { width: 4, height: 3 },
+    tags: ['현금', '흐름', '수입', '지출', '예측'],
+  },
+  'client-overview': {
+    type: 'client-overview',
+    name: '고객 현황',
+    description: '고객별 프로젝트 및 매출 현황',
+    icon: 'users',
+    defaultSize: { width: 3, height: 2 },
+    minSize: { width: 2, height: 2 },
+    maxSize: { width: 4, height: 3 },
+    tags: ['고객', '매출', '프로젝트', '현황'],
+  },
+  'invoice-status': {
+    type: 'invoice-status',
+    name: '청구서 현황',
+    description: '청구서 및 미수금 관리',
+    icon: 'file-text',
+    defaultSize: { width: 2, height: 2 },
+    minSize: { width: 2, height: 2 },
+    maxSize: { width: 4, height: 3 },
+    tags: ['청구서', '미수금', '결제', '관리'],
+  },
   'custom': {
     type: 'custom',
     name: '커스텀 위젯',
@@ -106,6 +206,56 @@ const widgetMetadata: Record<WidgetType, WidgetMetadata> = {
     minSize: { width: 1, height: 1 },
     maxSize: { width: 4, height: 4 },
     tags: ['커스텀'],
+  },
+  'realtime-test': {
+    type: 'realtime-test',
+    name: '실시간 테스트',
+    description: '실시간 업데이트 시스템 테스트',
+    icon: 'activity',
+    defaultSize: { width: 2, height: 2 },
+    minSize: { width: 1, height: 2 },
+    maxSize: { width: 3, height: 3 },
+    tags: ['실시간', '테스트', '개발'],
+  },
+  'notification-center': {
+    type: 'notification-center',
+    name: '알림 센터',
+    description: '통합 알림 센터로 모든 알림을 관리',
+    icon: 'bell',
+    defaultSize: { width: 2, height: 2 },
+    minSize: { width: 2, height: 2 },
+    maxSize: { width: 3, height: 4 },
+    tags: ['알림', '통지', '커뮤니케이션'],
+  },
+  'team-status': {
+    type: 'team-status',
+    name: '팀원 상태',
+    description: '팀원의 온라인 상태, 작업 현황 및 일정',
+    icon: 'users',
+    defaultSize: { width: 2, height: 2 },
+    minSize: { width: 2, height: 2 },
+    maxSize: { width: 4, height: 3 },
+    tags: ['팀', '협업', '상태', '커뮤니케이션'],
+  },
+  'quick-links': {
+    type: 'quick-links',
+    name: '바로가기',
+    description: '자주 사용하는 링크를 추가하고 관리',
+    icon: 'link',
+    defaultSize: { width: 2, height: 2 },
+    minSize: { width: 1, height: 2 },
+    maxSize: { width: 3, height: 3 },
+    tags: ['바로가기', '링크', '즐겨찾기', '커뮤니케이션'],
+  },
+  'announcements': {
+    type: 'announcements',
+    name: '공지사항',
+    description: '중요한 공지사항을 확인하고 관리',
+    icon: 'megaphone',
+    defaultSize: { width: 2, height: 3 },
+    minSize: { width: 2, height: 2 },
+    maxSize: { width: 3, height: 4 },
+    tags: ['공지', '알림', '안내'],
   },
 };
 
@@ -174,7 +324,7 @@ export function initializeWidgetRegistry() {
   // 생산성 관련 위젯
   WidgetRegistry.register(
     'todo-list',
-    lazy(() => import('@/components/dashboard/widgets/TodoListWidget').then(m => ({ default: m.TodoListWidget }))),
+    lazy(() => import('@/components/dashboard/widgets/TodoListWidget')),
     widgetMetadata['todo-list'],
     'productivity',
     'medium'
@@ -182,7 +332,7 @@ export function initializeWidgetRegistry() {
 
   WidgetRegistry.register(
     'calendar',
-    lazy(() => import('@/components/dashboard/widgets/CalendarWidget').then(m => ({ default: m.CalendarWidget }))),
+    lazy(() => import('@/components/dashboard/widgets/CalendarViewWidget')),
     widgetMetadata['calendar'],
     'productivity',
     'medium'
@@ -196,6 +346,96 @@ export function initializeWidgetRegistry() {
     'low'
   );
 
+  // 이벤트 목록 위젯
+  WidgetRegistry.register(
+    'event-list',
+    lazy(() => import('@/components/dashboard/widgets/EventListWidget')),
+    {
+      type: 'event-list',
+      name: '이벤트 목록',
+      description: '일정과 이벤트를 목록 형태로 표시',
+      icon: 'list',
+      defaultSize: { width: 2, height: 2 },
+      minSize: { width: 2, height: 1 },
+      maxSize: { width: 4, height: 3 },
+      tags: ['일정', '이벤트', '목록'],
+    },
+    'productivity',
+    'medium'
+  );
+
+  // 시간 추적기 위젯
+  WidgetRegistry.register(
+    'time-tracker',
+    lazy(() => import('@/components/dashboard/widgets/TimeTrackerWidget').then(m => ({ default: m.TimeTrackerWidget }))),
+    widgetMetadata['time-tracker'],
+    'productivity',
+    'high'
+  );
+
+  // 뽀모도로 타이머 위젯
+  WidgetRegistry.register(
+    'pomodoro',
+    lazy(() => import('@/components/dashboard/widgets/PomodoroWidget').then(m => ({ default: m.PomodoroWidget }))),
+    widgetMetadata['pomodoro'],
+    'productivity',
+    'high'
+  );
+
+  // 빠른 메모 위젯
+  WidgetRegistry.register(
+    'quick-notes',
+    lazy(() => import('@/components/dashboard/widgets/QuickNotesWidget').then(m => ({ default: m.QuickNotesWidget }))),
+    widgetMetadata['quick-notes'],
+    'productivity',
+    'medium'
+  );
+
+  // 날씨 위젯
+  WidgetRegistry.register(
+    'weather',
+    lazy(() => import('@/components/dashboard/widgets/WeatherWidget').then(m => ({ default: m.WeatherWidget }))),
+    widgetMetadata['weather'],
+    'productivity',
+    'low'
+  );
+
+  // 지출 추적기 위젯
+  WidgetRegistry.register(
+    'expense-tracker',
+    lazy(() => import('@/components/dashboard/widgets/ExpenseTrackerWidget').then(m => ({ default: m.ExpenseTrackerWidget }))),
+    widgetMetadata['expense-tracker'],
+    'analytics',
+    'high'
+  );
+
+  // 현금 흐름 위젯
+  WidgetRegistry.register(
+    'cash-flow',
+    lazy(() => import('@/components/dashboard/widgets/analytics/CashFlowWidget').then(m => ({ default: m.CashFlowWidget }))),
+    widgetMetadata['cash-flow'],
+    'analytics',
+    'high'
+  );
+
+  // 고객 현황 위젯
+  WidgetRegistry.register(
+    'client-overview',
+    lazy(() => import('@/components/dashboard/widgets/ClientOverviewWidget')),
+    widgetMetadata['client-overview'],
+    'analytics',
+    'high'
+  );
+
+  // 청구서 현황 위젯
+  WidgetRegistry.register(
+    'invoice-status',
+    lazy(() => import('@/components/dashboard/widgets/InvoiceStatusWidget').then(m => ({ default: m.InvoiceStatusWidget }))),
+    widgetMetadata['invoice-status'],
+    'analytics',
+    'high'
+  );
+
   // 커스텀 위젯
   WidgetRegistry.register(
     'custom',
@@ -203,6 +443,51 @@ export function initializeWidgetRegistry() {
     widgetMetadata['custom'],
     'custom',
     'low'
+  );
+
+  // 실시간 테스트 위젯
+  WidgetRegistry.register(
+    'realtime-test',
+    lazy(() => import('@/components/dashboard/widgets/RealtimeTestWidget').then(m => ({ default: m.RealtimeTestWidget }))),
+    widgetMetadata['realtime-test'],
+    'custom',
+    'low'
+  );
+
+  // 알림 센터 위젯
+  WidgetRegistry.register(
+    'notification-center',
+    lazy(() => import('@/components/dashboard/widgets/NotificationCenterWidget')),
+    widgetMetadata['notification-center'],
+    'productivity',
+    'high'
+  );
+
+  // 팀원 상태 위젯
+  WidgetRegistry.register(
+    'team-status',
+    lazy(() => import('@/components/dashboard/widgets/TeamStatusWidget')),
+    widgetMetadata['team-status'],
+    'productivity',
+    'high'
+  );
+
+  // 바로가기 위젯
+  WidgetRegistry.register(
+    'quick-links',
+    lazy(() => import('@/components/dashboard/widgets/QuickLinksWidget').then(m => ({ default: m.QuickLinksWidget }))),
+    widgetMetadata['quick-links'],
+    'productivity',
+    'medium'
+  );
+
+  // 공지사항 위젯
+  WidgetRegistry.register(
+    'announcements',
+    lazy(() => import('@/components/dashboard/widgets/AnnouncementsWidget')),
+    widgetMetadata['announcements'],
+    'custom',
+    'medium'
   );
 
   // 레지스트리 상태 출력 (디버깅)
@@ -217,7 +502,7 @@ export function initializeWidgetRegistry() {
 }
 
 // 위젯 타입별 아이콘 매핑 (Lucide 아이콘 이름)
-export const widgetIcons: Record<WidgetType, string> = {
+export const widgetIcons: Record<string, string> = {
   'project-summary': 'Folder',
   'tax-deadline': 'Calendar',
   'revenue-chart': 'TrendingUp',
@@ -226,8 +511,22 @@ export const widgetIcons: Record<WidgetType, string> = {
   'tax-calculator': 'Calculator',
   'todo-list': 'ListChecks',
   'calendar': 'CalendarDays',
+  'event-list': 'List',
   'recent-activity': 'Activity',
+  'time-tracker': 'Clock',
+  'pomodoro': 'Target',
+  'quick-notes': 'FileText',
+  'weather': 'Cloud',
+  'expense-tracker': 'Wallet',
+  'cash-flow': 'TrendingUp',
+  'client-overview': 'Users',
+  'invoice-status': 'FileText',
   'custom': 'Box',
+  'realtime-test': 'Activity',
+  'notification-center': 'Bell',
+  'team-status': 'Users',
+  'quick-links': 'Link2',
+  'announcements': 'Megaphone',
 };
 
 // 카테고리별 색상 매핑

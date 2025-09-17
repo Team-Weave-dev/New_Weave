@@ -19,7 +19,7 @@ interface TodoListWidgetProps {
   className?: string
 }
 
-export function TodoListWidget({ className }: TodoListWidgetProps) {
+export default function TodoListWidget({ className }: TodoListWidgetProps) {
   // 임시 데이터 - 추후 실제 API 연동
   const [todos, setTodos] = useState<TodoItem[]>([
     {

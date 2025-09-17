@@ -116,10 +116,10 @@
   - props 전달 테스트
   - 상태 관리 통합 테스트
 
-### [ ] **P1-08**: 개발 환경 스토리북 설정
+### [x] **P1-08**: 개발 환경 스토리북 설정
 - **Title**: 컴포넌트 개발 및 테스트를 위한 스토리북 설정
 - **Description**: 위젯 및 레이아웃 컴포넌트 개발을 위한 스토리북 환경 구성
-- **Status**: `TODO`
+- **Status**: `DONE`
 - **Dependencies**: P1-01
 - **Priority**: `P2 (Medium)`
 - **Details**:
@@ -656,10 +656,10 @@
   - 공유 링크 생성 테스트
   - 권한 검증 테스트
 
-### [ ] **P6-08**: 전체 시스템 통합 테스트
+### [x] **P6-08**: 전체 시스템 통합 테스트
 - **Title**: E2E 테스트 및 최종 검증
 - **Description**: 전체 시스템의 통합 테스트 및 품질 검증
-- **Status**: `TODO`
+- **Status**: `DONE`
 - **Dependencies**: All previous tasks
 - **Priority**: `P0 (Critical)`
 - **Details**:

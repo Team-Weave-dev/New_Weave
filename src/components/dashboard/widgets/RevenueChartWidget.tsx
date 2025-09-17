@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { TrendingUp, DollarSign, ArrowUp, ArrowDown, Calendar, Filter } from 'lucide-react'
+import { TrendingUp, DollarSign, ArrowUp, ArrowDown, Calendar, Filter, Download, BarChart2, LineChart as LineChartIcon, Activity } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
 import Typography from '@/components/ui/Typography'
 import type { WidgetProps } from '@/types/dashboard'
@@ -29,10 +29,15 @@ interface RevenueData {
   expense: number
   profit: number
   date: Date
+  // 비교 데이터
+  prevRevenue?: number
+  prevExpense?: number
+  prevProfit?: number
 }
 
 type ChartType = 'line' | 'bar' | 'area'
 type PeriodType = 'month' | 'quarter' | 'year'
+type CompareMode = 'none' | 'previous' | 'year'
 
 export function RevenueChartWidget({
   id,
@@ -45,8 +50,10 @@ export function RevenueChartWidget({
   const [loading, setLoading] = useState(true)
   const [chartType, setChartType] = useState<ChartType>('area')
   const [period, setPeriod] = useState<PeriodType>('month')
+  const [compareMode, setCompareMode] = useState<CompareMode>('none')
   const [totalRevenue, setTotalRevenue] = useState(0)
   const [growthRate, setGrowthRate] = useState(0)
+  const [showComparison, setShowComparison] = useState(false)
   const supabase = getSupabaseClientSafe()
 
   useEffect(() => {
@@ -69,12 +76,19 @@ export function RevenueChartWidget({
           const revenue = Math.floor(35000000 + Math.random() * 15000000)
           const expense = Math.floor(revenue * (0.6 + Math.random() * 0.2))
           
+          // 비교 데이터 추가 (전년 동기 또는 전기)
+          const prevRevenue = Math.floor(30000000 + Math.random() * 12000000)
+          const prevExpense = Math.floor(prevRevenue * (0.6 + Math.random() * 0.2))
+          
           mockData.push({
             month: date.toLocaleDateString('ko-KR', { month: 'short' }),
             revenue,
             expense,
             profit: revenue - expense,
-            date
+            date,
+            prevRevenue,
+            prevExpense,
+            prevProfit: prevRevenue - prevExpense
           })
         }
 
@@ -111,7 +125,27 @@ export function RevenueChartWidget({
       setGrowthRate(12.5)
       setLoading(false)
     }
-  }, [isEditMode, period, supabase])
+  }, [isEditMode, period, compareMode, supabase])
+
+  // 데이터 내보내기 기능
+  const exportData = () => {
+    const csvContent = [
+      ['월', '매출', '지출', '순익'].join(','),
+      ...data.map(row => 
+        `${row.month},${row.revenue},${row.expense},${row.profit}`
+      )
+    ].join('\n')
+
+    const blob = new Blob([`\uFEFF${csvContent}`], { type: 'text/csv;charset=utf-8;' })
+    const link = document.createElement('a')
+    const url = URL.createObjectURL(blob)
+    link.setAttribute('href', url)
+    link.setAttribute('download', `revenue-chart-${new Date().toISOString().split('T')[0]}.csv`)
+    link.style.visibility = 'hidden'
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  }
 
   // 편집 모드 뷰
   if (isEditMode) {
@@ -213,6 +247,30 @@ export function RevenueChartWidget({
               name="순익"
               dot={{ r: 3 }}
             />
+            {compareMode !== 'none' && showComparison && (
+              <>
+                <Line 
+                  type="monotone" 
+                  dataKey="prevRevenue" 
+                  stroke="#60a5fa" 
+                  strokeWidth={1}
+                  strokeDasharray="5 5"
+                  name="전기 매출"
+                  dot={{ r: 2 }}
+                  opacity={0.6}
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="prevProfit" 
+                  stroke="#14b8a6" 
+                  strokeWidth={1}
+                  strokeDasharray="5 5"
+                  name="전기 순익"
+                  dot={{ r: 2 }}
+                  opacity={0.6}
+                />
+              </>
+            )}
           </LineChart>
         )
       case 'bar':
@@ -226,6 +284,13 @@ export function RevenueChartWidget({
             <Bar dataKey="revenue" fill="#60a5fa" name="매출" />
             <Bar dataKey="expense" fill="#ef4444" name="지출" />
             <Bar dataKey="profit" fill="#14b8a6" name="순익" />
+            {compareMode !== 'none' && showComparison && (
+              <>
+                <Bar dataKey="prevRevenue" fill="#60a5fa" name="전기 매출" opacity={0.3} />
+                <Bar dataKey="prevExpense" fill="#ef4444" name="전기 지출" opacity={0.3} />
+                <Bar dataKey="prevProfit" fill="#14b8a6" name="전기 순익" opacity={0.3} />
+              </>
+            )}
           </BarChart>
         )
       case 'area':
@@ -263,6 +328,30 @@ export function RevenueChartWidget({
               fill="url(#colorProfit)"
               name="순익"
             />
+            {compareMode !== 'none' && showComparison && (
+              <>
+                <Line 
+                  type="monotone" 
+                  dataKey="prevRevenue" 
+                  stroke="#60a5fa" 
+                  strokeWidth={1}
+                  strokeDasharray="5 5"
+                  name="전기 매출"
+                  dot={false}
+                  opacity={0.6}
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="prevProfit" 
+                  stroke="#14b8a6" 
+                  strokeWidth={1}
+                  strokeDasharray="5 5"
+                  name="전기 순익"
+                  dot={false}
+                  opacity={0.6}
+                />
+              </>
+            )}
           </AreaChart>
         )
     }
@@ -283,39 +372,75 @@ export function RevenueChartWidget({
           <select
             value={period}
             onChange={(e) => setPeriod(e.target.value as PeriodType)}
-            className="text-sm border border-gray-300 rounded px-2 py-1"
+            className="text-sm border border-gray-300 rounded px-2 py-1 bg-white"
           >
             <option value="month">월별</option>
             <option value="quarter">분기별</option>
             <option value="year">연도별</option>
           </select>
+          
+          {/* 비교 모드 선택 */}
+          <select
+            value={compareMode}
+            onChange={(e) => {
+              setCompareMode(e.target.value as CompareMode)
+              setShowComparison(e.target.value !== 'none')
+            }}
+            className="text-sm border border-gray-300 rounded px-2 py-1 bg-white"
+          >
+            <option value="none">비교 없음</option>
+            <option value="previous">전기 비교</option>
+            <option value="year">전년 비교</option>
+          </select>
+          
           {/* 차트 타입 선택 */}
           <div className="flex gap-1">
-            {(['area', 'line', 'bar'] as ChartType[]).map((type) => (
-              <button
-                key={type}
-                onClick={() => setChartType(type)}
-                className={cn(
-                  "p-1 rounded",
-                  chartType === type 
-                    ? "bg-blue-500 text-white" 
-                    : cn(widgetColors.bg.surfaceSecondary, widgetColors.text.secondary)
-                )}
-              >
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-                  {type === 'line' && <path d="M1 13L5 8L8 10L15 3" stroke="currentColor" fill="none" strokeWidth="2"/>}
-                  {type === 'bar' && (
-                    <>
-                      <rect x="2" y="8" width="3" height="5"/>
-                      <rect x="7" y="5" width="3" height="8"/>
-                      <rect x="12" y="3" width="3" height="10"/>
-                    </>
-                  )}
-                  {type === 'area' && <path d="M1 13L5 8L8 10L15 3V13H1Z" fillOpacity="0.5"/>}
-                </svg>
-              </button>
-            ))}
+            <button
+              onClick={() => setChartType('area')}
+              className={cn(
+                "p-1.5 rounded",
+                chartType === 'area' 
+                  ? "bg-blue-500 text-white" 
+                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+              )}
+              title="영역 차트"
+            >
+              <Activity className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => setChartType('line')}
+              className={cn(
+                "p-1.5 rounded",
+                chartType === 'line' 
+                  ? "bg-blue-500 text-white" 
+                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+              )}
+              title="선 차트"
+            >
+              <LineChartIcon className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => setChartType('bar')}
+              className={cn(
+                "p-1.5 rounded",
+                chartType === 'bar' 
+                  ? "bg-blue-500 text-white" 
+                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+              )}
+              title="막대 차트"
+            >
+              <BarChart2 className="w-4 h-4" />
+            </button>
           </div>
+          
+          {/* 내보내기 버튼 */}
+          <button
+            onClick={exportData}
+            className="p-1.5 rounded bg-gray-100 text-gray-600 hover:bg-gray-200"
+            title="CSV 내보내기"
+          >
+            <Download className="w-4 h-4" />
+          </button>
         </div>
       </div>
 

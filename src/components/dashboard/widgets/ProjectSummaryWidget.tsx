@@ -1,13 +1,27 @@
 'use client'
 
 import React, { useEffect, useState } from 'react'
-import { Briefcase, TrendingUp, Clock, CheckCircle } from 'lucide-react'
+import { Briefcase, TrendingUp, Clock, CheckCircle, Calendar, Users, Flag, AlertCircle } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card'
 import Typography from '@/components/ui/Typography'
 import type { WidgetProps } from '@/types/dashboard'
 import { getSupabaseClientSafe } from '@/lib/supabase/client'
 import { cn } from '@/lib/utils'
 import { widgetColors, widgetCategoryColors, gradients } from '@/lib/dashboard/widget-colors'
+
+interface TeamMember {
+  id: string
+  name: string
+  avatar?: string
+  role?: string
+}
+
+interface Milestone {
+  id: string
+  name: string
+  date: string
+  status: 'completed' | 'current' | 'upcoming'
+}
 
 interface ProjectSummary {
   total: number
@@ -22,6 +36,9 @@ interface ProjectSummary {
     status: string
     progress: number
     client: string
+    teamMembers?: TeamMember[]
+    milestones?: Milestone[]
+    deadline?: string
   }>
 }
 
@@ -57,11 +74,74 @@ export function ProjectSummaryWidget({
             totalRevenue: 45000000,
             averageProgress: 68,
             recentProjects: [
-              { id: '1', name: '웹사이트 리뉴얼', status: 'in_progress', progress: 75, client: 'A사' },
-              { id: '2', name: '모바일 앱 개발', status: 'in_progress', progress: 40, client: 'B사' },
-              { id: '3', name: '데이터 분석 시스템', status: 'completed', progress: 100, client: 'C사' },
-              { id: '4', name: 'ERP 시스템 구축', status: 'in_progress', progress: 60, client: 'D사' },
-              { id: '5', name: 'UI/UX 디자인', status: 'on_hold', progress: 30, client: 'E사' }
+              { 
+                id: '1', 
+                name: '웹사이트 리뉴얼', 
+                status: 'in_progress', 
+                progress: 75, 
+                client: 'A사',
+                deadline: '2025-02-28',
+                teamMembers: [
+                  { id: 't1', name: '김개발', role: '프론트엔드' },
+                  { id: 't2', name: '이디자인', role: 'UI/UX' },
+                  { id: 't3', name: '박백엔드', role: '백엔드' }
+                ],
+                milestones: [
+                  { id: 'm1', name: '기획 완료', date: '2025-01-15', status: 'completed' },
+                  { id: 'm2', name: '디자인 완료', date: '2025-02-01', status: 'current' },
+                  { id: 'm3', name: '개발 완료', date: '2025-02-20', status: 'upcoming' },
+                  { id: 'm4', name: '배포', date: '2025-02-28', status: 'upcoming' }
+                ]
+              },
+              { 
+                id: '2', 
+                name: '모바일 앱 개발', 
+                status: 'in_progress', 
+                progress: 40, 
+                client: 'B사',
+                deadline: '2025-03-15',
+                teamMembers: [
+                  { id: 't4', name: '최모바일', role: '모바일 개발' },
+                  { id: 't5', name: '정서버', role: '서버 개발' }
+                ],
+                milestones: [
+                  { id: 'm5', name: 'MVP 개발', date: '2025-02-10', status: 'current' },
+                  { id: 'm6', name: '베타 테스트', date: '2025-03-01', status: 'upcoming' }
+                ]
+              },
+              { 
+                id: '3', 
+                name: '데이터 분석 시스템', 
+                status: 'completed', 
+                progress: 100, 
+                client: 'C사',
+                teamMembers: [
+                  { id: 't6', name: '강데이터', role: '데이터 분석' }
+                ]
+              },
+              { 
+                id: '4', 
+                name: 'ERP 시스템 구축', 
+                status: 'in_progress', 
+                progress: 60, 
+                client: 'D사',
+                deadline: '2025-04-30',
+                teamMembers: [
+                  { id: 't7', name: '송기획', role: 'PM' },
+                  { id: 't8', name: '한개발', role: '풀스택' },
+                  { id: 't9', name: '오운영', role: 'DevOps' }
+                ]
+              },
+              { 
+                id: '5', 
+                name: 'UI/UX 디자인', 
+                status: 'on_hold', 
+                progress: 30, 
+                client: 'E사',
+                teamMembers: [
+                  { id: 't10', name: '윤디자인', role: 'UI/UX' }
+                ]
+              }
             ]
           })
           setLoading(false)
@@ -134,11 +214,74 @@ export function ProjectSummaryWidget({
           totalRevenue: 45000000,
           averageProgress: 68,
           recentProjects: [
-            { id: '1', name: '웹사이트 리뉴얼', status: 'in_progress', progress: 75, client: 'A사' },
-            { id: '2', name: '모바일 앱 개발', status: 'in_progress', progress: 40, client: 'B사' },
-            { id: '3', name: '데이터 분석 시스템', status: 'completed', progress: 100, client: 'C사' },
-            { id: '4', name: 'ERP 시스템 구축', status: 'in_progress', progress: 60, client: 'D사' },
-            { id: '5', name: 'UI/UX 디자인', status: 'on_hold', progress: 30, client: 'E사' }
+            { 
+              id: '1', 
+              name: '웹사이트 리뉴얼', 
+              status: 'in_progress', 
+              progress: 75, 
+              client: 'A사',
+              deadline: '2025-02-28',
+              teamMembers: [
+                { id: 't1', name: '김개발', role: '프론트엔드' },
+                { id: 't2', name: '이디자인', role: 'UI/UX' },
+                { id: 't3', name: '박백엔드', role: '백엔드' }
+              ],
+              milestones: [
+                { id: 'm1', name: '기획 완료', date: '2025-01-15', status: 'completed' },
+                { id: 'm2', name: '디자인 완료', date: '2025-02-01', status: 'current' },
+                { id: 'm3', name: '개발 완료', date: '2025-02-20', status: 'upcoming' },
+                { id: 'm4', name: '배포', date: '2025-02-28', status: 'upcoming' }
+              ]
+            },
+            { 
+              id: '2', 
+              name: '모바일 앱 개발', 
+              status: 'in_progress', 
+              progress: 40, 
+              client: 'B사',
+              deadline: '2025-03-15',
+              teamMembers: [
+                { id: 't4', name: '최모바일', role: '모바일 개발' },
+                { id: 't5', name: '정서버', role: '서버 개발' }
+              ],
+              milestones: [
+                { id: 'm5', name: 'MVP 개발', date: '2025-02-10', status: 'current' },
+                { id: 'm6', name: '베타 테스트', date: '2025-03-01', status: 'upcoming' }
+              ]
+            },
+            { 
+              id: '3', 
+              name: '데이터 분석 시스템', 
+              status: 'completed', 
+              progress: 100, 
+              client: 'C사',
+              teamMembers: [
+                { id: 't6', name: '강데이터', role: '데이터 분석' }
+              ]
+            },
+            { 
+              id: '4', 
+              name: 'ERP 시스템 구축', 
+              status: 'in_progress', 
+              progress: 60, 
+              client: 'D사',
+              deadline: '2025-04-30',
+              teamMembers: [
+                { id: 't7', name: '송기획', role: 'PM' },
+                { id: 't8', name: '한개발', role: '풀스택' },
+                { id: 't9', name: '오운영', role: 'DevOps' }
+              ]
+            },
+            { 
+              id: '5', 
+              name: 'UI/UX 디자인', 
+              status: 'on_hold', 
+              progress: 30, 
+              client: 'E사',
+              teamMembers: [
+                { id: 't10', name: '윤디자인', role: 'UI/UX' }
+              ]
+            }
           ]
         })
       } finally {
@@ -287,21 +430,53 @@ export function ProjectSummaryWidget({
         </div>
       </div>
 
-      {/* 평균 진행률 - 깔끔한 프로그레스 바 */}
-      <div className="mb-3 sm:mb-4">
-        <div className="flex justify-between mb-1.5 sm:mb-2">
-          <Typography variant="body2" className={cn("text-xs sm:text-sm", widgetColors.text.secondary, "font-medium")}>
-            평균 진행률
-          </Typography>
-          <Typography variant="body2" className="font-bold text-xs sm:text-sm text-[var(--color-brand-primary-end)]">
-            {data.averageProgress}%
-          </Typography>
+      {/* 평균 진행률 - 개선된 원형 프로그레스바 */}
+      <div className="mb-3 sm:mb-4 flex items-center gap-3">
+        <div className="flex-1">
+          <div className="flex justify-between mb-1.5 sm:mb-2">
+            <Typography variant="body2" className={cn("text-xs sm:text-sm", widgetColors.text.secondary, "font-medium")}>
+              평균 진행률
+            </Typography>
+            <Typography variant="body2" className="font-bold text-xs sm:text-sm text-[var(--color-brand-primary-end)]">
+              {data.averageProgress}%
+            </Typography>
+          </div>
+          <div className="w-full bg-gray-100 rounded-full h-2 sm:h-2.5 overflow-hidden">
+            <div
+              className="h-full rounded-full transition-all duration-500 ease-out bg-[var(--color-brand-primary-end)]"
+              style={{ width: `${data.averageProgress}%` }}
+            />
+          </div>
         </div>
-        <div className="w-full bg-gray-100 rounded-full h-2 sm:h-2.5 overflow-hidden">
-          <div
-            className="h-full rounded-full transition-all duration-500 ease-out bg-[var(--color-brand-primary-end)]"
-            style={{ width: `${data.averageProgress}%` }}
-          />
+        {/* 원형 프로그레스 */}
+        <div className="relative w-12 h-12 sm:w-14 sm:h-14">
+          <svg className="w-full h-full -rotate-90">
+            <circle
+              cx="50%"
+              cy="50%"
+              r="45%"
+              stroke="var(--color-brand-primary-start)"
+              strokeWidth="3"
+              fill="none"
+              opacity="0.2"
+            />
+            <circle
+              cx="50%"
+              cy="50%"
+              r="45%"
+              stroke="var(--color-brand-primary-end)"
+              strokeWidth="3"
+              fill="none"
+              strokeLinecap="round"
+              strokeDasharray={`${data.averageProgress * 1.25} 125`}
+              className="transition-all duration-500"
+            />
+          </svg>
+          <div className="absolute inset-0 flex items-center justify-center">
+            <Typography variant="caption" className="font-bold text-[10px] sm:text-xs text-[var(--color-brand-primary-end)]">
+              {data.averageProgress}%
+            </Typography>
+          </div>
         </div>
       </div>
 
@@ -315,37 +490,113 @@ export function ProjectSummaryWidget({
             {data.recentProjects.map((project) => (
               <div
                 key={project.id}
-                className="flex items-center justify-between p-2 sm:p-3 bg-gray-50 rounded-lg border border-gray-200 hover:shadow-sm hover:border-[var(--color-brand-primary-end)] transition-all cursor-pointer"
+                className="p-2 sm:p-3 bg-gray-50 rounded-lg border border-gray-200 hover:shadow-sm hover:border-[var(--color-brand-primary-end)] transition-all cursor-pointer"
               >
-                <div className="flex-1 min-w-0">
-                  <Typography variant="body2" className={cn("text-sm sm:text-base", widgetColors.text.primary, "font-semibold truncate")}>
-                    {project.name}
-                  </Typography>
-                  <Typography variant="caption" className={cn("text-xs sm:text-sm", widgetColors.text.tertiary, "truncate")}>
-                    {project.client}
-                  </Typography>
+                <div className="flex items-start justify-between mb-2">
+                  <div className="flex-1 min-w-0">
+                    <Typography variant="body2" className={cn("text-sm sm:text-base", widgetColors.text.primary, "font-semibold truncate")}>
+                      {project.name}
+                    </Typography>
+                    <Typography variant="caption" className={cn("text-xs sm:text-sm", widgetColors.text.tertiary, "truncate")}>
+                      {project.client}
+                    </Typography>
+                  </div>
+                  <div className="flex items-center gap-2 ml-2">
+                    <span className={cn(
+                      "text-[10px] sm:text-xs px-2 py-1 sm:px-3 sm:py-1.5 rounded-full font-medium",
+                      getStatusColor(project.status)
+                    )}>
+                      {getStatusLabel(project.status)}
+                    </span>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2 ml-2">
-                  <span className={cn(
-                    "text-[10px] sm:text-xs px-2 py-1 sm:px-3 sm:py-1.5 rounded-full font-medium",
-                    getStatusColor(project.status)
-                  )}>
-                    {getStatusLabel(project.status)}
-                  </span>
-                  {project.status === 'in_progress' && (
-                    <div className="flex items-center gap-1">
-                      <div className="w-8 h-1 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                
+                {/* 진행률 표시 */}
+                {project.status === 'in_progress' && (
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="flex-1">
+                      <div className="w-full h-1.5 bg-gray-200 rounded-full overflow-hidden">
                         <div 
-                          className="h-full bg-[var(--color-brand-primary-end)] rounded-full"
+                          className="h-full bg-[var(--color-brand-primary-end)] rounded-full transition-all"
                           style={{ width: `${project.progress}%` }}
                         />
                       </div>
-                      <Typography variant="caption" className="font-medium text-[10px] sm:text-xs text-[var(--color-brand-primary-end)] min-w-[2rem] sm:min-w-[2.5rem] text-right">
-                        {project.progress}%
+                    </div>
+                    <Typography variant="caption" className="font-medium text-[10px] sm:text-xs text-[var(--color-brand-primary-end)] min-w-[2rem] text-right">
+                      {project.progress}%
+                    </Typography>
+                  </div>
+                )}
+                
+                {/* 팀원 아바타 */}
+                {project.teamMembers && project.teamMembers.length > 0 && (
+                  <div className="flex items-center gap-2 mb-2">
+                    <Users className="w-3 h-3 text-gray-400" />
+                    <div className="flex -space-x-2">
+                      {project.teamMembers.slice(0, 3).map((member) => (
+                        <div
+                          key={member.id}
+                          className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-gradient-to-r from-[var(--color-brand-primary-start)] to-[var(--color-brand-primary-end)] flex items-center justify-center text-white text-[10px] font-medium border-2 border-white"
+                          title={`${member.name} - ${member.role}`}
+                        >
+                          {member.name.substring(0, 1)}
+                        </div>
+                      ))}
+                      {project.teamMembers.length > 3 && (
+                        <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-gray-300 flex items-center justify-center text-gray-600 text-[10px] font-medium border-2 border-white">
+                          +{project.teamMembers.length - 3}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+                
+                {/* 마일스톤 타임라인 */}
+                {project.milestones && project.milestones.length > 0 && (
+                  <div className="mt-2">
+                    <div className="flex items-center gap-1 mb-1">
+                      <Flag className="w-3 h-3 text-gray-400" />
+                      <Typography variant="caption" className="text-[10px] sm:text-xs text-gray-500">
+                        마일스톤
                       </Typography>
                     </div>
-                  )}
-                </div>
+                    <div className="relative">
+                      <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-gray-200" />
+                      <div className="space-y-1 pl-3">
+                        {project.milestones.slice(0, 2).map((milestone, idx) => (
+                          <div key={milestone.id} className="flex items-center gap-2">
+                            <div className={cn(
+                              "w-2 h-2 rounded-full -ml-[13px] border-2 border-white",
+                              milestone.status === 'completed' ? 'bg-green-500' :
+                              milestone.status === 'current' ? 'bg-blue-500' : 'bg-gray-300'
+                            )} />
+                            <Typography variant="caption" className="text-[10px] text-gray-600 truncate">
+                              {milestone.name}
+                            </Typography>
+                            <Typography variant="caption" className="text-[9px] text-gray-400">
+                              {new Date(milestone.date).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })}
+                            </Typography>
+                          </div>
+                        ))}
+                        {project.milestones.length > 2 && (
+                          <Typography variant="caption" className="text-[9px] text-gray-400 pl-2">
+                            +{project.milestones.length - 2} more
+                          </Typography>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+                
+                {/* 마감일 표시 */}
+                {project.deadline && (
+                  <div className="flex items-center gap-1 mt-2">
+                    <Calendar className="w-3 h-3 text-gray-400" />
+                    <Typography variant="caption" className="text-[10px] text-gray-500">
+                      마감: {new Date(project.deadline).toLocaleDateString('ko-KR')}
+                    </Typography>
+                  </div>
+                )}
               </div>
             ))}
           </div>

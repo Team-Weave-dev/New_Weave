@@ -11,7 +11,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 **대시보드 위젯 시스템 개선** - [`docs/dashboard-widget-architecture-improvements.md`](./docs/dashboard-widget-architecture-improvements.md) 참조
 
 ### TASK 작업 규칙
-1. **TASK 문서 확인**: `docs/dashboard-widget-improvement-tasks.md`의 태스크 목록 참조
+1. **TASK 문서 확인**: `docs/dashboard-widget-improvement-tasks.md`의 태스크 목록 참조  ⚠️ **현재 작업 문서**
 2. **순차적 진행**: Task ID 순서대로 작업 (P1-01부터 시작)
 3. **완료 표시**: 각 태스크 완료 시 체크박스 `[x]` 표시
 4. **E2E 테스트**: 각 태스크 완료 후 Playwright MCP로 E2E 테스트 실행
@@ -249,6 +249,7 @@ export async function POST(request) {
 - 오류 발견 시 즉시 수정 후 재테스트
 
 ## 📚 참고 문서
-- **태스크 목록**: [`docs/dashboard-widget-tasks.md`](./docs/dashboard-widget-tasks.md)
+- **현재 작업 태스크**: [`docs/dashboard-widget-improvement-tasks.md`](./docs/dashboard-widget-improvement-tasks.md) ⚠️ **이 문서의 태스크를 진행 중**
+- **구 태스크 목록 (완료)**: [`docs/dashboard-widget-tasks.md`](./docs/dashboard-widget-tasks.md) - Phase 1-6 모두 완료
 - **시스템 설계**: [`docs/dashboard-widget-system-design.md`](./docs/dashboard-widget-system-design.md)
 - **기술 스택**: Next.js 14, TypeScript, Tailwind CSS, @dnd-kit, Zustand

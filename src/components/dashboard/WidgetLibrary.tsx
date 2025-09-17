@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useMemo, useEffect, Suspense, lazy } from 'react'
-import { X, Search, Plus, Grid3x3, Briefcase, Calculator, TrendingUp, CheckSquare, Package, Folder, Calendar, BarChart3, Box, Eye, EyeOff, Info } from 'lucide-react'
+import { X, Search, Plus, Grid3x3, Briefcase, Calculator, TrendingUp, CheckSquare, Package, Folder, Calendar, BarChart3, Box, Eye, EyeOff, Info, Users, Cloud, FileText, Wallet, Clock, Target, List } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
 import Typography from '@/components/ui/Typography'
 import Button from '@/components/ui/Button'
@@ -38,11 +38,22 @@ const categoryLabels: Record<WidgetCategory, string> = {
 const widgetIcons: Record<string, React.ReactNode> = {
   folder: <Folder className="w-8 h-8" />,
   calendar: <Calendar className="w-8 h-8" />,
+  'calendar-days': <Calendar className="w-8 h-8" />,
   chart: <TrendingUp className="w-8 h-8" />,
   'chart-bar': <BarChart3 className="w-8 h-8" />,
   tasks: <CheckSquare className="w-8 h-8" />,
+  'list-check': <CheckSquare className="w-8 h-8" />,
   calculator: <Calculator className="w-8 h-8" />,
-  box: <Box className="w-8 h-8" />
+  activity: <TrendingUp className="w-8 h-8" />,
+  box: <Box className="w-8 h-8" />,
+  users: <Users className="w-8 h-8" />,
+  cloud: <Cloud className="w-8 h-8" />,
+  'file-text': <FileText className="w-8 h-8" />,
+  wallet: <Wallet className="w-8 h-8" />,
+  clock: <Clock className="w-8 h-8" />,
+  target: <Target className="w-8 h-8" />,
+  list: <List className="w-8 h-8" />,
+  'trending-up': <TrendingUp className="w-8 h-8" />
 }
 
 export function WidgetLibrary({ isOpen, onClose, onAddWidget }: WidgetLibraryProps) {
@@ -78,6 +89,19 @@ export function WidgetLibrary({ isOpen, onClose, onAddWidget }: WidgetLibraryPro
           else if (widget.metadata.name === '작업 추적기') widgetType = 'task-tracker'
           else if (widget.metadata.name === 'KPI 지표') widgetType = 'kpi-metrics'
           else if (widget.metadata.name === '세금 계산기') widgetType = 'tax-calculator'
+          else if (widget.metadata.name === '할 일 목록') widgetType = 'todo-list'
+          else if (widget.metadata.name === '캘린더') widgetType = 'calendar'
+          else if (widget.metadata.name === '이벤트 목록') widgetType = 'event-list'
+          else if (widget.metadata.name === '시간 추적기') widgetType = 'time-tracker'
+          else if (widget.metadata.name === '뽀모도로 타이머') widgetType = 'pomodoro'
+          else if (widget.metadata.name === '빠른 메모') widgetType = 'quick-notes'
+          else if (widget.metadata.name === '날씨 정보') widgetType = 'weather'
+          else if (widget.metadata.name === '지출 추적기') widgetType = 'expense-tracker'
+          else if (widget.metadata.name === '현금 흐름') widgetType = 'cash-flow' as WidgetType
+          else if (widget.metadata.name === '고객 현황') widgetType = 'client-overview' as WidgetType
+          else if (widget.metadata.name === '청구서 현황') widgetType = 'invoice-status' as WidgetType
+          else if (widget.metadata.name === '최근 활동') widgetType = 'recent-activity'
+          else if (widget.metadata.name === '커스텀 위젯') widgetType = 'custom'
           
           widgets.push({
             type: widgetType,

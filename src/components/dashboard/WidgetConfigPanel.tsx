@@ -1,11 +1,14 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { X } from 'lucide-react'
+import { X, Save, RotateCcw, Download, Upload } from 'lucide-react'
 import Button from '@/components/ui/Button'
 import Typography from '@/components/ui/Typography'
 import { useDashboardStore } from '@/lib/stores/useDashboardStore'
+import { widgetConfigManager } from '@/lib/dashboard/widget-config-manager'
+import { widgetEventBus, WidgetEventTypes } from '@/lib/dashboard/widget-event-bus'
 import type { WidgetType } from '@/types/dashboard'
+import type { WidgetConfig, WidgetSettings } from '@/lib/dashboard/widget-config-types'
 
 interface WidgetConfigPanelProps {
   widgetId: string
@@ -174,15 +177,37 @@ export function WidgetConfigPanel({ widgetId, isOpen, onClose }: WidgetConfigPan
   const { currentLayout, updateWidgetConfig } = useDashboardStore()
   const [config, setConfig] = useState<Record<string, any>>({})
   const [widgetType, setWidgetType] = useState<WidgetType | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
+  const [hasChanges, setHasChanges] = useState(false)
+  const [validationErrors, setValidationErrors] = useState<string[]>([])
 
   useEffect(() => {
     if (!currentLayout || !widgetId) return
 
-    const widget = currentLayout.widgets.find(w => w.id === widgetId)
-    if (!widget) return
+    const loadWidgetConfig = async () => {
+      setIsLoading(true)
+      
+      const widget = currentLayout.widgets.find(w => w.id === widgetId)
+      if (!widget) {
+        setIsLoading(false)
+        return
+      }
 
-    setWidgetType(widget.type as WidgetType)
-    setConfig(widget.config || {})
+      setWidgetType(widget.type as WidgetType)
+      
+      // 저장된 설정 로드 시도
+      const savedConfig = await widgetConfigManager.loadConfig(widgetId)
+      if (savedConfig) {
+        setConfig(savedConfig.settings.customSettings || {})
+      } else {
+        setConfig(widget.config || {})
+      }
+      
+      setIsLoading(false)
+      setHasChanges(false)
+    }
+
+    loadWidgetConfig()
   }, [currentLayout, widgetId])
 
   if (!isOpen || !widgetType) return null
@@ -195,11 +220,62 @@ export function WidgetConfigPanel({ widgetId, isOpen, onClose }: WidgetConfigPan
       ...prev,
       [key]: value
     }))
+    setHasChanges(true)
+    setValidationErrors([])
   }
 
-  const handleSave = () => {
-    updateWidgetConfig(widgetId, config)
-    onClose()
+  const handleSave = async () => {
+    if (!widgetType) return
+    
+    setIsLoading(true)
+    
+    try {
+      // WidgetConfig 형식으로 변환
+      const widgetConfig: WidgetConfig = {
+        id: widgetId,
+        type: widgetType,
+        settings: {
+          showHeader: true,
+          showFooter: false,
+          theme: 'default',
+          customSettings: config
+        },
+        metadata: {
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          version: '1.0.0'
+        }
+      }
+      
+      // 유효성 검증
+      const validation = await widgetConfigManager.validateConfig(widgetConfig)
+      if (!validation.isValid) {
+        setValidationErrors(validation.errors?.map(e => e.message) || [])
+        setIsLoading(false)
+        return
+      }
+      
+      // 설정 저장
+      await widgetConfigManager.saveConfig(widgetId, widgetConfig)
+      
+      // Store 업데이트
+      updateWidgetConfig(widgetId, config)
+      
+      // 이벤트 발행
+      widgetEventBus.emit({
+        type: WidgetEventTypes.STATE_CHANGE,
+        source: 'ConfigPanel',
+        data: { widgetId, config }
+      })
+      
+      setHasChanges(false)
+      onClose()
+    } catch (error) {
+      console.error('Failed to save config:', error)
+      setValidationErrors(['설정 저장에 실패했습니다'])
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   const handleCancel = () => {
@@ -207,7 +283,82 @@ export function WidgetConfigPanel({ widgetId, isOpen, onClose }: WidgetConfigPan
     if (widget) {
       setConfig(widget.config || {})
     }
+    setHasChanges(false)
+    setValidationErrors([])
     onClose()
+  }
+  
+  const handleReset = async () => {
+    if (!widgetType) return
+    
+    setIsLoading(true)
+    
+    try {
+      await widgetConfigManager.resetToDefault(widgetId)
+      const schema = widgetConfigSchemas[widgetType]
+      if (schema) {
+        const defaultConfig: Record<string, any> = {}
+        Object.entries(schema).forEach(([key, field]) => {
+          defaultConfig[key] = field.defaultValue
+        })
+        setConfig(defaultConfig)
+        setHasChanges(true)
+      }
+    } catch (error) {
+      console.error('Failed to reset config:', error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+  
+  const handleExport = async () => {
+    try {
+      const preset = await widgetConfigManager.exportPreset(
+        `${widgetType}_config`,
+        [widgetId],
+        { includeLayout: false }
+      )
+      
+      const dataStr = JSON.stringify(preset, null, 2)
+      const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr)
+      
+      const exportFileDefaultName = `widget_config_${widgetId}_${Date.now()}.json`
+      
+      const linkElement = document.createElement('a')
+      linkElement.setAttribute('href', dataUri)
+      linkElement.setAttribute('download', exportFileDefaultName)
+      linkElement.click()
+    } catch (error) {
+      console.error('Failed to export config:', error)
+    }
+  }
+  
+  const handleImport = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+    
+    setIsLoading(true)
+    
+    try {
+      const text = await file.text()
+      await widgetConfigManager.importPreset(text, {
+        validateBeforeImport: true,
+        preserveIds: true,
+        overwrite: true
+      })
+      
+      // 설정 다시 로드
+      const savedConfig = await widgetConfigManager.loadConfig(widgetId)
+      if (savedConfig) {
+        setConfig(savedConfig.settings.customSettings || {})
+        setHasChanges(true)
+      }
+    } catch (error) {
+      console.error('Failed to import config:', error)
+      setValidationErrors(['설정 가져오기에 실패했습니다'])
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   const renderField = (key: string, field: typeof schema[string]) => {
@@ -317,6 +468,65 @@ export function WidgetConfigPanel({ widgetId, isOpen, onClose }: WidgetConfigPan
         </div>
 
         <div className="p-4 space-y-4 max-h-[60vh] overflow-y-auto">
+          {/* 유효성 검증 오류 표시 */}
+          {validationErrors.length > 0 && (
+            <div className="p-3 bg-red-50 border border-red-200 rounded-md">
+              <Typography variant="body2" className="text-red-700">
+                {validationErrors.join(', ')}
+              </Typography>
+            </div>
+          )}
+          
+          {/* 설정 도구 */}
+          <div className="flex justify-between items-center pb-2 border-b">
+            <div className="flex gap-2">
+              <Button
+                onClick={handleReset}
+                variant="ghost"
+                size="sm"
+                disabled={isLoading}
+                className="text-xs"
+              >
+                <RotateCcw className="h-3 w-3 mr-1" />
+                초기화
+              </Button>
+              <Button
+                onClick={handleExport}
+                variant="ghost"
+                size="sm"
+                disabled={isLoading}
+                className="text-xs"
+              >
+                <Download className="h-3 w-3 mr-1" />
+                내보내기
+              </Button>
+              <label>
+                <input
+                  type="file"
+                  accept=".json"
+                  onChange={handleImport}
+                  className="hidden"
+                  id="import-config"
+                />
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  disabled={isLoading}
+                  className="text-xs cursor-pointer"
+                  onClick={() => document.getElementById('import-config')?.click()}
+                  type="button"
+                >
+                  <Upload className="h-3 w-3 mr-1" />
+                  가져오기
+                </Button>
+              </label>
+            </div>
+            {hasChanges && (
+              <span className="text-xs text-[var(--color-status-warning)]">
+                변경사항 있음
+              </span>
+            )}
+          </div>
           {Object.entries(schema).map(([key, field]) => (
             <div key={key} className="space-y-2">
               <Typography variant="body2" className="block text-sm font-medium text-[var(--color-gray-700)] dark:text-[var(--color-gray-300)]">
@@ -332,14 +542,26 @@ export function WidgetConfigPanel({ widgetId, isOpen, onClose }: WidgetConfigPan
             onClick={handleCancel}
             variant="outline"
             className="flex-1"
+            disabled={isLoading}
           >
             취소
           </Button>
           <Button
             onClick={handleSave}
             className="flex-1"
+            disabled={isLoading || !hasChanges}
           >
-            저장
+            {isLoading ? (
+              <span className="flex items-center justify-center">
+                <span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full mr-2" />
+                처리 중...
+              </span>
+            ) : (
+              <>
+                <Save className="h-4 w-4 mr-1" />
+                저장
+              </>
+            )}
           </Button>
         </div>
       </div>

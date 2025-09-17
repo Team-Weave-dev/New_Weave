@@ -20,9 +20,7 @@ export const RevenueChartWidget = lazy(() =>
 )
 
 export const TodoListWidget = lazy(() => 
-  import('./TodoListWidget').then(module => ({
-    default: module.TodoListWidget
-  }))
+  import('./TodoListWidget')
 )
 
 export const TaskTrackerWidget = lazy(() => 
@@ -58,5 +56,11 @@ export const RecentActivityWidget = lazy(() =>
 export const CustomWidget = lazy(() => 
   import('./CustomWidget').then(module => ({
     default: module.CustomWidget
+  }))
+)
+
+export const QuickNotesWidget = lazy(() => 
+  import('./QuickNotesWidget').then(module => ({
+    default: module.QuickNotesWidget
   }))
 )
