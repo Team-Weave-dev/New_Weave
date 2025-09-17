@@ -81,10 +81,10 @@
 
 ### ResizeHandle 통합
 
-- [ ] **[RESIZE-001]** ResizeHandle 컴포넌트 WidgetWrapper 통합
+- [x] **[RESIZE-001]** ResizeHandle 컴포넌트 WidgetWrapper 통합
   - **Title**: Integrate ResizeHandle to WidgetWrapper
   - **Description**: 기존 ResizeHandle 컴포넌트를 실제로 사용하도록 통합
-  - **Status**: TODO
+  - **Status**: DONE
   - **Dependencies**: COORD-001
   - **Priority**: P2 (High)
   - **Details**:

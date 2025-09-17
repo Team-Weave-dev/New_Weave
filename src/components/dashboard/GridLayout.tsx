@@ -107,6 +107,7 @@ export function GridLayout({
     <div
       ref={containerRef}
       className={cn(
+        'grid-layout-container',
         'dashboard-grid dashboard-grid-container grid w-full h-full auto-rows-fr',
         getGridClassName(gridSize),
         className

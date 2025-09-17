@@ -1,6 +1,6 @@
 'use client'
 
-import React, { ReactNode, useState, useCallback } from 'react'
+import React, { ReactNode, useState, useCallback, useRef, useEffect } from 'react'
 import { cn } from '@/lib/utils'
 import { useDashboardStore } from '@/lib/stores/useDashboardStore'
 import { 
@@ -18,6 +18,7 @@ import {
 } from 'lucide-react'
 import Button from '@/components/ui/Button'
 import { WidgetRegistry } from '@/lib/dashboard/WidgetRegistry'
+import { ResizeHandle } from './ResizeHandle'
 
 interface WidgetWrapperProps {
   id: string
@@ -59,6 +60,9 @@ export function WidgetWrapper({
   const [isHovered, setIsHovered] = useState(false)
   const [isFullscreen, setIsFullscreen] = useState(false)
   const [showSizeMenu, setShowSizeMenu] = useState(false)
+  const [isResizing, setIsResizing] = useState(false)
+  const [tempSize, setTempSize] = useState<{ width: number; height: number } | null>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
   
   const isSelected = selectedWidgetId === id
   
@@ -74,7 +78,28 @@ export function WidgetWrapper({
   
   // 현재 위젯 크기
   const currentWidget = currentLayout?.widgets.find(w => w.id === id)
-  const currentSize = currentWidget?.position || { width: 1, height: 1 }
+  const currentSize = tempSize || currentWidget?.position || { width: 1, height: 1 }
+  
+  // 그리드 셀 크기 계산
+  const [cellSize, setCellSize] = useState(0)
+  
+  useEffect(() => {
+    const calculateCellSize = () => {
+      if (containerRef.current) {
+        const parent = containerRef.current.closest('.grid-layout-container')
+        if (parent) {
+          const containerWidth = parent.clientWidth
+          const gap = 16 // Tailwind gap-4
+          const availableWidth = containerWidth - gap * (gridColumns - 1)
+          setCellSize(availableWidth / gridColumns)
+        }
+      }
+    }
+    
+    calculateCellSize()
+    window.addEventListener('resize', calculateCellSize)
+    return () => window.removeEventListener('resize', calculateCellSize)
+  }, [gridColumns])
   
   // 위젯 크기 타입 정의
   const sizeTypes = [
@@ -117,10 +142,111 @@ export function WidgetWrapper({
   }
 
   const handleSelect = () => {
-    if (isEditMode && !locked) {
+    if (isEditMode && !locked && !isResizing) {
       selectWidget(isSelected ? null : id)
     }
   }
+  
+  // 리사이즈 핸들러
+  const handleResize = useCallback((position: string) => (deltaX: number, deltaY: number) => {
+    if (!currentWidget || locked || !cellSize) return
+    
+    const gridDeltaX = Math.round(deltaX / cellSize)
+    const gridDeltaY = Math.round(deltaY / cellSize)
+    
+    let newWidth = currentWidget.position.width
+    let newHeight = currentWidget.position.height
+    let newX = currentWidget.position.x
+    let newY = currentWidget.position.y
+    
+    switch (position) {
+      case 'right':
+        newWidth = Math.max(minSize.width, Math.min(maxSize.width, currentWidget.position.width + gridDeltaX))
+        break
+      case 'left':
+        const potentialWidthLeft = currentWidget.position.width - gridDeltaX
+        if (potentialWidthLeft >= minSize.width && potentialWidthLeft <= maxSize.width) {
+          newWidth = potentialWidthLeft
+          newX = Math.max(0, currentWidget.position.x + gridDeltaX)
+        }
+        break
+      case 'bottom':
+        newHeight = Math.max(minSize.height, Math.min(maxSize.height, currentWidget.position.height + gridDeltaY))
+        break
+      case 'top':
+        const potentialHeightTop = currentWidget.position.height - gridDeltaY
+        if (potentialHeightTop >= minSize.height && potentialHeightTop <= maxSize.height) {
+          newHeight = potentialHeightTop
+          newY = Math.max(0, currentWidget.position.y + gridDeltaY)
+        }
+        break
+      case 'bottom-right':
+        newWidth = Math.max(minSize.width, Math.min(maxSize.width, currentWidget.position.width + gridDeltaX))
+        newHeight = Math.max(minSize.height, Math.min(maxSize.height, currentWidget.position.height + gridDeltaY))
+        break
+      case 'bottom-left':
+        const potentialWidthBL = currentWidget.position.width - gridDeltaX
+        if (potentialWidthBL >= minSize.width && potentialWidthBL <= maxSize.width) {
+          newWidth = potentialWidthBL
+          newX = Math.max(0, currentWidget.position.x + gridDeltaX)
+        }
+        newHeight = Math.max(minSize.height, Math.min(maxSize.height, currentWidget.position.height + gridDeltaY))
+        break
+      case 'top-right':
+        newWidth = Math.max(minSize.width, Math.min(maxSize.width, currentWidget.position.width + gridDeltaX))
+        const potentialHeightTR = currentWidget.position.height - gridDeltaY
+        if (potentialHeightTR >= minSize.height && potentialHeightTR <= maxSize.height) {
+          newHeight = potentialHeightTR
+          newY = Math.max(0, currentWidget.position.y + gridDeltaY)
+        }
+        break
+      case 'top-left':
+        const potentialWidthTL = currentWidget.position.width - gridDeltaX
+        const potentialHeightTL = currentWidget.position.height - gridDeltaY
+        if (potentialWidthTL >= minSize.width && potentialWidthTL <= maxSize.width) {
+          newWidth = potentialWidthTL
+          newX = Math.max(0, currentWidget.position.x + gridDeltaX)
+        }
+        if (potentialHeightTL >= minSize.height && potentialHeightTL <= maxSize.height) {
+          newHeight = potentialHeightTL
+          newY = Math.max(0, currentWidget.position.y + gridDeltaY)
+        }
+        break
+    }
+    
+    // 그리드 경계 체크
+    newWidth = Math.min(newWidth, gridColumns - newX)
+    newHeight = Math.min(newHeight, gridColumns - newY)
+    
+    // 임시 크기 업데이트 (실시간 프리뷰)
+    setTempSize({ width: newWidth, height: newHeight })
+    setIsResizing(true)
+    
+    // 실제 위젯 크기 업데이트
+    if (newX !== currentWidget.position.x || newY !== currentWidget.position.y) {
+      // 위치가 변경된 경우 (left, top 리사이즈)
+      const updatedWidget = {
+        ...currentWidget,
+        position: {
+          x: newX,
+          y: newY,
+          width: newWidth,
+          height: newHeight
+        }
+      }
+      const otherWidgets = currentLayout?.widgets.filter(w => w.id !== id) || []
+      const newWidgets = [...otherWidgets, updatedWidget]
+      // Store update logic would go here
+    } else {
+      // 크기만 변경된 경우
+      resizeWidget(id, { width: newWidth, height: newHeight })
+    }
+  }, [currentWidget, locked, cellSize, minSize, maxSize, gridColumns, resizeWidget, id, currentLayout])
+  
+  const handleResizeEnd = useCallback(() => {
+    setIsResizing(false)
+    setTempSize(null)
+  }, [])
 
   const handleFullscreenToggle = () => {
     setIsFullscreen(!isFullscreen)
@@ -141,14 +267,15 @@ export function WidgetWrapper({
 
   return (
     <div
+      ref={containerRef}
       className={cn(
         'relative h-full w-full overflow-hidden rounded-lg border bg-white transition-all duration-200',
         {
           'border-blue-500 shadow-lg': isSelected && isEditMode,
           'border-gray-200': !isSelected || !isEditMode,
           'opacity-50': isDragging,
-          'hover:shadow-md': isEditMode && !locked,
-          'cursor-move': isEditMode && !locked,
+          'hover:shadow-md': isEditMode && !locked && !isResizing,
+          'cursor-move': isEditMode && !locked && !isResizing,
           'fixed inset-4 z-50': isFullscreen,
         },
         className
@@ -360,6 +487,72 @@ export function WidgetWrapper({
         <div className="absolute bottom-2 right-2 z-10">
           <div className="bg-gray-600 text-white px-2 py-1 rounded text-xs font-medium opacity-50">
             {currentSizeType.label}
+          </div>
+        </div>
+      )}
+      
+      {/* 리사이즈 핸들 (편집 모드에서 선택된 위젯에만 표시) */}
+      {isEditMode && isSelected && !locked && (
+        <>
+          {/* 변 핸들 */}
+          <ResizeHandle
+            position="top"
+            onResize={handleResize('top')}
+            onResizeEnd={handleResizeEnd}
+            disabled={locked || !isEditMode}
+          />
+          <ResizeHandle
+            position="right"
+            onResize={handleResize('right')}
+            onResizeEnd={handleResizeEnd}
+            disabled={locked || !isEditMode}
+          />
+          <ResizeHandle
+            position="bottom"
+            onResize={handleResize('bottom')}
+            onResizeEnd={handleResizeEnd}
+            disabled={locked || !isEditMode}
+          />
+          <ResizeHandle
+            position="left"
+            onResize={handleResize('left')}
+            onResizeEnd={handleResizeEnd}
+            disabled={locked || !isEditMode}
+          />
+          
+          {/* 모서리 핸들 */}
+          <ResizeHandle
+            position="top-left"
+            onResize={handleResize('top-left')}
+            onResizeEnd={handleResizeEnd}
+            disabled={locked || !isEditMode}
+          />
+          <ResizeHandle
+            position="top-right"
+            onResize={handleResize('top-right')}
+            onResizeEnd={handleResizeEnd}
+            disabled={locked || !isEditMode}
+          />
+          <ResizeHandle
+            position="bottom-left"
+            onResize={handleResize('bottom-left')}
+            onResizeEnd={handleResizeEnd}
+            disabled={locked || !isEditMode}
+          />
+          <ResizeHandle
+            position="bottom-right"
+            onResize={handleResize('bottom-right')}
+            onResizeEnd={handleResizeEnd}
+            disabled={locked || !isEditMode}
+          />
+        </>
+      )}
+      
+      {/* 리사이징 중 크기 표시 */}
+      {isResizing && tempSize && (
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 pointer-events-none">
+          <div className="bg-blue-600 text-white px-3 py-2 rounded-lg shadow-lg font-mono text-sm">
+            {tempSize.width} × {tempSize.height}
           </div>
         </div>
       )}
