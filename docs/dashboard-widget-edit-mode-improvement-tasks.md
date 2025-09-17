@@ -28,10 +28,10 @@
     - E2E test: 브라우저 크기 변경 시 드래그 정확도 테스트
     - 모바일/태블릿/데스크톱 각각 테스트
 
-- [ ] **[COORD-002]** 그리드 좌표 변환 유틸리티 함수 구현
+- [x] **[COORD-002]** 그리드 좌표 변환 유틸리티 함수 구현
   - **Title**: Grid Coordinate Transformation Utilities
   - **Description**: 픽셀 좌표와 그리드 좌표 간 정확한 변환 함수
-  - **Status**: TODO
+  - **Status**: DONE
   - **Dependencies**: COORD-001
   - **Priority**: P1 (Critical)
   - **Details**:

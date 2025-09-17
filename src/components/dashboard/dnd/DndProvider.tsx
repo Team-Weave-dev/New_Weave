@@ -37,6 +37,11 @@ import {
   calculateWidgetSize,
   getGridColumns 
 } from '@/lib/dashboard/gridCalculations'
+import {
+  pixelToGridPrecise,
+  gridToPixelPrecise,
+  type GridConfig
+} from '@/lib/dashboard/gridCoordinates'
 
 interface DndProviderProps {
   children: ReactNode
@@ -61,6 +66,14 @@ export function DndProvider({ children }: DndProviderProps) {
     gap,
     padding
   })
+  
+  // 그리드 설정
+  const gridConfig: GridConfig = {
+    cellSize,
+    gap,
+    padding,
+    gridSize: currentLayout?.gridSize || '3x3'
+  }
   
   const isVisible = useLazyLoad(containerRef)
   
