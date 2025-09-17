@@ -37,7 +37,7 @@ export function SortableWidget({
     transform: CSS.Transform.toString(transform),
     transition: isDragging ? 'none' : transition, // 드래그 중에는 트랜지션 제거
     zIndex: isDragging ? 999 : undefined,
-    opacity: isDragging ? 0.8 : 1,
+    opacity: isDragging ? 0.3 : 1, // 드래그 중 원본 위젯 반투명 처리
     cursor: isDragging ? 'grabbing' : disabled ? 'default' : 'grab',
   }
 
@@ -48,6 +48,8 @@ export function SortableWidget({
     'aria-describedby': `${id}-description`,
     'aria-disabled': disabled,
     'aria-grabbed': isDragging ? true : false,
+    'aria-live': isDragging ? ('polite' as const) : undefined,
+    'aria-label': isDragging ? '위젯 이동 중' : '드래그 가능한 위젯',
     'tabIndex': disabled ? -1 : 0,
   }
 
@@ -58,9 +60,17 @@ export function SortableWidget({
       className={cn(
         'relative h-full w-full focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200',
         {
-          'scale-105 shadow-2xl': isDragging,
+          // 드래그 중 스타일
+          'widget-dragging': isDragging,
+          'shadow-2xl': isDragging,
+          // 드롭 가능 영역 스타일  
+          'widget-drop-zone': isOver && !isDragging,
           'ring-2 ring-green-500 ring-offset-2 bg-green-50': isOver && !isDragging,
+          // 호버 스타일
+          'widget-hoverable': !disabled && !isDragging,
           'hover:shadow-lg': !disabled && !isDragging,
+          // 정렬 중 스타일
+          'widget-sorting': isSorting,
           'transition-transform': isSorting,
         },
         className
@@ -68,9 +78,19 @@ export function SortableWidget({
       {...ariaProps}
       {...(disabled ? {} : { ...attributes, ...listeners })}
     >
-      {/* 드래그 시작 시 시각적 피드백 */}
+      {/* 드래그 중 원본 위젯 표시 */}
       {isDragging && (
-        <div className="absolute inset-0 border-2 border-blue-500 rounded-lg pointer-events-none animate-pulse" />
+        <>
+          {/* 점선 테두리 */}
+          <div className="absolute inset-0 border-2 border-dashed border-gray-400 rounded-lg pointer-events-none" />
+          
+          {/* "이동 중" 라벨 */}
+          <div className="absolute top-2 left-2 z-10 pointer-events-none">
+            <div className="bg-gray-800 text-white px-2 py-1 rounded text-xs font-medium shadow-lg">
+              이동 중
+            </div>
+          </div>
+        </>
       )}
       
       {/* 드롭 영역 표시 */}
@@ -90,9 +110,12 @@ export function SortableWidget({
       <span 
         id={`${id}-description`}
         className="sr-only"
+        aria-live="polite"
       >
-        위젯을 이동하려면 스페이스바를 누른 후 화살표 키를 사용하세요. 
-        스페이스바를 다시 눌러 배치를 완료하세요.
+        {isDragging 
+          ? '위젯을 이동 중입니다. 화살표 키로 위치를 선택하고 스페이스바를 눌러 놓으세요.'
+          : '위젯을 이동하려면 스페이스바를 누른 후 화살표 키를 사용하세요. 스페이스바를 다시 눌러 배치를 완료하세요.'
+        }
       </span>
     </div>
   )
