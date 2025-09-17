@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useMemo, useEffect, Suspense, lazy } from 'react'
+import React, { useState, useMemo, useEffect, Suspense, lazy, useRef } from 'react'
 import { X, Search, Plus, Grid3x3, Briefcase, Calculator, TrendingUp, CheckSquare, Package, Folder, Calendar, BarChart3, Box, Eye, EyeOff, Info, Users, Cloud, FileText, Wallet, Clock, Target, List } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
 import Typography from '@/components/ui/Typography'
@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils'
 import { WidgetRegistry } from '@/lib/dashboard/WidgetRegistry'
 import type { WidgetCategory, WidgetMetadata, WidgetType } from '@/types/dashboard'
 import { useDashboardStore } from '@/lib/stores/useDashboardStore'
+import { useFocusTrap, useKeyboardShortcuts } from '@/lib/dashboard/keyboard-navigation'
 
 interface WidgetLibraryProps {
   isOpen: boolean
@@ -66,6 +67,42 @@ export function WidgetLibrary({ isOpen, onClose, onAddWidget }: WidgetLibraryPro
     metadata: WidgetMetadata
     category: WidgetCategory
   }>>([])
+  const containerRef = useRef<HTMLDivElement>(null)
+  const [focusedWidgetIndex, setFocusedWidgetIndex] = useState(0)
+
+  // 포커스 트랩 설정 (모달이 열려있을 때)
+  useFocusTrap(containerRef, isOpen)
+
+  // 키보드 단축키 설정
+  useKeyboardShortcuts([
+    {
+      key: 'Escape',
+      handler: onClose,
+      preventDefault: true
+    },
+    {
+      key: '/',
+      handler: () => {
+        const searchInput = containerRef.current?.querySelector('input[type="text"]') as HTMLInputElement
+        searchInput?.focus()
+      },
+      preventDefault: true
+    },
+    {
+      key: 'ArrowDown',
+      handler: () => {
+        setFocusedWidgetIndex(prev => Math.min(prev + 1, availableWidgets.length - 1))
+      },
+      preventDefault: true
+    },
+    {
+      key: 'ArrowUp',
+      handler: () => {
+        setFocusedWidgetIndex(prev => Math.max(prev - 1, 0))
+      },
+      preventDefault: true
+    }
+  ])
 
   // WidgetRegistry에서 위젯 데이터 가져오기
   useEffect(() => {
@@ -154,7 +191,13 @@ export function WidgetLibrary({ isOpen, onClose, onAddWidget }: WidgetLibraryPro
   }
 
   return (
-    <div className="fixed inset-0 lg:inset-y-0 lg:right-0 lg:left-auto lg:w-96 bg-bg-primary lg:border-l border-border-primary shadow-xl z-50 flex flex-col">
+    <div 
+      ref={containerRef}
+      className="fixed inset-0 lg:inset-y-0 lg:right-0 lg:left-auto lg:w-96 bg-bg-primary lg:border-l border-border-primary shadow-xl z-50 flex flex-col"
+      role="dialog"
+      aria-label="위젯 라이브러리"
+      aria-modal="true"
+    >
       {/* 헤더 */}
       <div className="flex items-center justify-between p-4 border-b border-border-primary">
         <div className="flex items-center gap-2">

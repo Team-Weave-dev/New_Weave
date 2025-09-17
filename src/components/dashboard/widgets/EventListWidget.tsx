@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo, useCallback, useEffect } from 'react';
+import React, { useState, useMemo, useCallback, useEffect, memo } from 'react';
 import { 
   Calendar, 
   List, 
@@ -26,6 +26,8 @@ import {
   type EventStatus
 } from '@/lib/dashboard/calendar-data-service';
 import type { WidgetProps } from '@/types/dashboard';
+import { FixedSizeList } from 'react-window';
+import { areWidgetPropsEqual } from '@/lib/dashboard/optimization';
 
 // EventItem을 CalendarEvent로 타입 별칭 설정
 type EventItem = CalendarEvent;
@@ -34,7 +36,118 @@ type ViewMode = 'list' | 'timeline';
 type SortBy = 'date' | 'title' | 'type' | 'priority';
 type FilterBy = 'all' | 'today' | 'week' | 'month' | 'upcoming' | 'past';
 
-const EventListWidget: React.FC<WidgetProps> = ({
+// 가상 스크롤링 EventRow 컴포넌트의 props - React.memo로 최적화
+interface EventRowProps {
+  index: number;
+  style: React.CSSProperties;
+  data: {
+    events: EventItem[];
+    expandedEvents: Set<string>;
+    handleEventClick: (event: EventItem) => void;
+    getEventColor: (type: EventItem['type']) => string;
+    getPriorityIndicator: (priority?: EventItem['priority']) => React.ReactNode;
+  };
+}
+
+// 가상 스크롤링을 위한 EventRow 컴포넌트 - React.memo로 최적화
+const EventRow = memo(({ index, style, data }: EventRowProps) => {
+  const {
+    events,
+    expandedEvents,
+    handleEventClick,
+    getEventColor,
+    getPriorityIndicator
+  } = data;
+  
+  const event = events[index];
+  if (!event) return null;
+  
+  const isExpanded = expandedEvents.has(event.id);
+  const eventDate = new Date(event.start);
+  const eventEndDate = new Date(event.end);
+  const isToday = eventDate.toDateString() === new Date().toDateString();
+  const isPast = eventEndDate < new Date();
+  
+  return (
+    <div style={style} className="px-2">
+      <div
+        className={cn(
+          "p-3 rounded-lg border cursor-pointer transition-all",
+          isExpanded ? "shadow-md" : "hover:shadow-sm",
+          isPast ? "opacity-60" : "",
+          isToday ? "border-blue-300 bg-blue-50" : "border-gray-200 bg-white"
+        )}
+        onClick={() => handleEventClick(event)}
+      >
+        <div className="flex items-start justify-between">
+          <div className="flex-1">
+            <div className="flex items-center gap-2 mb-1">
+              {getPriorityIndicator(event.priority)}
+              <Typography variant="body2" className="font-medium">
+                {event.title}
+              </Typography>
+              <span className={cn(
+                "text-xs px-2 py-0.5 rounded",
+                getEventColor(event.type)
+              )}>
+                {event.type}
+              </span>
+            </div>
+            
+            <div className="flex items-center gap-4 text-xs text-gray-500">
+              <div className="flex items-center gap-1">
+                <Clock className="w-3 h-3" />
+                {eventDate.toLocaleTimeString('ko-KR', { 
+                  hour: '2-digit', 
+                  minute: '2-digit' 
+                })}
+              </div>
+              {event.location && (
+                <div className="flex items-center gap-1">
+                  <MapPin className="w-3 h-3" />
+                  {event.location}
+                </div>
+              )}
+              {event.attendees && event.attendees.length > 0 && (
+                <div className="flex items-center gap-1">
+                  <Users className="w-3 h-3" />
+                  {event.attendees.length}명
+                </div>
+              )}
+            </div>
+            
+            {isExpanded && (
+              <div className="mt-2 pt-2 border-t border-gray-100">
+                {event.description && (
+                  <Typography variant="caption" className="text-gray-600 mb-2 block">
+                    {event.description}
+                  </Typography>
+                )}
+                {event.tags && event.tags.length > 0 && (
+                  <div className="flex items-center gap-1 flex-wrap">
+                    <Tag className="w-3 h-3 text-gray-400" />
+                    {event.tags.map(tag => (
+                      <span key={tag} className="text-xs px-2 py-0.5 bg-gray-100 rounded">
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+          
+          <ChevronDown className={cn(
+            "w-4 h-4 text-gray-400 transition-transform",
+            isExpanded ? "rotate-180" : ""
+          )} />
+        </div>
+      </div>
+    </div>
+  );
+});
+
+const EventListWidget: React.FC<WidgetProps> = memo(({
   id,
   type,
   config,
@@ -208,95 +321,37 @@ const EventListWidget: React.FC<WidgetProps> = ({
     );
   }
 
-  // 리스트 뷰 렌더링
-  const renderListView = () => (
-    <div className="space-y-2">
-      {filteredEvents.map(event => {
-        const isExpanded = expandedEvents.has(event.id);
-        const eventDate = new Date(event.start);
-        const eventEndDate = new Date(event.end);
-        const isToday = eventDate.toDateString() === new Date().toDateString();
-        const isPast = eventEndDate < new Date();
-        
-        return (
-          <div
-            key={event.id}
-            className={cn(
-              "p-3 rounded-lg border cursor-pointer transition-all",
-              isExpanded ? "shadow-md" : "hover:shadow-sm",
-              isPast ? "opacity-60" : "",
-              isToday ? "border-blue-300 bg-blue-50" : "border-gray-200 bg-white"
-            )}
-            onClick={() => handleEventClick(event)}
-          >
-            <div className="flex items-start justify-between">
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-1">
-                  {getPriorityIndicator(event.priority)}
-                  <Typography variant="body2" className="font-medium">
-                    {event.title}
-                  </Typography>
-                  <span className={cn(
-                    "text-xs px-2 py-0.5 rounded",
-                    getEventColor(event.type)
-                  )}>
-                    {event.type}
-                  </span>
-                </div>
-                
-                <div className="flex items-center gap-4 text-xs text-gray-500">
-                  <div className="flex items-center gap-1">
-                    <Clock className="w-3 h-3" />
-                    {eventDate.toLocaleTimeString('ko-KR', { 
-                      hour: '2-digit', 
-                      minute: '2-digit' 
-                    })}
-                  </div>
-                  {event.location && (
-                    <div className="flex items-center gap-1">
-                      <MapPin className="w-3 h-3" />
-                      {event.location}
-                    </div>
-                  )}
-                  {event.attendees && event.attendees.length > 0 && (
-                    <div className="flex items-center gap-1">
-                      <Users className="w-3 h-3" />
-                      {event.attendees.length}명
-                    </div>
-                  )}
-                </div>
-                
-                {isExpanded && (
-                  <div className="mt-2 pt-2 border-t border-gray-100">
-                    {event.description && (
-                      <Typography variant="caption" className="text-gray-600 mb-2 block">
-                        {event.description}
-                      </Typography>
-                    )}
-                    {event.tags && event.tags.length > 0 && (
-                      <div className="flex items-center gap-1 flex-wrap">
-                        <Tag className="w-3 h-3 text-gray-400" />
-                        {event.tags.map(tag => (
-                          <span key={tag} className="text-xs px-2 py-0.5 bg-gray-100 rounded">
-                            {tag}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-              
-              <ChevronDown className={cn(
-                "w-4 h-4 text-gray-400 transition-transform",
-                isExpanded ? "rotate-180" : ""
-              )} />
-            </div>
-          </div>
-        );
-      })}
-    </div>
-  );
+  // 리스트 뷰 렌더링 with 가상 스크롤링
+  const renderListView = () => {
+    if (filteredEvents.length === 0) {
+      return (
+        <div className="text-center py-8">
+          <Typography variant="body2" className="text-gray-500">
+            이벤트가 없습니다
+          </Typography>
+        </div>
+      );
+    }
+
+    // 가상 스크롤링 사용
+    return (
+      <FixedSizeList
+        height={400} // 위젯 높이에 맞게 조정
+        itemCount={filteredEvents.length}
+        itemSize={expandedEvents.size > 0 ? 150 : 90} // 확장된 아이템이 있을 때 더 큰 높이
+        width="100%"
+        itemData={{
+          events: filteredEvents,
+          expandedEvents,
+          handleEventClick,
+          getEventColor,
+          getPriorityIndicator
+        }}
+      >
+        {EventRow}
+      </FixedSizeList>
+    );
+  };
 
   // 타임라인 뷰 렌더링
   const renderTimelineView = () => {
@@ -464,7 +519,7 @@ const EventListWidget: React.FC<WidgetProps> = ({
       </div>
     </Card>
   );
-};
+}, areWidgetPropsEqual);
 
 // 목업 데이터 생성
 function getMockEvents(): EventItem[] {

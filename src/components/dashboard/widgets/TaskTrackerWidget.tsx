@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useMemo } from 'react'
+import React, { useState, useEffect, useMemo, useCallback, forwardRef, memo } from 'react'
 import { 
   CheckCircle2, 
   Circle, 
@@ -26,6 +26,8 @@ import type { WidgetProps } from '@/types/dashboard'
 import { cn } from '@/lib/utils'
 import { getSupabaseClientSafe } from '@/lib/supabase/client'
 import { widgetColors } from '@/lib/dashboard/widget-colors'
+import { areWidgetPropsEqual } from '@/lib/dashboard/optimization'
+import { FixedSizeList } from 'react-window'
 import {
   DndContext,
   closestCenter,
@@ -48,6 +50,12 @@ import {
   useSortable
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
+import { 
+  useScreenReader,
+  useAriaProps,
+  useDragAndDropAnnouncements 
+} from '@/lib/accessibility/hooks/useScreenReader'
+import { ariaLabels } from '@/lib/accessibility/screen-reader'
 
 interface Task {
   id: string
@@ -75,7 +83,188 @@ type SortOption = 'priority' | 'dueDate' | 'project' | 'status'
 type FilterOption = 'all' | 'today' | 'week' | 'overdue' | 'completed'
 type ViewMode = 'list' | 'kanban'
 
-// 칸반 카드 컴포넌트
+// 가상 스크롤링 TaskRow 컴포넌트의 props
+interface TaskRowProps {
+  index: number
+  style: React.CSSProperties
+  data: {
+    tasks: Task[]
+    toggleTaskComplete: (id: string) => void
+    toggleTaskExpanded: (id: string) => void
+    toggleSubtask: (taskId: string, subtaskId: string) => void
+    deleteTask: (id: string) => void
+    expandedTasks: Set<string>
+    getPriorityColor: (priority: Task['priority']) => string
+    getPriorityIcon: (priority: Task['priority']) => React.ReactNode
+  }
+}
+
+// 가상 스크롤링을 위한 TaskRow 컴포넌트 - React.memo로 최적화
+const TaskRow = memo(({ index, style, data }: TaskRowProps) => {
+  const {
+    tasks,
+    toggleTaskComplete,
+    toggleTaskExpanded,
+    toggleSubtask,
+    deleteTask,
+    expandedTasks,
+    getPriorityColor,
+    getPriorityIcon
+  } = data
+  
+  const task = tasks[index]
+  
+  if (!task) return null
+  
+  return (
+    <div style={style}>
+      <div
+        className={cn(
+          "group p-2 mx-2 rounded-lg hover:bg-gray-50 transition-colors",
+          task.completed && "opacity-60"
+        )}
+      >
+        <div className="flex items-start gap-2">
+          <button
+            onClick={() => toggleTaskComplete(task.id)}
+            className="mt-0.5 flex-shrink-0"
+          >
+            {task.completed ? (
+              <CheckCircle2 className={cn("w-4 h-4", widgetColors.status.success.icon)} />
+            ) : (
+              <Circle className={cn("w-4 h-4", widgetColors.icon.muted, "hover:text-gray-600")} />
+            )}
+          </button>
+          
+          <div className="flex-1 min-w-0">
+            <div className="flex items-start justify-between gap-2">
+              <div className="flex-1">
+                <div className="flex items-center gap-2">
+                  {task.subtasks && task.subtasks.length > 0 && (
+                    <button
+                      onClick={() => toggleTaskExpanded(task.id)}
+                      className="p-0.5 hover:bg-gray-200 rounded"
+                    >
+                      {expandedTasks.has(task.id) ? (
+                        <ChevronDown className="w-3 h-3" />
+                      ) : (
+                        <ChevronUp className="w-3 h-3" />
+                      )}
+                    </button>
+                  )}
+                  <Typography 
+                    variant="body2" 
+                    className={cn(
+                      "text-gray-900",
+                      task.completed && "line-through"
+                    )}
+                  >
+                    {task.title}
+                  </Typography>
+                </div>
+                {task.description && (
+                  <Typography variant="caption" className="text-gray-500 ml-5">
+                    {task.description}
+                  </Typography>
+                )}
+              </div>
+              
+              {/* 우선순위 배지 */}
+              <div className={cn(
+                "flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-medium",
+                getPriorityColor(task.priority)
+              )}>
+                {getPriorityIcon(task.priority)}
+                <span className="hidden sm:inline">
+                  {task.priority === 'urgent' && '긴급'}
+                  {task.priority === 'high' && '높음'}
+                  {task.priority === 'medium' && '보통'}
+                  {task.priority === 'low' && '낮음'}
+                </span>
+              </div>
+            </div>
+            
+            {/* 서브태스크 */}
+            {expandedTasks.has(task.id) && task.subtasks && task.subtasks.length > 0 && (
+              <div className="ml-6 mt-2 space-y-1">
+                {task.subtasks.map(subtask => (
+                  <div key={subtask.id} className="flex items-center gap-2">
+                    <button
+                      onClick={() => toggleSubtask(task.id, subtask.id)}
+                      className="flex-shrink-0"
+                    >
+                      {subtask.completed ? (
+                        <CheckCircle2 className="w-3 h-3 text-green-500" />
+                      ) : (
+                        <Circle className="w-3 h-3 text-gray-400 hover:text-gray-600" />
+                      )}
+                    </button>
+                    <Typography
+                      variant="caption"
+                      className={cn(
+                        "text-gray-700",
+                        subtask.completed && "line-through text-gray-500"
+                      )}
+                    >
+                      {subtask.title}
+                    </Typography>
+                  </div>
+                ))}
+              </div>
+            )}
+            
+            {/* 메타 정보 */}
+            <div className="flex items-center gap-3 mt-1">
+              {task.projectName && (
+                <span className="text-xs text-gray-500">
+                  {task.projectName}
+                </span>
+              )}
+              {task.dueDate && (
+                <span className={cn(
+                  "flex items-center gap-1 text-xs",
+                  new Date(task.dueDate) < new Date() && !task.completed
+                    ? widgetColors.status.error.text
+                    : widgetColors.text.tertiary
+                )}>
+                  <Calendar className="w-3 h-3" />
+                  {new Date(task.dueDate).toLocaleDateString('ko-KR', {
+                    month: 'short',
+                    day: 'numeric'
+                  })}
+                </span>
+              )}
+              {task.tags && task.tags.length > 0 && (
+                <div className="flex gap-1">
+                  {task.tags.map(tag => (
+                    <span
+                      key={tag}
+                      className="px-1.5 py-0.5 text-xs bg-gray-100 text-gray-600 rounded"
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* 작업 액션 (호버 시 표시) */}
+          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+            <button
+              onClick={() => deleteTask(task.id)}
+              className={cn("p-1 transition-colors", widgetColors.icon.muted, "hover:" + widgetColors.status.error.text)}
+            >
+              <Trash2 className="w-3 h-3" />
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+})
+
+// 칸반 카드 컴포넌트 - React.memo로 최적화
 interface KanbanCardProps {
   task: Task
   onToggleComplete: (id: string) => void
@@ -85,14 +274,14 @@ interface KanbanCardProps {
   getPriorityIcon: (priority: Task['priority']) => React.ReactNode
 }
 
-function KanbanCard({
+const KanbanCard = memo(({
   task,
   onToggleComplete,
   onToggleSubtask,
   onDelete,
   getPriorityColor,
   getPriorityIcon
-}: KanbanCardProps) {
+}: KanbanCardProps) => {
   const {
     attributes,
     listeners,
@@ -258,15 +447,16 @@ function KanbanCard({
       )}
     </div>
   )
-}
+})
 
-export function TaskTrackerWidget({
+// TaskTrackerWidget을 React.memo로 최적화
+export const TaskTrackerWidget = memo(({
   id,
   type,
   config,
   isEditMode,
   className
-}: WidgetProps) {
+}: WidgetProps) => {
   const [tasks, setTasks] = useState<Task[]>([])
   const [loading, setLoading] = useState(true)
   const [showAddTask, setShowAddTask] = useState(false)
@@ -279,6 +469,27 @@ export function TaskTrackerWidget({
   const [activeId, setActiveId] = useState<string | null>(null)
   const [expandedTasks, setExpandedTasks] = useState<Set<string>>(new Set())
   const supabase = getSupabaseClientSafe()
+
+  // 스크린 리더 지원
+  const { 
+    announceCompletion,
+    announceCount,
+    announceSelection,
+    announceWidgetState,
+    announceLoading
+  } = useScreenReader()
+  
+  const {
+    announceDragStart,
+    announceDragOver,
+    announceDrop,
+    announceDragCancel
+  } = useDragAndDropAnnouncements()
+
+  const widgetAriaProps = useAriaProps('widget', {
+    type: 'TaskTracker',
+    title: '작업 추적기'
+  })
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -474,18 +685,40 @@ export function TaskTrackerWidget({
     return filtered
   }, [tasks, filterBy, sortBy, selectedProject])
 
-  // 작업 완료 토글
-  const toggleTaskComplete = (taskId: string) => {
-    setTasks(prev => prev.map(task => 
-      task.id === taskId 
-        ? { 
-            ...task, 
-            completed: !task.completed,
-            completedAt: !task.completed ? new Date() : undefined
-          }
-        : task
-    ))
-  }
+  // 필터링 결과 알림
+  useEffect(() => {
+    if (!loading && filteredTasks.length > 0) {
+      const completedCount = filteredTasks.filter(t => t.completed).length
+      announceCount('작업 목록', filteredTasks.length)
+      if (completedCount > 0) {
+        announceCount('완료된 작업', completedCount, filteredTasks.length)
+      }
+    }
+  }, [filteredTasks, loading, announceCount])
+
+  // 작업 완료 토글 - useCallback으로 최적화
+  const toggleTaskComplete = useCallback((taskId: string) => {
+    setTasks(prev => {
+      const task = prev.find(t => t.id === taskId)
+      if (task) {
+        const newCompleted = !task.completed
+        announceCompletion(
+          `"${task.title}" 작업`,
+          true,
+          newCompleted ? '완료됨' : '미완료로 변경됨'
+        )
+      }
+      return prev.map(task => 
+        task.id === taskId 
+          ? { 
+              ...task, 
+              completed: !task.completed,
+              completedAt: !task.completed ? new Date() : undefined
+            }
+          : task
+      )
+    })
+  }, [announceCompletion])
 
   // 새 작업 추가
   const addTask = () => {
@@ -503,15 +736,22 @@ export function TaskTrackerWidget({
     setNewTaskTitle('')
     setNewTaskPriority('medium')
     setShowAddTask(false)
+    announceCompletion(`"${newTaskTitle}" 작업 추가`, true)
   }
 
-  // 작업 삭제
-  const deleteTask = (taskId: string) => {
-    setTasks(prev => prev.filter(task => task.id !== taskId))
-  }
+  // 작업 삭제 - useCallback으로 최적화
+  const deleteTask = useCallback((taskId: string) => {
+    setTasks(prev => {
+      const task = prev.find(t => t.id === taskId)
+      if (task) {
+        announceCompletion(`"${task.title}" 작업 삭제`, true)
+      }
+      return prev.filter(task => task.id !== taskId)
+    })
+  }, [announceCompletion])
 
-  // 서브태스크 토글
-  const toggleSubtask = (taskId: string, subtaskId: string) => {
+  // 서브태스크 토글 - useCallback으로 최적화
+  const toggleSubtask = useCallback((taskId: string, subtaskId: string) => {
     setTasks(prev => prev.map(task => {
       if (task.id === taskId) {
         return {
@@ -523,10 +763,10 @@ export function TaskTrackerWidget({
       }
       return task
     }))
-  }
+  }, [])
 
-  // 태스크 확장 토글
-  const toggleTaskExpanded = (taskId: string) => {
+  // 태스크 확장 토글 - useCallback으로 최적화
+  const toggleTaskExpanded = useCallback((taskId: string) => {
     setExpandedTasks(prev => {
       const newSet = new Set(prev)
       if (newSet.has(taskId)) {
@@ -536,11 +776,15 @@ export function TaskTrackerWidget({
       }
       return newSet
     })
-  }
+  }, [])
 
   // 칸반 보드 드래그 핸들러
   const handleDragStart = (event: DragStartEvent) => {
     setActiveId(event.active.id as string)
+    const task = tasks.find(t => t.id === event.active.id)
+    if (task) {
+      announceDragStart(task.title)
+    }
   }
 
   const handleDragEnd = (event: DragEndEvent) => {
@@ -552,6 +796,14 @@ export function TaskTrackerWidget({
       
       if (activeTask && ['todo', 'in-progress', 'review', 'done'].includes(overContainer)) {
         // 상태 변경
+        const statusNames = {
+          'todo': '할 일',
+          'in-progress': '진행 중',
+          'review': '검토',
+          'done': '완료'
+        }
+        announceDrop(activeTask.title, statusNames[overContainer as keyof typeof statusNames])
+        
         setTasks(prev => prev.map(task =>
           task.id === active.id
             ? { ...task, status: overContainer as Task['status'] }
@@ -563,6 +815,7 @@ export function TaskTrackerWidget({
         const overIndex = tasks.findIndex(t => t.id === over.id)
         
         if (activeIndex !== -1 && overIndex !== -1) {
+          announceDrop(activeTask?.title || '', `${overIndex + 1}번째 위치`)
           setTasks(prev => arrayMove(prev, activeIndex, overIndex))
         }
       }
@@ -588,25 +841,25 @@ export function TaskTrackerWidget({
     }
   }
 
-  // 우선순위 색상
-  const getPriorityColor = (priority: Task['priority']) => {
+  // 우선순위 색상 - useCallback으로 최적화
+  const getPriorityColor = useCallback((priority: Task['priority']) => {
     switch (priority) {
       case 'urgent': return cn(widgetColors.status.error.text, widgetColors.status.error.bgLight)
       case 'high': return cn(widgetColors.status.warning.text, widgetColors.status.warning.bgLight)
       case 'medium': return cn(widgetColors.primary.text, widgetColors.primary.bgLight)
       case 'low': return cn(widgetColors.text.secondary, widgetColors.bg.surfaceSecondary)
     }
-  }
+  }, [])
 
-  // 우선순위 아이콘
-  const getPriorityIcon = (priority: Task['priority']) => {
+  // 우선순위 아이콘 - useCallback으로 최적화
+  const getPriorityIcon = useCallback((priority: Task['priority']) => {
     switch (priority) {
       case 'urgent': return <AlertTriangle className="w-3 h-3" />
       case 'high': return <AlertCircle className="w-3 h-3" />
       case 'medium': return <Flag className="w-3 h-3" />
       case 'low': return <Circle className="w-3 h-3" />
     }
-  }
+  }, [])
 
   // 편집 모드 뷰
   if (isEditMode) {
@@ -650,24 +903,30 @@ export function TaskTrackerWidget({
   }
 
   return (
-    <Card className={cn("h-full p-4 flex flex-col", className)}>
+    <Card className={cn("h-full p-4 flex flex-col", className)} {...widgetAriaProps}>
       {/* 헤더 */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <CheckCircle2 className={cn("w-5 h-5", widgetColors.primary.icon)} />
-          <Typography variant="h3" className={widgetColors.text.primary}>
+          <Typography variant="h3" className={widgetColors.text.primary} id="task-tracker-title">
             작업 관리
           </Typography>
         </div>
         <div className="flex items-center gap-2">
           {/* 뷰 모드 토글 */}
-          <div className="flex items-center bg-gray-100 rounded-lg p-1">
+          <div 
+            className="flex items-center bg-gray-100 rounded-lg p-1" 
+            role="group" 
+            aria-label="보기 모드 선택"
+          >
             <button
               onClick={() => setViewMode('list')}
               className={cn(
                 "p-1 rounded transition-colors",
                 viewMode === 'list' ? 'bg-white shadow-sm' : 'hover:bg-gray-200'
               )}
+              aria-label="리스트 보기"
+              aria-pressed={viewMode === 'list'}
             >
               <List className="w-4 h-4" />
             </button>
@@ -677,6 +936,8 @@ export function TaskTrackerWidget({
                 "p-1 rounded transition-colors",
                 viewMode === 'kanban' ? 'bg-white shadow-sm' : 'hover:bg-gray-200'
               )}
+              aria-label="칸반 보기"
+              aria-pressed={viewMode === 'kanban'}
             >
               <Kanban className="w-4 h-4" />
             </button>
@@ -800,164 +1061,35 @@ export function TaskTrackerWidget({
       )}
 
       {/* 작업 목록 / 칸반 보드 */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-hidden">
         {viewMode === 'list' ? (
-          // 리스트 뷰
-          <div className="space-y-2">
-            {filteredAndSortedTasks.length === 0 ? (
-              <div className="text-center py-8">
-                <Typography variant="body2" className="text-gray-500">
-                  작업이 없습니다
-                </Typography>
-              </div>
-            ) : (
-              filteredAndSortedTasks.map(task => (
-                <div
-                  key={task.id}
-                  className={cn(
-                    "group p-2 rounded-lg hover:bg-gray-50 transition-colors",
-                    task.completed && "opacity-60"
-                  )}
-                >
-                  <div className="flex items-start gap-2">
-                    <button
-                      onClick={() => toggleTaskComplete(task.id)}
-                      className="mt-0.5 flex-shrink-0"
-                    >
-                      {task.completed ? (
-                        <CheckCircle2 className={cn("w-4 h-4", widgetColors.status.success.icon)} />
-                      ) : (
-                        <Circle className={cn("w-4 h-4", widgetColors.icon.muted, "hover:text-gray-600")} />
-                      )}
-                    </button>
-                    
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2">
-                            {task.subtasks && task.subtasks.length > 0 && (
-                              <button
-                                onClick={() => toggleTaskExpanded(task.id)}
-                                className="p-0.5 hover:bg-gray-200 rounded"
-                              >
-                                {expandedTasks.has(task.id) ? (
-                                  <ChevronDown className="w-3 h-3" />
-                                ) : (
-                                  <ChevronUp className="w-3 h-3" />
-                                )}
-                              </button>
-                            )}
-                            <Typography 
-                              variant="body2" 
-                              className={cn(
-                                "text-gray-900",
-                                task.completed && "line-through"
-                              )}
-                            >
-                              {task.title}
-                            </Typography>
-                          </div>
-                          {task.description && (
-                            <Typography variant="caption" className="text-gray-500 ml-5">
-                              {task.description}
-                            </Typography>
-                          )}
-                        </div>
-                        
-                        {/* 우선순위 배지 */}
-                        <div className={cn(
-                          "flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-medium",
-                          getPriorityColor(task.priority)
-                        )}>
-                          {getPriorityIcon(task.priority)}
-                          <span className="hidden sm:inline">
-                            {task.priority === 'urgent' && '긴급'}
-                            {task.priority === 'high' && '높음'}
-                            {task.priority === 'medium' && '보통'}
-                            {task.priority === 'low' && '낮음'}
-                          </span>
-                        </div>
-                      </div>
-                      
-                      {/* 서브태스크 */}
-                      {expandedTasks.has(task.id) && task.subtasks && task.subtasks.length > 0 && (
-                        <div className="ml-6 mt-2 space-y-1">
-                          {task.subtasks.map(subtask => (
-                            <div key={subtask.id} className="flex items-center gap-2">
-                              <button
-                                onClick={() => toggleSubtask(task.id, subtask.id)}
-                                className="flex-shrink-0"
-                              >
-                                {subtask.completed ? (
-                                  <CheckCircle2 className="w-3 h-3 text-green-500" />
-                                ) : (
-                                  <Circle className="w-3 h-3 text-gray-400 hover:text-gray-600" />
-                                )}
-                              </button>
-                              <Typography
-                                variant="caption"
-                                className={cn(
-                                  "text-gray-700",
-                                  subtask.completed && "line-through text-gray-500"
-                                )}
-                              >
-                                {subtask.title}
-                              </Typography>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                      
-                      {/* 메타 정보 */}
-                      <div className="flex items-center gap-3 mt-1">
-                        {task.projectName && (
-                          <span className="text-xs text-gray-500">
-                            {task.projectName}
-                          </span>
-                        )}
-                        {task.dueDate && (
-                          <span className={cn(
-                            "flex items-center gap-1 text-xs",
-                            new Date(task.dueDate) < new Date() && !task.completed
-                              ? widgetColors.status.error.text
-                              : widgetColors.text.tertiary
-                          )}>
-                            <Calendar className="w-3 h-3" />
-                            {new Date(task.dueDate).toLocaleDateString('ko-KR', {
-                              month: 'short',
-                              day: 'numeric'
-                            })}
-                          </span>
-                        )}
-                        {task.tags && task.tags.length > 0 && (
-                          <div className="flex gap-1">
-                            {task.tags.map(tag => (
-                              <span
-                                key={tag}
-                                className="px-1.5 py-0.5 text-xs bg-gray-100 text-gray-600 rounded"
-                              >
-                                {tag}
-                              </span>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* 작업 액션 (호버 시 표시) */}
-                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button
-                        onClick={() => deleteTask(task.id)}
-                        className={cn("p-1 transition-colors", widgetColors.icon.muted, "hover:" + widgetColors.status.error.text)}
-                      >
-                        <Trash2 className="w-3 h-3" />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
+          // 리스트 뷰 with 가상 스크롤링
+          filteredAndSortedTasks.length === 0 ? (
+            <div className="text-center py-8">
+              <Typography variant="body2" className="text-gray-500">
+                작업이 없습니다
+              </Typography>
+            </div>
+          ) : (
+            <FixedSizeList
+              height={400} // 위젯 높이에 맞게 조정
+              itemCount={filteredAndSortedTasks.length}
+              itemSize={expandedTasks.size > 0 ? 120 : 80} // 동적 높이 (확장 시 더 큼)
+              width="100%"
+              itemData={{
+                tasks: filteredAndSortedTasks,
+                toggleTaskComplete,
+                toggleTaskExpanded,
+                toggleSubtask,
+                deleteTask,
+                expandedTasks,
+                getPriorityColor,
+                getPriorityIcon
+              }}
+            >
+              {TaskRow}
+            </FixedSizeList>
+          )
         ) : (
           // 칸반 보드 뷰
           <DndContext
@@ -1038,7 +1170,7 @@ export function TaskTrackerWidget({
       </div>
     </Card>
   )
-}
+}, areWidgetPropsEqual)
 
 // 위젯 메타데이터
 export const taskTrackerWidgetMetadata = {

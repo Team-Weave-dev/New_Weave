@@ -37,6 +37,7 @@ import {
   Target,
   PieChart
 } from 'lucide-react';
+import { useKeyboardShortcuts, announceMessage } from '@/lib/dashboard/keyboard-navigation';
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -54,6 +55,50 @@ export default function DashboardPage() {
     addWidget,
     reflowWidgets,
   } = useDashboardStore();
+
+  // 키보드 단축키 설정
+  useKeyboardShortcuts([
+    {
+      key: 'e',
+      ctrlKey: true,
+      handler: () => {
+        setEditMode(!isEditMode);
+        announceMessage(isEditMode ? '편집 모드 종료' : '편집 모드 시작', 'polite');
+      },
+      preventDefault: true
+    },
+    {
+      key: 't',
+      ctrlKey: true,
+      handler: () => {
+        setShowTemplateManager(true);
+        announceMessage('템플릿 관리 열기', 'polite');
+      },
+      preventDefault: true
+    },
+    {
+      key: 'r',
+      ctrlKey: true,
+      handler: () => {
+        if (isEditMode) {
+          reflowWidgets();
+          announceMessage('위젯 자동 정렬 완료', 'polite');
+        }
+      },
+      preventDefault: true
+    },
+    {
+      key: 's',
+      ctrlKey: true,
+      handler: () => {
+        if (isEditMode) {
+          setEditMode(false);
+          announceMessage('대시보드 저장 완료', 'polite');
+        }
+      },
+      preventDefault: true
+    }
+  ]);
 
   // 첫 사용자 체크 및 온보딩 표시
   useEffect(() => {

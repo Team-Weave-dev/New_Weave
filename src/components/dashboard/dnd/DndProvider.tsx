@@ -1,6 +1,6 @@
 'use client'
 
-import React, { ReactNode, useState, useCallback } from 'react'
+import React, { ReactNode, useState, useCallback, useRef } from 'react'
 import {
   DndContext,
   DragEndEvent,
@@ -29,12 +29,15 @@ import { createGridCollisionDetection } from './customCollisionDetection'
 import { findNearestValidPosition, reflowWidgets } from '@/lib/dashboard/collisionDetection'
 import { DragPreview } from './DragPreview'
 import { cn } from '@/lib/utils'
+import { useLazyLoad } from '@/hooks/useIntersectionObserver'
 
 interface DndProviderProps {
   children: ReactNode
 }
 
 export function DndProvider({ children }: DndProviderProps) {
+  const containerRef = useRef<HTMLDivElement>(null)
+  const isVisible = useLazyLoad(containerRef)
   const { 
     currentLayout, 
     moveWidget,
@@ -215,9 +218,9 @@ export function DndProvider({ children }: DndProviderProps) {
     setIsValidDropPosition(true)
   }, [])
 
-  // 편집 모드가 아니면 DnD 비활성화
-  if (!isEditMode) {
-    return <>{children}</>
+  // 편집 모드가 아니거나 아직 보이지 않으면 DnD 비활성화
+  if (!isEditMode || !isVisible) {
+    return <div ref={containerRef}>{children}</div>
   }
 
   const widgetIds = currentLayout?.widgets

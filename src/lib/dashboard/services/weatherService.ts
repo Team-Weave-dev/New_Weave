@@ -1,4 +1,10 @@
 import { create } from 'zustand'
+import { 
+  ApiCache, 
+  debounce, 
+  throttle,
+  retryRequest 
+} from '@/lib/utils/api-optimizer'
 
 interface CurrentWeather {
   temperature: number
@@ -91,6 +97,100 @@ const locationMap: { [key: string]: string } = {
   'paris': '파리',
 }
 
+// API Cache instance for weather data
+const weatherCache = new ApiCache()
+
+// Simulated API fetch with caching and retry
+const fetchWeatherData = async (location: string): Promise<{ current: CurrentWeather; forecast: ForecastDay[] }> => {
+  // Check cache first
+  const cacheKey = `weather_${location}`
+  const cached = weatherCache.get<{ current: CurrentWeather; forecast: ForecastDay[] }>(cacheKey, {})
+  
+  if (cached) {
+    return cached
+  }
+
+  // Simulate API call with potential failure
+  return new Promise((resolve, reject) => {
+    // 90% success rate for testing retry logic
+    if (Math.random() > 0.9) {
+      reject(new Error('Weather API temporarily unavailable'))
+      return
+    }
+
+    setTimeout(() => {
+      const data = generateMockWeather(location)
+      // Cache for 30 minutes
+      weatherCache.set(cacheKey, data, {}, 30 * 60 * 1000)
+      resolve(data)
+    }, 500)
+  })
+}
+
+// Debounced location update to prevent rapid API calls
+const debouncedLocationUpdate = debounce((location: string, set: any) => {
+  retryRequest(
+    () => fetchWeatherData(location),
+    3, // max retries
+    1000, // initial delay
+    1.5 // backoff multiplier
+  )
+    .then(({ current, forecast }) => {
+      set({
+        currentWeather: current,
+        forecast,
+        loading: false,
+        error: null,
+      })
+      
+      // Store in localStorage as backup
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('weather_location', location)
+        localStorage.setItem('weather_data', JSON.stringify({ current, forecast }))
+        localStorage.setItem('weather_updated', new Date().toISOString())
+      }
+    })
+    .catch((error) => {
+      set({
+        loading: false,
+        error: error.message || 'Failed to fetch weather data',
+      })
+    })
+}, 300)
+
+// Throttled refresh to prevent spamming
+const throttledRefresh = throttle((location: string, set: any) => {
+  // Invalidate cache for this location
+  weatherCache.invalidate(`weather_${location}`, {})
+  
+  retryRequest(
+    () => fetchWeatherData(location),
+    3,
+    1000,
+    1.5
+  )
+    .then(({ current, forecast }) => {
+      set({
+        currentWeather: current,
+        forecast,
+        loading: false,
+        error: null,
+      })
+      
+      // Update localStorage
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('weather_data', JSON.stringify({ current, forecast }))
+        localStorage.setItem('weather_updated', new Date().toISOString())
+      }
+    })
+    .catch((error) => {
+      set({
+        loading: false,
+        error: error.message || 'Failed to refresh weather data',
+      })
+    })
+}, 2000) // Max once every 2 seconds
+
 const useWeatherStore = create<WeatherStore>((set, get) => ({
   currentWeather: null,
   forecast: [],
@@ -104,45 +204,16 @@ const useWeatherStore = create<WeatherStore>((set, get) => ({
     
     set({ location: koreanLocation, loading: true, error: null })
     
-    // Simulate API call delay
-    setTimeout(() => {
-      const { current, forecast } = generateMockWeather(koreanLocation)
-      set({
-        currentWeather: current,
-        forecast,
-        loading: false,
-        error: null,
-      })
-      
-      // Store in localStorage
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('weather_location', koreanLocation)
-        localStorage.setItem('weather_data', JSON.stringify({ current, forecast }))
-        localStorage.setItem('weather_updated', new Date().toISOString())
-      }
-    }, 1000)
+    // Use debounced API call
+    debouncedLocationUpdate(koreanLocation, set)
   },
 
   refreshWeather: () => {
     const { location } = get()
     set({ loading: true, error: null })
     
-    // Simulate API call delay
-    setTimeout(() => {
-      const { current, forecast } = generateMockWeather(location)
-      set({
-        currentWeather: current,
-        forecast,
-        loading: false,
-        error: null,
-      })
-      
-      // Update localStorage
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('weather_data', JSON.stringify({ current, forecast }))
-        localStorage.setItem('weather_updated', new Date().toISOString())
-      }
-    }, 1000)
+    // Use throttled refresh
+    throttledRefresh(location, set)
   },
 
   setLoading: (loading: boolean) => set({ loading }),
