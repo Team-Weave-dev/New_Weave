@@ -17,13 +17,13 @@ import { useTouchInteraction } from '@/hooks/useTouchInteraction'
 import { OptimizedWidgetWrapper } from './OptimizedWidgetWrapper'
 import { EditModeToolbar } from './EditModeToolbar'
 import { DndProvider } from './dnd/DndProvider'
-import { SortableWidget } from './dnd/SortableWidget'
+import { DraggableWidget } from './dnd/DraggableWidget'
 import { WidgetLibrary } from './WidgetLibrary'
 import { WidgetConfigPanel } from './WidgetConfigPanel'
 import { WidgetSkeleton } from './WidgetSkeleton'
 import { WidgetErrorBoundary } from './WidgetErrorBoundary'
 import { KeyboardShortcutHelp } from './KeyboardShortcutHelp'
-import { AnimatedWidget, LayoutTransition } from './AnimatedWidget'
+import { LayoutTransition } from './AnimatedWidget'
 import { cn } from '@/lib/utils'
 import { Loader2 } from 'lucide-react'
 import { useDashboardKeyboardNavigation } from '@/hooks/useDashboardKeyboardNavigation'
@@ -295,15 +295,21 @@ export function DashboardContainer({
                 padding={isEditMode ? 20 : 16}
               >
                 {currentLayout.widgets.map((widget) => (
-                  <AnimatedWidget
+                  <DraggableWidget
                     key={widget.id}
                     id={widget.id}
                     position={widget.position}
                     isEditMode={isEditMode}
+                    isLocked={widget.locked}
+                    isSelected={isSelectionMode && selectedForMove === widget.id}
+                    disableDragging={isTouch}
+                    minSize={{ width: 1, height: 1 }}
+                    maxSize={{ width: 5, height: 5 }}
                     className={cn({
                       'hover:shadow-lg transition-shadow': isEditMode && !widget.locked,
                       'ring-2 ring-blue-500': isSelectionMode && selectedForMove === widget.id
                     })}
+                    onSelect={() => selectWidgetForMove(widget.id)}
                   >
                     {isTouch && isEditMode ? (
                       /* 터치 디바이스 편집 모드 */
@@ -321,23 +327,18 @@ export function DashboardContainer({
                       </div>
                     ) : (
                       /* 데스크톱 드래그 앤 드롭 */
-                      <SortableWidget
+                      <OptimizedWidgetWrapper
                         id={widget.id}
-                        disabled={!isEditMode || widget.locked}
+                        type={widget.type}
+                        title={widget.type}
+                        locked={widget.locked}
+                        position={widget.position}
+                        onConfigure={() => setConfigPanelWidgetId(widget.id)}
                       >
-                        <OptimizedWidgetWrapper
-                          id={widget.id}
-                          type={widget.type}
-                          title={widget.type}
-                          locked={widget.locked}
-                          position={widget.position}
-                          onConfigure={() => setConfigPanelWidgetId(widget.id)}
-                        >
-                          {renderWidgetContent(widget)}
-                        </OptimizedWidgetWrapper>
-                      </SortableWidget>
+                        {renderWidgetContent(widget)}
+                      </OptimizedWidgetWrapper>
                     )}
-                  </AnimatedWidget>
+                  </DraggableWidget>
                 ))}
 
               {/* 터치 선택 모드 - 빈 그리드 셀 표시 */}

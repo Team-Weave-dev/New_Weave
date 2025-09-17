@@ -148,10 +148,10 @@
 
 ### 컴포넌트 구조 단순화
 
-- [ ] **[ARCH-001]** 통합 Widget 컴포넌트 개발
+- [x] **[ARCH-001]** 통합 Widget 컴포넌트 개발
   - **Title**: Unified Widget Component
   - **Description**: GridItem, AnimatedWidget, SortableWidget을 통합
-  - **Status**: TODO
+  - **Status**: DONE
   - **Dependencies**: None
   - **Priority**: P2 (High)
   - **Details**:
