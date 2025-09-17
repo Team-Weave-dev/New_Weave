@@ -1,6 +1,9 @@
 /* Inter Variable 폰트 로딩 */
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap");
 
+/* Dashboard Animations */
+@import url("../styles/dashboard-animations.css");
+
 /* stylelint-disable-next-line at-rule-no-unknown */
 @tailwind base;
 /* stylelint-disable-next-line at-rule-no-unknown */

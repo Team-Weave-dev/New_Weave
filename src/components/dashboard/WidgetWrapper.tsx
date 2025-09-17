@@ -19,6 +19,8 @@ import {
 import Button from '@/components/ui/Button'
 import { WidgetRegistry } from '@/lib/dashboard/WidgetRegistry'
 import { ResizeHandle } from './ResizeHandle'
+import { ResizeGhost } from './ResizeGhost'
+import { hasCollisionWithWidgets } from '@/lib/dashboard/collisionDetection'
 
 interface WidgetWrapperProps {
   id: string
@@ -62,6 +64,8 @@ export function WidgetWrapper({
   const [showSizeMenu, setShowSizeMenu] = useState(false)
   const [isResizing, setIsResizing] = useState(false)
   const [tempSize, setTempSize] = useState<{ width: number; height: number } | null>(null)
+  const [tempPosition, setTempPosition] = useState<{ x: number; y: number } | null>(null)
+  const [isColliding, setIsColliding] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
   
   const isSelected = selectedWidgetId === id
@@ -151,8 +155,8 @@ export function WidgetWrapper({
   const handleResize = useCallback((position: string) => (deltaX: number, deltaY: number) => {
     if (!currentWidget || locked || !cellSize) return
     
-    const gridDeltaX = Math.round(deltaX / cellSize)
-    const gridDeltaY = Math.round(deltaY / cellSize)
+    const gridDeltaX = Math.round(deltaX / (cellSize + 16)) // 16px gap 포함
+    const gridDeltaY = Math.round(deltaY / (cellSize + 16))
     
     let newWidth = currentWidget.position.width
     let newHeight = currentWidget.position.height
@@ -218,9 +222,18 @@ export function WidgetWrapper({
     newWidth = Math.min(newWidth, gridColumns - newX)
     newHeight = Math.min(newHeight, gridColumns - newY)
     
-    // 임시 크기 업데이트 (실시간 프리뷰)
+    // 임시 크기와 위치 업데이트 (실시간 프리뷰)
     setTempSize({ width: newWidth, height: newHeight })
+    setTempPosition({ x: newX, y: newY })
     setIsResizing(true)
+    
+    // 충돌 감지
+    const collision = hasCollisionWithWidgets(
+      { x: newX, y: newY, width: newWidth, height: newHeight },
+      currentLayout?.widgets || [],
+      currentWidget.id
+    )
+    setIsColliding(collision)
     
     // 실제 위젯 크기 업데이트
     if (newX !== currentWidget.position.x || newY !== currentWidget.position.y) {
@@ -246,6 +259,8 @@ export function WidgetWrapper({
   const handleResizeEnd = useCallback(() => {
     setIsResizing(false)
     setTempSize(null)
+    setTempPosition(null)
+    setIsColliding(false)
   }, [])
 
   const handleFullscreenToggle = () => {
@@ -548,13 +563,74 @@ export function WidgetWrapper({
         </>
       )}
       
-      {/* 리사이징 중 크기 표시 */}
+      {/* 리사이징 중 시각적 피드백 */}
       {isResizing && tempSize && (
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 pointer-events-none">
-          <div className="bg-blue-600 text-white px-3 py-2 rounded-lg shadow-lg font-mono text-sm">
-            {tempSize.width} × {tempSize.height}
+        <>
+          {/* 리사이즈 오버레이 */}
+          <div 
+            className={cn(
+              "absolute inset-0 border-2 rounded-lg transition-colors duration-150 pointer-events-none z-40",
+              isColliding 
+                ? "bg-red-100/30 border-red-400 border-dashed" 
+                : "bg-blue-100/30 border-blue-400 border-dashed"
+            )}
+          >
+            {/* 그리드 라인 표시 */}
+            <div className="absolute inset-0 overflow-hidden rounded-lg">
+              {/* 수직선 */}
+              {Array.from({ length: tempSize.width - 1 }, (_, i) => (
+                <div
+                  key={`v-${i}`}
+                  className={cn(
+                    "absolute top-0 bottom-0 w-px",
+                    isColliding ? "bg-red-300/50" : "bg-blue-300/50"
+                  )}
+                  style={{
+                    left: `${((i + 1) / tempSize.width) * 100}%`
+                  }}
+                />
+              ))}
+              
+              {/* 수평선 */}
+              {Array.from({ length: tempSize.height - 1 }, (_, i) => (
+                <div
+                  key={`h-${i}`}
+                  className={cn(
+                    "absolute left-0 right-0 h-px",
+                    isColliding ? "bg-red-300/50" : "bg-blue-300/50"
+                  )}
+                  style={{
+                    top: `${((i + 1) / tempSize.height) * 100}%`
+                  }}
+                />
+              ))}
+            </div>
           </div>
-        </div>
+          
+          {/* 크기 표시 */}
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 pointer-events-none">
+            <div
+              className={cn(
+                "px-4 py-2 rounded-full text-sm font-bold shadow-lg backdrop-blur-sm",
+                isColliding
+                  ? "bg-red-500/90 text-white"
+                  : "bg-blue-500/90 text-white"
+              )}
+            >
+              {tempSize.width} × {tempSize.height}
+            </div>
+          </div>
+          
+          {/* 충돌 경고 */}
+          {isColliding && (
+            <div className="absolute -top-10 left-1/2 transform -translate-x-1/2 z-50 pointer-events-none">
+              <div className="bg-red-500 text-white px-3 py-1.5 rounded-full text-xs font-semibold shadow-lg animate-pulse flex items-center gap-1">
+                <span>⚠️</span>
+                <span>충돌 감지됨</span>
+              </div>
+            </div>
+          )}
+        </>
       )}
     </div>
   )

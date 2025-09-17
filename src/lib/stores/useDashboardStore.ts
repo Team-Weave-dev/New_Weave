@@ -27,8 +27,18 @@ interface DashboardStore {
   moveWidget: (widgetId: string, newPosition: WidgetPosition) => void
   resizeWidget: (widgetId: string, newSize: { width: number; height: number }) => void
   lockWidget: (widgetId: string, locked: boolean) => void
-  reflowWidgets: () => void
+  reflowWidgets: (updatedWidgets?: Widget[]) => void
   swapWidgets: (widgetId1: string, widgetId2: string) => void
+  pushAndReflowWidgets: (movedWidget: Widget, newPosition: WidgetPosition) => void
+  optimizeLayout: () => void
+  
+  // History Actions
+  undoLastAction: () => void
+  redoAction: () => void
+  canUndo: boolean
+  canRedo: boolean
+  actionHistory: Array<{ type: string; data: any; timestamp: number }>
+  redoHistory: Array<{ type: string; data: any; timestamp: number }>
   
   // Edit Mode Actions
   setEditMode: (editMode: boolean) => void
@@ -60,6 +70,10 @@ export const useDashboardStore = create<DashboardStore>()(
       layouts: [],
       isEditMode: false,
       selectedWidgetId: null,
+      actionHistory: [],
+      redoHistory: [],
+      canUndo: false,
+      canRedo: false,
       
       // Layout Actions
       setCurrentLayout: (layout) => {
@@ -220,16 +234,30 @@ export const useDashboardStore = create<DashboardStore>()(
         set((state) => {
           if (!state.currentLayout) return state
           
+          const before = state.currentLayout.widgets
+          const after = state.currentLayout.widgets.map((widget) =>
+            widget.id === widgetId
+              ? { ...widget, position: newPosition }
+              : widget
+          )
+          
+          // 히스토리에 액션 저장
+          const action = {
+            type: 'move',
+            data: { before, after, widgetId, position: newPosition },
+            timestamp: Date.now(),
+          }
+          
           return {
             currentLayout: {
               ...state.currentLayout,
-              widgets: state.currentLayout.widgets.map((widget) =>
-                widget.id === widgetId
-                  ? { ...widget, position: newPosition }
-                  : widget
-              ),
+              widgets: after,
               updatedAt: new Date(),
             },
+            actionHistory: [...state.actionHistory, action].slice(-20),
+            redoHistory: [],
+            canUndo: true,
+            canRedo: false,
           }
         })
       },
@@ -289,11 +317,12 @@ export const useDashboardStore = create<DashboardStore>()(
         })
       },
       
-      reflowWidgets: () => {
+      reflowWidgets: (updatedWidgets?: Widget[]) => {
         set((state) => {
           if (!state.currentLayout) return state
           
-          const { widgets, gridSize } = state.currentLayout
+          const widgets = updatedWidgets || state.currentLayout.widgets
+          const { gridSize } = state.currentLayout
           const columns = gridSize === '2x2' ? 2 :
                          gridSize === '3x3' ? 3 :
                          gridSize === '4x4' ? 4 : 5
@@ -352,12 +381,23 @@ export const useDashboardStore = create<DashboardStore>()(
             }
           })
           
+          // 히스토리에 액션 저장
+          const action = {
+            type: 'reflow',
+            data: { before: state.currentLayout.widgets, after: reflowedWidgets },
+            timestamp: Date.now(),
+          }
+          
           return {
             currentLayout: {
               ...state.currentLayout,
               widgets: reflowedWidgets,
               updatedAt: new Date(),
             },
+            actionHistory: [...state.actionHistory, action].slice(-20), // 최대 20개 히스토리 저장
+            redoHistory: [], // 새로운 액션이 발생하면 redo 히스토리 초기화
+            canUndo: true,
+            canRedo: false,
           }
         })
       },
@@ -447,6 +487,200 @@ export const useDashboardStore = create<DashboardStore>()(
             console.error('Failed to load layout from localStorage:', error)
           }
         }
+      },
+      
+      // 스마트 위젯 재배치 (밀어내기 포함)
+      pushAndReflowWidgets: (movedWidget: Widget, newPosition: WidgetPosition) => {
+        set((state) => {
+          if (!state.currentLayout) return state
+          
+          const { widgets, gridSize } = state.currentLayout
+          const columns = gridSize === '2x2' ? 2 :
+                         gridSize === '3x3' ? 3 :
+                         gridSize === '4x4' ? 4 : 5
+          
+          // EnhancedCollisionDetector 사용
+          const { EnhancedCollisionDetector } = require('@/lib/dashboard/enhancedCollisionDetection')
+          const detector = new EnhancedCollisionDetector(widgets, gridSize, {
+            allowPush: true,
+            allowSwap: true,
+            allowPartialOverlap: false,
+          })
+          
+          // 위젯 밀어내기 수행
+          const updatedWidgets = detector.pushWidgets(movedWidget, newPosition)
+          
+          // 히스토리에 액션 저장
+          const action = {
+            type: 'push_reflow',
+            data: { before: widgets, after: updatedWidgets },
+            timestamp: Date.now(),
+          }
+          
+          return {
+            currentLayout: {
+              ...state.currentLayout,
+              widgets: updatedWidgets,
+              updatedAt: new Date(),
+            },
+            actionHistory: [...state.actionHistory, action].slice(-20),
+            redoHistory: [],
+            canUndo: true,
+            canRedo: false,
+          }
+        })
+      },
+      
+      // 레이아웃 최적화 (빈 공간 제거)
+      optimizeLayout: () => {
+        set((state) => {
+          if (!state.currentLayout) return state
+          
+          const { widgets, gridSize } = state.currentLayout
+          const columns = gridSize === '2x2' ? 2 :
+                         gridSize === '3x3' ? 3 :
+                         gridSize === '4x4' ? 4 : 5
+          
+          // 위젯을 y, x 순으로 정렬
+          const sortedWidgets = [...widgets].sort((a, b) => {
+            if (a.locked) return 1  // 잠긴 위젯은 나중에 처리
+            if (b.locked) return -1
+            if (a.position.y !== b.position.y) {
+              return a.position.y - b.position.y
+            }
+            return a.position.x - b.position.x
+          })
+          
+          // 그리드를 빈 공간으로 초기화
+          const grid: (string | null)[][] = Array(columns).fill(null).map(() => Array(columns).fill(null))
+          
+          // 잠긴 위젯 먼저 배치
+          sortedWidgets.filter(w => w.locked).forEach(widget => {
+            const { x, y, width, height } = widget.position
+            for (let h = 0; h < height; h++) {
+              for (let w = 0; w < width; w++) {
+                if (grid[y + h] && grid[y + h][x + w] !== undefined) {
+                  grid[y + h][x + w] = widget.id
+                }
+              }
+            }
+          })
+          
+          // 잠기지 않은 위젯 최적 위치로 재배치
+          const optimizedWidgets = sortedWidgets.map(widget => {
+            if (widget.locked) return widget
+            
+            let { width, height } = widget.position
+            let bestX = 0, bestY = columns
+            
+            // 가장 위쪽의 빈 공간 찾기
+            for (let row = 0; row <= columns - height; row++) {
+              for (let col = 0; col <= columns - width; col++) {
+                let canPlace = true
+                
+                for (let h = 0; h < height && canPlace; h++) {
+                  for (let w = 0; w < width && canPlace; w++) {
+                    if (grid[row + h]?.[col + w] !== null) {
+                      canPlace = false
+                    }
+                  }
+                }
+                
+                if (canPlace && row < bestY) {
+                  bestX = col
+                  bestY = row
+                }
+              }
+            }
+            
+            // 그리드에 배치
+            for (let h = 0; h < height; h++) {
+              for (let w = 0; w < width; w++) {
+                if (grid[bestY + h] && grid[bestY + h][bestX + w] !== undefined) {
+                  grid[bestY + h][bestX + w] = widget.id
+                }
+              }
+            }
+            
+            return {
+              ...widget,
+              position: { x: bestX, y: bestY, width, height }
+            }
+          })
+          
+          // 히스토리에 액션 저장
+          const action = {
+            type: 'optimize',
+            data: { before: widgets, after: optimizedWidgets },
+            timestamp: Date.now(),
+          }
+          
+          return {
+            currentLayout: {
+              ...state.currentLayout,
+              widgets: optimizedWidgets,
+              updatedAt: new Date(),
+            },
+            actionHistory: [...state.actionHistory, action].slice(-20),
+            redoHistory: [],
+            canUndo: true,
+            canRedo: false,
+          }
+        })
+      },
+      
+      // Undo 액션
+      undoLastAction: () => {
+        set((state) => {
+          if (!state.currentLayout || state.actionHistory.length === 0) return state
+          
+          const lastAction = state.actionHistory[state.actionHistory.length - 1]
+          const newHistory = state.actionHistory.slice(0, -1)
+          
+          // 이전 상태로 복원
+          if (lastAction.data.before) {
+            return {
+              currentLayout: {
+                ...state.currentLayout,
+                widgets: lastAction.data.before,
+                updatedAt: new Date(),
+              },
+              actionHistory: newHistory,
+              redoHistory: [...state.redoHistory, lastAction],
+              canUndo: newHistory.length > 0,
+              canRedo: true,
+            }
+          }
+          
+          return state
+        })
+      },
+      
+      // Redo 액션
+      redoAction: () => {
+        set((state) => {
+          if (!state.currentLayout || state.redoHistory.length === 0) return state
+          
+          const redoAction = state.redoHistory[state.redoHistory.length - 1]
+          const newRedoHistory = state.redoHistory.slice(0, -1)
+          
+          // 다시 실행
+          if (redoAction.data.after) {
+            return {
+              currentLayout: {
+                ...state.currentLayout,
+                widgets: redoAction.data.after,
+                updatedAt: new Date(),
+              },
+              actionHistory: [...state.actionHistory, redoAction],
+              redoHistory: newRedoHistory,
+              canUndo: true,
+              canRedo: newRedoHistory.length > 0,
+            }
+          }
+          
+          return state
+        })
       },
     }),
     {

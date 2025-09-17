@@ -36,7 +36,10 @@ import {
   Users,
   FileText,
   Target,
-  PieChart
+  PieChart,
+  Undo2,
+  Redo2,
+  Maximize2
 } from 'lucide-react';
 import { useKeyboardShortcuts, announceMessage } from '@/lib/dashboard/keyboard-navigation';
 import '@/styles/accessibility.css';
@@ -56,6 +59,11 @@ export default function DashboardPage() {
     setCurrentLayout,
     addWidget,
     reflowWidgets,
+    optimizeLayout,
+    undoLastAction,
+    redoAction,
+    canUndo,
+    canRedo,
   } = useDashboardStore();
 
   // 키보드 단축키 설정
@@ -96,6 +104,39 @@ export default function DashboardPage() {
         if (isEditMode) {
           setEditMode(false);
           announceMessage('대시보드 저장 완료', 'polite');
+        }
+      },
+      preventDefault: true
+    },
+    {
+      key: 'z',
+      ctrlKey: true,
+      handler: () => {
+        if (isEditMode && canUndo) {
+          undoLastAction();
+          announceMessage('마지막 작업 취소', 'polite');
+        }
+      },
+      preventDefault: true
+    },
+    {
+      key: 'y',
+      ctrlKey: true,
+      handler: () => {
+        if (isEditMode && canRedo) {
+          redoAction();
+          announceMessage('다시 실행', 'polite');
+        }
+      },
+      preventDefault: true
+    },
+    {
+      key: 'o',
+      ctrlKey: true,
+      handler: () => {
+        if (isEditMode) {
+          optimizeLayout();
+          announceMessage('레이아웃 최적화 완료', 'polite');
         }
       },
       preventDefault: true
@@ -284,14 +325,49 @@ export default function DashboardPage() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={reflowWidgets}
+                    onClick={undoLastAction}
+                    disabled={!canUndo}
+                    className="text-blue-600 hover:text-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                    aria-label="마지막 작업 취소"
+                    title="실행 취소 (Ctrl+Z)"
+                  >
+                    <Undo2 className="h-4 w-4" aria-hidden="true" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={redoAction}
+                    disabled={!canRedo}
+                    className="text-blue-600 hover:text-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                    aria-label="다시 실행"
+                    title="다시 실행 (Ctrl+Y)"
+                  >
+                    <Redo2 className="h-4 w-4" aria-hidden="true" />
+                  </Button>
+                  <div className="w-px h-6 bg-blue-300 mx-1" />
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => reflowWidgets()}
                     className="text-blue-600 hover:text-blue-700"
                     aria-label="위젯 자동 정렬"
                     title="위젯 자동 정렬 (Ctrl+R)"
                   >
                     <RefreshCw className="h-4 w-4 mr-1" aria-hidden="true" />
-                    <span>자동 정렬</span>
+                    <span>정렬</span>
                   </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={optimizeLayout}
+                    className="text-blue-600 hover:text-blue-700"
+                    aria-label="레이아웃 최적화"
+                    title="빈 공간 제거 (Ctrl+O)"
+                  >
+                    <Maximize2 className="h-4 w-4 mr-1" aria-hidden="true" />
+                    <span>최적화</span>
+                  </Button>
+                  <div className="w-px h-6 bg-blue-300 mx-1" />
                   <Button
                     variant="ghost"
                     size="sm"

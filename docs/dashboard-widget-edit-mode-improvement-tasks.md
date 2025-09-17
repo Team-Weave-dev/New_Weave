@@ -96,10 +96,10 @@
     - E2E test: 각 핸들 드래그 동작 확인
     - Unit test: 크기 제약 조건 검증
 
-- [ ] **[RESIZE-002]** 리사이즈 중 실시간 프리뷰
+- [x] **[RESIZE-002]** 리사이즈 중 실시간 프리뷰
   - **Title**: Real-time Resize Preview
   - **Description**: 리사이즈 중 변경될 크기를 실시간으로 표시
-  - **Status**: TODO
+  - **Status**: DONE
   - **Dependencies**: RESIZE-001
   - **Priority**: P2 (High)
   - **Details**:
@@ -112,10 +112,10 @@
 
 ### 충돌 감지 개선
 
-- [ ] **[COLLISION-001]** 향상된 충돌 감지 알고리즘
+- [x] **[COLLISION-001]** 향상된 충돌 감지 알고리즘
   - **Title**: Enhanced Collision Detection Algorithm
   - **Description**: 더 정확하고 효율적인 충돌 감지 시스템
-  - **Status**: TODO
+  - **Status**: DONE
   - **Dependencies**: COORD-001
   - **Priority**: P2 (High)
   - **Details**:
@@ -127,10 +127,10 @@
     - Unit test: 다양한 충돌 시나리오
     - Performance test: 100개 위젯에서도 실시간 처리
 
-- [ ] **[COLLISION-002]** 스마트 위젯 재배치 시스템
+- [x] **[COLLISION-002]** 스마트 위젯 재배치 시스템
   - **Title**: Smart Widget Reflow System
   - **Description**: 충돌 시 자동으로 최적 위치 찾기
-  - **Status**: TODO
+  - **Status**: DONE
   - **Dependencies**: COLLISION-001
   - **Priority**: P3 (Medium)
   - **Details**:
@@ -317,10 +317,10 @@
 | Phase | Total Tasks | TODO | IN_PROGRESS | DONE | Progress |
 |-------|------------|------|-------------|------|----------|
 | Phase 1 | 4 | 0 | 0 | 4 | 100% |
-| Phase 2 | 4 | 4 | 0 | 0 | 0% |
+| Phase 2 | 4 | 1 | 0 | 3 | 75% |
 | Phase 3 | 4 | 4 | 0 | 0 | 0% |
 | Phase 4 | 6 | 6 | 0 | 0 | 0% |
-| **Total** | **18** | **14** | **0** | **4** | **22%** |
+| **Total** | **18** | **11** | **0** | **7** | **39%** |
 
 ## 🎯 우선순위 분포
 

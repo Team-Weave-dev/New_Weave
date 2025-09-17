@@ -1,6 +1,6 @@
 'use client'
 
-import React, { ReactNode, useState, useCallback, useRef } from 'react'
+import React, { ReactNode, useState, useCallback, useRef, useEffect } from 'react'
 import {
   DndContext,
   DragEndEvent,
@@ -27,6 +27,7 @@ import { restrictToWindowEdges, restrictToParentElement } from '@dnd-kit/modifie
 import { createPortal } from 'react-dom'
 import { createGridCollisionDetection } from './customCollisionDetection'
 import { findNearestValidPosition, reflowWidgets } from '@/lib/dashboard/collisionDetection'
+import { EnhancedCollisionDetector, CollisionOptions } from '@/lib/dashboard/enhancedCollisionDetection'
 import { DragPreview } from './DragPreview'
 import { GridDropZones } from './GridDropZones'
 import { cn } from '@/lib/utils'
@@ -67,6 +68,27 @@ export function DndProvider({ children }: DndProviderProps) {
     gap,
     padding
   })
+  
+  // 향상된 충돌 감지기 인스턴스
+  const [collisionDetector, setCollisionDetector] = useState<EnhancedCollisionDetector | null>(null)
+  
+  // 충돌 감지기 초기화/업데이트
+  useEffect(() => {
+    if (currentLayout) {
+      const options: CollisionOptions = {
+        allowPartialOverlap: false,
+        maxOverlapRatio: 0,
+        allowSwap: true,
+        allowPush: true,
+      }
+      const detector = new EnhancedCollisionDetector(
+        currentLayout.widgets,
+        currentLayout.gridSize,
+        options
+      )
+      setCollisionDetector(detector)
+    }
+  }, [currentLayout?.widgets, currentLayout?.gridSize])
   
   // 그리드 설정
   const gridConfig: GridConfig = {
@@ -120,7 +142,7 @@ export function DndProvider({ children }: DndProviderProps) {
   // 드래그 이동 핸들러 (실시간 프리뷰)
   const handleDragMove = useCallback((event: DragMoveEvent) => {
     const { delta, active } = event
-    if (!currentLayout || !active) return
+    if (!currentLayout || !active || !collisionDetector) return
     
     const activeWidget = currentLayout.widgets.find(w => w.id === active.id)
     if (!activeWidget) return
@@ -138,30 +160,33 @@ export function DndProvider({ children }: DndProviderProps) {
       gridColumns
     )
     
-    setDragPreviewPosition({
+    const testPosition = {
       x: newPosition.x,
       y: newPosition.y,
       width: activeWidget.position.width,
       height: activeWidget.position.height
-    })
+    }
     
-    // 충돌 검사
-    const otherWidgets = currentLayout.widgets.filter(w => w.id !== active.id)
-    const hasCollision = otherWidgets.some(w => {
-      return !(newPosition.x + activeWidget.position.width <= w.position.x ||
-               w.position.x + w.position.width <= newPosition.x ||
-               newPosition.y + activeWidget.position.height <= w.position.y ||
-               w.position.y + w.position.height <= newPosition.y)
-    })
+    // 향상된 충돌 감지 사용
+    const collisionResult = collisionDetector.detectCollision(
+      testPosition,
+      activeWidget.id
+    )
     
-    setIsValidDropPosition(!hasCollision)
-  }, [currentLayout, cellSize, gap])
+    setDragPreviewPosition(testPosition)
+    setIsValidDropPosition(!collisionResult.hasCollision)
+    
+    // 스왑 가능한 위젯이 있으면 시각적 힌트 제공 가능
+    if (collisionResult.swappableWidget) {
+      // 스왑 가능 시각화 (추후 구현)
+    }
+  }, [currentLayout, cellSize, gap, collisionDetector])
 
   // 드래그 종료 핸들러
   const handleDragEnd = useCallback((event: DragEndEvent) => {
     const { active, over, delta } = event
     
-    if (!active || !currentLayout) {
+    if (!active || !currentLayout || !collisionDetector) {
       setActiveId(null)
       setDraggedWidget(null)
       return
@@ -193,35 +218,33 @@ export function DndProvider({ children }: DndProviderProps) {
       height: activeWidget.position.height,
     }
 
-    // 충돌 확인
-    const otherWidgets = currentLayout.widgets.filter(w => w.id !== active.id)
-    const hasCollision = otherWidgets.some(w => {
-      return !(newPosition.x + newPosition.width <= w.position.x ||
-               w.position.x + w.position.width <= newPosition.x ||
-               newPosition.y + newPosition.height <= w.position.y ||
-               w.position.y + w.position.height <= newPosition.y)
-    })
+    // 향상된 충돌 감지 사용
+    const collisionResult = collisionDetector.detectCollision(
+      newPosition,
+      activeWidget.id
+    )
 
-    if (!hasCollision) {
+    if (!collisionResult.hasCollision) {
       // 충돌이 없으면 이동
       moveWidget(activeWidget.id, newPosition)
+    } else if (collisionResult.swappableWidget) {
+      // 스왑 가능한 위젯이 있으면 교환
+      swapWidgets(activeWidget.id, collisionResult.swappableWidget.id)
+    } else if (collisionResult.suggestedPosition) {
+      // 제안된 대체 위치로 이동
+      moveWidget(activeWidget.id, collisionResult.suggestedPosition)
     } else if (over && over.id !== active.id) {
-      // 충돌이 있고 다른 위젯 위에 드롭한 경우 위치 교환
+      // over 위젯과 스왑 시도
       const targetWidget = currentLayout.widgets.find(w => w.id === over.id)
       if (targetWidget && !targetWidget.locked) {
-        // 두 위젯의 위치를 교환
         swapWidgets(activeWidget.id, targetWidget.id)
       }
     } else {
-      // 유효한 가장 가까운 위치 찾기
-      const validPosition = findNearestValidPosition(
-        newPosition,
-        otherWidgets,
-        currentLayout.gridSize,
-        activeWidget.id
-      )
-      if (validPosition) {
-        moveWidget(activeWidget.id, validPosition)
+      // 밀어내기 시도
+      const updatedWidgets = collisionDetector.pushWidgets(activeWidget, newPosition)
+      if (updatedWidgets.length > 0) {
+        // 밀어내기 성공 시 위젯 재배치
+        reflowWidgets()
       }
     }
     
@@ -229,7 +252,7 @@ export function DndProvider({ children }: DndProviderProps) {
     setDraggedWidget(null)
     setDragPreviewPosition(null)
     setIsValidDropPosition(true)
-  }, [currentLayout, moveWidget, swapWidgets, cellSize, gap])
+  }, [currentLayout, moveWidget, swapWidgets, reflowWidgets, cellSize, gap, collisionDetector])
 
   // 드래그 취소 핸들러
   const handleDragCancel = useCallback(() => {
@@ -293,8 +316,8 @@ export function DndProvider({ children }: DndProviderProps) {
       {typeof window !== 'undefined' && createPortal(
         <DragOverlay
           dropAnimation={{
-            duration: 300,
-            easing: 'cubic-bezier(0.18, 0.67, 0.6, 1.22)',
+            duration: 350,
+            easing: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)',
           }}
         >
           {activeId && draggedWidget ? (

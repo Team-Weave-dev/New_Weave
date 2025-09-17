@@ -35,10 +35,13 @@ export function SortableWidget({
 
   const style = {
     transform: CSS.Transform.toString(transform),
-    transition: isDragging ? 'none' : transition, // 드래그 중에는 트랜지션 제거
+    transition: isDragging 
+      ? 'none' 
+      : transition || 'transform 300ms cubic-bezier(0.25, 0.46, 0.45, 0.94), box-shadow 200ms ease', // 부드러운 애니메이션
     zIndex: isDragging ? 999 : undefined,
     opacity: isDragging ? 0.3 : 1, // 드래그 중 원본 위젯 반투명 처리
     cursor: isDragging ? 'grabbing' : disabled ? 'default' : 'grab',
+    willChange: isDragging ? 'transform' : undefined, // 성능 최적화
   }
 
   // ARIA 속성 추가
@@ -58,20 +61,20 @@ export function SortableWidget({
       ref={setNodeRef}
       style={style}
       className={cn(
-        'relative h-full w-full focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200',
+        'relative h-full w-full focus:outline-none focus:ring-2 focus:ring-blue-500',
         {
           // 드래그 중 스타일
           'widget-dragging': isDragging,
-          'shadow-2xl': isDragging,
+          'shadow-2xl scale-105': isDragging,
           // 드롭 가능 영역 스타일  
           'widget-drop-zone': isOver && !isDragging,
-          'ring-2 ring-green-500 ring-offset-2 bg-green-50': isOver && !isDragging,
+          'ring-2 ring-green-500 ring-offset-2 bg-green-50 scale-102': isOver && !isDragging,
           // 호버 스타일
           'widget-hoverable': !disabled && !isDragging,
-          'hover:shadow-lg': !disabled && !isDragging,
+          'hover:shadow-lg hover:scale-101 transition-all duration-300': !disabled && !isDragging,
           // 정렬 중 스타일
           'widget-sorting': isSorting,
-          'transition-transform': isSorting,
+          'transition-transform duration-300': isSorting,
         },
         className
       )}
