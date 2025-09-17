@@ -32,7 +32,7 @@ import { DragPreview } from './DragPreview'
 import { GridDropZones } from './GridDropZones'
 import { cn } from '@/lib/utils'
 import { useLazyLoad } from '@/hooks/useIntersectionObserver'
-import { useGridCellSize } from '@/hooks/useGridCellSize'
+import { useGridContext } from '@/contexts/GridContext'
 import { 
   deltaToGridUnits, 
   constrainToGrid, 
@@ -55,19 +55,21 @@ export function DndProvider({ children }: DndProviderProps) {
     moveWidget,
     swapWidgets,
     reflowWidgets,
-    isEditMode,
     selectWidget,
-    selectedWidgetId 
+    selectedWidgetId,
+    isEditMode
   } = useDashboardStore()
   
-  // 동적 셀 크기 계산
-  const gap = 16
-  const padding = 16
-  const { cellSize, containerRef } = useGridCellSize({
-    gridSize: currentLayout?.gridSize || '3x3',
-    gap,
-    padding
-  })
+  // GridContext에서 그리드 정보 가져오기 (optional)
+  const gridContextData = useGridContext()
+  const fallbackContainerRef = useRef<HTMLDivElement>(null)
+  
+  // GridContext가 없는 경우 기본값 사용
+  const cellSize = gridContextData?.cellSize || 150
+  const gap = gridContextData?.gap || 16
+  const padding = gridContextData?.padding || 16
+  const containerRef = gridContextData?.containerRef || fallbackContainerRef
+  const gridSize = gridContextData?.gridSize || currentLayout?.gridSize || '3x3'
   
   // 향상된 충돌 감지기 인스턴스
   const [collisionDetector, setCollisionDetector] = useState<EnhancedCollisionDetector | null>(null)
@@ -95,7 +97,7 @@ export function DndProvider({ children }: DndProviderProps) {
     cellSize,
     gap,
     padding,
-    gridSize: currentLayout?.gridSize || '3x3'
+    gridSize: gridSize
   }
   
   const isVisible = useLazyLoad(containerRef)
@@ -264,7 +266,7 @@ export function DndProvider({ children }: DndProviderProps) {
 
   // 편집 모드가 아니거나 아직 보이지 않으면 DnD 비활성화
   if (!isEditMode || !isVisible) {
-    return <div ref={containerRef} className="w-full h-full">{children}</div>
+    return <>{children}</>
   }
 
   const widgetIds = currentLayout?.widgets
@@ -296,7 +298,7 @@ export function DndProvider({ children }: DndProviderProps) {
         items={widgetIds}
         strategy={rectSortingStrategy}
       >
-        <div ref={containerRef} className="relative w-full h-full">
+        <div className="relative w-full h-full">
           {/* 드롭 가능 영역 시각화 */}
           {activeId && currentLayout && (
             <GridDropZones

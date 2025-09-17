@@ -8,7 +8,7 @@ import { useToast } from '@/components/ui/Toast'
 import Typography from '@/components/ui/Typography'
 import Button from '@/components/ui/Button'
 import { log } from '@/lib/logger'
-import { GridLayout, GridItem } from './GridLayout'
+import { GridContainer, GridItem } from './GridContainer'
 import { useResponsiveGrid } from '@/lib/dashboard/responsive-grid'
 import { AdaptiveWidget, MobileDashboardLayout } from './AdaptiveWidget'
 import { FloatingActionButton } from './FloatingActionButton'
@@ -16,7 +16,6 @@ import { MobileDashboardTabs } from './MobileDashboardTabs'
 import { useTouchInteraction } from '@/hooks/useTouchInteraction'
 import { OptimizedWidgetWrapper } from './OptimizedWidgetWrapper'
 import { EditModeToolbar } from './EditModeToolbar'
-import { DndProvider } from './dnd/DndProvider'
 import { DraggableWidget } from './dnd/DraggableWidget'
 import { WidgetLibrary } from './WidgetLibrary'
 import { WidgetConfigPanel } from './WidgetConfigPanel'
@@ -286,14 +285,15 @@ export function DashboardContainer({
           />
         ) : (
           /* 데스크톱/태블릿 레이아웃 */
-          <DndProvider>
-            <LayoutTransition>
-              <GridLayout
-                gridSize={isResponsiveMode ? responsiveGridSize : currentLayout.gridSize}
-                className="h-full"
-                gap={isEditMode ? 20 : 16}
-                padding={isEditMode ? 20 : 16}
-              >
+          <LayoutTransition>
+            <GridContainer
+              gridSize={isResponsiveMode ? responsiveGridSize : currentLayout.gridSize}
+              className="h-full"
+              gap={isEditMode ? 20 : 16}
+              padding={isEditMode ? 20 : 16}
+              enableDnd={true}
+              enableKeyboardNavigation={true}
+            >
                 {currentLayout.widgets.map((widget) => (
                   <DraggableWidget
                     key={widget.id}
@@ -360,26 +360,25 @@ export function DashboardContainer({
                 </div>
               )}
 
-            {/* 빈 그리드 셀 (편집 모드에서만) */}
-            {isEditMode && currentLayout.widgets.length === 0 && (
-              <div className="col-span-full row-span-full flex items-center justify-center">
-                <div className="text-center">
-                  <Typography variant="body1" className="text-[var(--color-gray-500)] mb-4">
-                    위젯을 추가하여 대시보드를 구성하세요
-                  </Typography>
-                  <Button
-                    onClick={handleAddWidget}
-                    variant="primary"
-                    className="bg-[var(--color-blue-500)] hover:bg-[var(--color-blue-600)]"
-                  >
-                    첫 위젯 추가하기
-                  </Button>
+              {/* 빈 그리드 셀 (편집 모드에서만) */}
+              {isEditMode && currentLayout.widgets.length === 0 && (
+                <div className="col-span-full row-span-full flex items-center justify-center">
+                  <div className="text-center">
+                    <Typography variant="body1" className="text-[var(--color-gray-500)] mb-4">
+                      위젯을 추가하여 대시보드를 구성하세요
+                    </Typography>
+                    <Button
+                      onClick={handleAddWidget}
+                      variant="primary"
+                      className="bg-[var(--color-blue-500)] hover:bg-[var(--color-blue-600)]"
+                    >
+                      첫 위젯 추가하기
+                    </Button>
+                  </div>
                 </div>
-              </div>
-            )}
-              </GridLayout>
-            </LayoutTransition>
-          </DndProvider>
+              )}
+            </GridContainer>
+          </LayoutTransition>
         )}
       </div>
 

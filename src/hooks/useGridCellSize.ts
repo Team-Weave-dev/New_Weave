@@ -6,6 +6,7 @@ interface UseGridCellSizeOptions {
   gridSize: GridSize
   gap?: number
   padding?: number
+  containerElement?: HTMLElement | null
 }
 
 interface UseGridCellSizeReturn {
@@ -21,16 +22,18 @@ interface UseGridCellSizeReturn {
 export function useGridCellSize({
   gridSize,
   gap = 16,
-  padding = 16
+  padding = 16,
+  containerElement
 }: UseGridCellSizeOptions): UseGridCellSizeReturn {
   const containerRef = useRef<HTMLDivElement>(null)
   const [cellSize, setCellSize] = useState(150) // 기본값
   const resizeObserverRef = useRef<ResizeObserver | null>(null)
 
   const recalculate = useCallback(() => {
-    if (!containerRef.current) return
+    const container = containerElement || containerRef.current
+    if (!container) return
 
-    const containerWidth = containerRef.current.clientWidth
+    const containerWidth = container.clientWidth
     if (containerWidth > 0) {
       const newCellSize = calculateCellSize(containerWidth, gridSize, gap, padding)
       setCellSize(newCellSize)
@@ -38,7 +41,7 @@ export function useGridCellSize({
   }, [gridSize, gap, padding])
 
   useEffect(() => {
-    const container = containerRef.current
+    const container = containerElement || containerRef.current
     if (!container) return
 
     // 초기 계산
@@ -67,7 +70,7 @@ export function useGridCellSize({
         resizeObserverRef.current.unobserve(container)
       }
     }
-  }, [gridSize, gap, padding, recalculate])
+  }, [gridSize, gap, padding, recalculate, containerElement])
 
   // 윈도우 리사이즈 이벤트에도 대응
   useEffect(() => {

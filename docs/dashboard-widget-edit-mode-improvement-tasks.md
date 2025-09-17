@@ -163,10 +163,10 @@
     - Component test: 모든 기능 동작 확인
     - Performance test: 렌더링 성능 비교
 
-- [ ] **[ARCH-002]** GridContainer 통합 컴포넌트
+- [x] **[ARCH-002]** GridContainer 통합 컴포넌트
   - **Title**: Unified Grid Container
   - **Description**: GridLayout과 DndProvider 통합
-  - **Status**: TODO
+  - **Status**: DONE
   - **Dependencies**: ARCH-001
   - **Priority**: P2 (High)
   - **Details**:
