@@ -195,10 +195,10 @@
     - Unit test: 상태 전환 검증
     - E2E test: 드래그 시나리오 전체 테스트
 
-- [ ] **[STATE-002]** 위젯 위치 정규화 시스템
+- [x] **[STATE-002]** 위젯 위치 정규화 시스템
   - **Title**: Widget Position Normalization
   - **Description**: 위젯 위치 데이터 일관성 보장
-  - **Status**: TODO
+  - **Status**: DONE
   - **Dependencies**: STATE-001
   - **Priority**: P3 (Medium)
   - **Details**:
@@ -216,10 +216,10 @@
 
 ### 모바일/터치 통합
 
-- [ ] **[MOBILE-001]** 통합 인터랙션 시스템
+- [x] **[MOBILE-001]** 통합 인터랙션 시스템
   - **Title**: Unified Interaction System
   - **Description**: 터치와 마우스 이벤트 통합 처리
-  - **Status**: TODO
+  - **Status**: DONE
   - **Dependencies**: ARCH-001
   - **Priority**: P3 (Medium)
   - **Details**:

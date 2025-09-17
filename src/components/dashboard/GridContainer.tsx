@@ -4,7 +4,7 @@ import React, { ReactNode, useRef, useCallback, useMemo, memo } from 'react'
 import { cn } from '@/lib/utils'
 import { GridSize } from '@/types/dashboard'
 import { useDashboardStore } from '@/lib/stores/useDashboardStore'
-import { DndProvider } from './dnd/DndProvider'
+import { UnifiedDndProvider } from './dnd/UnifiedDndProvider'
 import { GridProvider } from '@/contexts/GridContext'
 import { useGridCellSize } from '@/hooks/useGridCellSize'
 import { useGridNavigation, useKeyboardShortcuts } from '@/lib/dashboard/keyboard-navigation'
@@ -164,7 +164,7 @@ export const GridContainer = memo(function GridContainer({
   
   // DnD 활성화 여부에 따라 래핑
   if (enableDnd && isEditMode) {
-    return <DndProvider>{content}</DndProvider>
+    return <UnifiedDndProvider>{content}</UnifiedDndProvider>
   }
   
   return content

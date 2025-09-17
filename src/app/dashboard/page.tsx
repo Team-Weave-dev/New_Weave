@@ -60,6 +60,7 @@ export default function DashboardPage() {
     addWidget,
     reflowWidgets,
     optimizeLayout,
+    normalizeWidgetPositions,
     undoLastAction,
     redoAction,
     canUndo,
@@ -366,6 +367,20 @@ export default function DashboardPage() {
                   >
                     <Maximize2 className="h-4 w-4 mr-1" aria-hidden="true" />
                     <span>최적화</span>
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      normalizeWidgetPositions();
+                      announceMessage('위젯 위치 정규화 완료', 'polite');
+                    }}
+                    className="text-blue-600 hover:text-blue-700"
+                    aria-label="위젯 위치 정규화"
+                    title="위치 데이터 정규화 및 충돌 해결"
+                  >
+                    <Grid3x3 className="h-4 w-4 mr-1" aria-hidden="true" />
+                    <span>정규화</span>
                   </Button>
                   <div className="w-px h-6 bg-blue-300 mx-1" />
                   <Button

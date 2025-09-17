@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { GridSize, WidgetPosition, Widget, DashboardLayout } from '@/types/dashboard'
 import { migrateWidgetTypes } from '@/lib/dashboard/widgetTypeMapping'
+import { WidgetNormalizer } from '@/lib/dashboard/widgetNormalizer'
 
 // Re-export types for backward compatibility
 export type { GridSize, WidgetPosition, Widget, DashboardLayout }
@@ -61,6 +62,7 @@ interface DashboardStore {
   swapWidgets: (widgetId1: string, widgetId2: string) => void
   pushAndReflowWidgets: (movedWidget: Widget, newPosition: WidgetPosition) => void
   optimizeLayout: () => void
+  normalizeWidgetPositions: () => void
   
   // History Actions
   undoLastAction: () => void
@@ -211,9 +213,18 @@ export const useDashboardStore = create<DashboardStore>()(
             return state
           }
           
+          // 위치 정규화
+          const normalizer = new WidgetNormalizer(state.currentLayout.gridSize)
+          const normalizedPosition = normalizer.normalizePosition(widget.position)
+          const normalizedWidget = { ...widget, position: normalizedPosition }
+          
+          // 충돌 체크 및 자동 위치 조정
+          const allWidgets = [...state.currentLayout.widgets, normalizedWidget]
+          const { widgets: adjustedWidgets } = normalizer.normalizeWidgets(allWidgets)
+          
           const updatedLayout = {
             ...state.currentLayout,
-            widgets: [...state.currentLayout.widgets, widget],
+            widgets: adjustedWidgets,
             updatedAt: new Date(),
           }
           
@@ -290,10 +301,14 @@ export const useDashboardStore = create<DashboardStore>()(
           const widget = before.find(w => w.id === widgetId)
           if (!widget) return state
           
+          // 위치 정규화
+          const normalizer = new WidgetNormalizer(state.currentLayout.gridSize)
+          const normalizedPosition = normalizer.normalizePosition(newPosition)
+          
           // Optimistic update
           const after = state.currentLayout.widgets.map((w) =>
             w.id === widgetId
-              ? { ...w, position: newPosition }
+              ? { ...w, position: normalizedPosition }
               : w
           )
           
@@ -548,6 +563,11 @@ export const useDashboardStore = create<DashboardStore>()(
             // 위젯 타입 마이그레이션 (한글 -> 영문)
             if (layout.widgets) {
               layout.widgets = migrateWidgetTypes(layout.widgets)
+              
+              // 위치 정규화
+              const normalizer = new WidgetNormalizer(layout.gridSize || '3x3')
+              const { widgets } = normalizer.normalizeWidgets(layout.widgets)
+              layout.widgets = widgets
             }
             set({ currentLayout: layout })
           } catch (error) {
@@ -921,6 +941,53 @@ export const useDashboardStore = create<DashboardStore>()(
       
       clearDragHistory: () => {
         set({ dragHistory: [] })
+      },
+      
+      // 위젯 위치 정규화
+      normalizeWidgetPositions: () => {
+        set((state) => {
+          if (!state.currentLayout) return state
+          
+          const normalizer = new WidgetNormalizer(state.currentLayout.gridSize)
+          const { widgets, report } = normalizer.normalizeWidgets(state.currentLayout.widgets)
+          
+          // 정규화 보고서 로깅
+          if (report.invalidPositions > 0 || report.duplicates > 0 || report.collisions > 0) {
+            console.log('[Widget Normalization Report]', {
+              totalWidgets: report.totalWidgets,
+              invalidPositions: report.invalidPositions,
+              duplicates: report.duplicates,
+              collisions: report.collisions,
+              normalized: report.normalized,
+            })
+          }
+          
+          // 변경사항이 없으면 상태 유지
+          const hasChanges = JSON.stringify(widgets) !== JSON.stringify(state.currentLayout.widgets)
+          if (!hasChanges) {
+            console.log('[Widget Normalization] No changes needed')
+            return state
+          }
+          
+          // 히스토리에 액션 저장
+          const action = {
+            type: 'normalize',
+            data: { before: state.currentLayout.widgets, after: widgets },
+            timestamp: Date.now(),
+          }
+          
+          return {
+            currentLayout: {
+              ...state.currentLayout,
+              widgets,
+              updatedAt: new Date(),
+            },
+            actionHistory: [...state.actionHistory, action].slice(-20),
+            redoHistory: [],
+            canUndo: true,
+            canRedo: false,
+          }
+        })
       },
     }),
     {
