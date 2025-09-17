@@ -497,9 +497,9 @@ export const wcagCompliance = {
       const ariaLabelledby = input.getAttribute('aria-labelledby');
       
       if (!label && !ariaLabel && !ariaLabelledby) {
-        results.failed.push(`Form element missing label: ${id || input.name}`);
+        results.failed.push(`Form element missing label: ${id || (input as HTMLInputElement).name}`);
       } else {
-        results.passed.push(`Form element has label: ${id || input.name}`);
+        results.passed.push(`Form element has label: ${id || (input as HTMLInputElement).name}`);
       }
     });
 

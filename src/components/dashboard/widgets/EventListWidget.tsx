@@ -50,7 +50,7 @@ interface EventRowProps {
 }
 
 // 가상 스크롤링을 위한 EventRow 컴포넌트 - React.memo로 최적화
-const EventRow = memo(({ index, style, data }: EventRowProps) => {
+const EventRow = memo(function EventRow({ index, style, data }: EventRowProps) {
   const {
     events,
     expandedEvents,
@@ -147,13 +147,13 @@ const EventRow = memo(({ index, style, data }: EventRowProps) => {
   );
 });
 
-const EventListWidget: React.FC<WidgetProps> = memo(({
+const EventListWidget: React.FC<WidgetProps> = memo(function EventListWidget({
   id,
   type,
   config,
   isEditMode,
   className
-}) => {
+}) {
   const widgetId = id;
   const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [searchQuery, setSearchQuery] = useState('');
@@ -168,7 +168,7 @@ const EventListWidget: React.FC<WidgetProps> = memo(({
   // 초기 데이터 로드
   useEffect(() => {
     loadEvents();
-  }, []);
+  }, [loadEvents]);
 
   // 필터 및 정렬 업데이트
   useEffect(() => {

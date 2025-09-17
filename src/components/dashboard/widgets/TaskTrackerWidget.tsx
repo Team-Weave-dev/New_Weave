@@ -100,7 +100,7 @@ interface TaskRowProps {
 }
 
 // 가상 스크롤링을 위한 TaskRow 컴포넌트 - React.memo로 최적화
-const TaskRow = memo(({ index, style, data }: TaskRowProps) => {
+const TaskRow = memo(function TaskRow({ index, style, data }: TaskRowProps) {
   const {
     tasks,
     toggleTaskComplete,
@@ -274,14 +274,14 @@ interface KanbanCardProps {
   getPriorityIcon: (priority: Task['priority']) => React.ReactNode
 }
 
-const KanbanCard = memo(({
+const KanbanCard = memo(function KanbanCard({
   task,
   onToggleComplete,
   onToggleSubtask,
   onDelete,
   getPriorityColor,
   getPriorityIcon
-}: KanbanCardProps) => {
+}: KanbanCardProps) {
   const {
     attributes,
     listeners,
@@ -450,13 +450,13 @@ const KanbanCard = memo(({
 })
 
 // TaskTrackerWidget을 React.memo로 최적화
-export const TaskTrackerWidget = memo(({
+export const TaskTrackerWidget = memo(function TaskTrackerWidget({
   id,
   type,
   config,
   isEditMode,
   className
-}: WidgetProps) => {
+}: WidgetProps) {
   const [tasks, setTasks] = useState<Task[]>([])
   const [loading, setLoading] = useState(true)
   const [showAddTask, setShowAddTask] = useState(false)
@@ -687,14 +687,14 @@ export const TaskTrackerWidget = memo(({
 
   // 필터링 결과 알림
   useEffect(() => {
-    if (!loading && filteredTasks.length > 0) {
-      const completedCount = filteredTasks.filter(t => t.completed).length
-      announceCount('작업 목록', filteredTasks.length)
+    if (!loading && filteredAndSortedTasks.length > 0) {
+      const completedCount = filteredAndSortedTasks.filter(t => t.completed).length
+      announceCount('작업 목록', filteredAndSortedTasks.length)
       if (completedCount > 0) {
-        announceCount('완료된 작업', completedCount, filteredTasks.length)
+        announceCount('완료된 작업', completedCount, filteredAndSortedTasks.length)
       }
     }
-  }, [filteredTasks, loading, announceCount])
+  }, [loading, announceCount, filteredAndSortedTasks])
 
   // 작업 완료 토글 - useCallback으로 최적화
   const toggleTaskComplete = useCallback((taskId: string) => {
@@ -908,7 +908,7 @@ export const TaskTrackerWidget = memo(({
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <CheckCircle2 className={cn("w-5 h-5", widgetColors.primary.icon)} />
-          <Typography variant="h3" className={widgetColors.text.primary} id="task-tracker-title">
+          <Typography variant="h3" className={widgetColors.text.primary}>
             작업 관리
           </Typography>
         </div>
