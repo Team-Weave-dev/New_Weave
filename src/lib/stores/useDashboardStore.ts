@@ -39,6 +39,9 @@ interface DashboardStore {
   isEditMode: boolean
   selectedWidgetId: string | null
   
+  // Getters
+  widgets: Widget[]
+  
   // 드래그 상태
   dragState: DragState
   dragHistory: DragHistoryItem[]
@@ -55,6 +58,8 @@ interface DashboardStore {
   updateWidget: (widgetId: string, updates: Partial<Widget>) => void
   updateWidgetConfig: (widgetId: string, config: Record<string, any>) => void
   removeWidget: (widgetId: string) => void
+  deleteWidget: (widgetId: string) => void
+  duplicateWidget: (widgetId: string) => void
   moveWidget: (widgetId: string, newPosition: WidgetPosition) => void
   resizeWidget: (widgetId: string, newSize: { width: number; height: number }) => void
   lockWidget: (widgetId: string, locked: boolean) => void
@@ -75,6 +80,7 @@ interface DashboardStore {
   // Edit Mode Actions
   setEditMode: (editMode: boolean) => void
   selectWidget: (widgetId: string | null) => void
+  setSelectedWidgetId: (widgetId: string | null) => void
   
   // Grid Actions
   setGridSize: (gridSize: GridSize) => void
@@ -111,6 +117,11 @@ export const useDashboardStore = create<DashboardStore>()(
       layouts: [],
       isEditMode: false,
       selectedWidgetId: null,
+      
+      // Getters
+      get widgets() {
+        return get().currentLayout?.widgets || []
+      },
       actionHistory: [],
       redoHistory: [],
       canUndo: false,
@@ -291,6 +302,37 @@ export const useDashboardStore = create<DashboardStore>()(
                 : state.selectedWidgetId,
           }
         })
+      },
+      
+      deleteWidget: (widgetId) => {
+        // Alias for removeWidget
+        get().removeWidget(widgetId)
+      },
+      
+      duplicateWidget: (widgetId) => {
+        const state = get()
+        if (!state.currentLayout) return
+        
+        const widgetToDuplicate = state.currentLayout.widgets.find(
+          (widget) => widget.id === widgetId
+        )
+        
+        if (!widgetToDuplicate) return
+        
+        // Create new widget with unique ID and shifted position
+        const newWidget = {
+          ...widgetToDuplicate,
+          id: `widget-${Date.now()}`,
+          position: {
+            ...widgetToDuplicate.position,
+            x: Math.min(
+              widgetToDuplicate.position.x + 1,
+              parseInt(state.currentLayout.gridSize.split('x')[0]) - 1
+            ),
+          },
+        }
+        
+        state.addWidget(newWidget)
       },
       
       moveWidget: (widgetId, newPosition) => {
@@ -517,6 +559,10 @@ export const useDashboardStore = create<DashboardStore>()(
       },
       
       selectWidget: (widgetId) => {
+        set({ selectedWidgetId: widgetId })
+      },
+      
+      setSelectedWidgetId: (widgetId) => {
         set({ selectedWidgetId: widgetId })
       },
       

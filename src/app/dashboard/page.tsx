@@ -43,6 +43,11 @@ import {
 } from 'lucide-react';
 import { useKeyboardShortcuts, announceMessage } from '@/lib/dashboard/keyboard-navigation';
 import '@/styles/accessibility.css';
+import { MobileEditToolbar } from '@/components/dashboard/mobile/MobileEditToolbar';
+import { FloatingActionButton } from '@/components/dashboard/mobile/FloatingActionButton';
+import { MobileBottomSheet } from '@/components/dashboard/mobile/MobileBottomSheet';
+import { MobileWidgetOptions } from '@/components/dashboard/mobile/MobileWidgetOptions';
+import { WidgetLibrary } from '@/components/dashboard/WidgetLibrary';
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -50,6 +55,10 @@ export default function DashboardPage() {
   const [supabaseClient] = useState(() => getSupabaseClientSafe());
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showTemplateManager, setShowTemplateManager] = useState(false);
+  const [showMobileWidgetOptions, setShowMobileWidgetOptions] = useState(false);
+  const [showMobileAddWidget, setShowMobileAddWidget] = useState(false);
+  const [selectedMobileWidgetId, setSelectedMobileWidgetId] = useState<string | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
   
   const {
     currentLayout,
@@ -66,6 +75,17 @@ export default function DashboardPage() {
     canUndo,
     canRedo,
   } = useDashboardStore();
+
+  // 모바일 감지
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 1024); // lg 브레이크포인트
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   // 키보드 단축키 설정
   useKeyboardShortcuts([
@@ -220,6 +240,27 @@ export default function DashboardPage() {
     // firstTimeUserService에서 이미 처리됨 (completeOnboarding 또는 skipOnboarding)
   };
 
+  // 모바일에서 위젯 추가 핸들러
+  const handleMobileAddWidget = (widgetType?: string) => {
+    if (widgetType) {
+      // 특정 위젯 타입 추가 로직
+      addWidget({
+        type: widgetType,
+        position: { x: 0, y: 0, width: 1, height: 1 },
+        config: { title: `새 ${widgetType} 위젯` }
+      });
+      setShowMobileAddWidget(false);
+    } else {
+      setShowMobileAddWidget(true);
+    }
+  };
+
+  // 모바일에서 위젯 선택 핸들러
+  const handleMobileWidgetSelect = (widgetId: string) => {
+    setSelectedMobileWidgetId(widgetId);
+    setShowMobileWidgetOptions(true);
+  };
+
   return (
     <AppLayout>
       {/* 스킵 링크 */}
@@ -253,12 +294,12 @@ export default function DashboardPage() {
             
             {/* 우측 액션 버튼 그룹 */}
             <nav className="flex items-center gap-3 flex-shrink-0" role="navigation" aria-label="대시보드 도구">
-              {/* 템플릿 관리 버튼 */}
+              {/* 템플릿 관리 버튼 - 데스크톱에서만 표시 */}
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => setShowTemplateManager(true)}
-                className="flex items-center gap-2"
+                className="hidden lg:flex items-center gap-2"
                 aria-label="템플릿 관리 열기"
                 title="템플릿 관리 (Ctrl+T)"
               >
@@ -266,8 +307,8 @@ export default function DashboardPage() {
                 <span>템플릿</span>
               </Button>
               
-              {/* 그리드 크기 선택 */}
-              <div className="relative">
+              {/* 그리드 크기 선택 - 데스크톱에서만 표시 */}
+              <div className="relative hidden lg:block">
                 <Button
                   variant="outline"
                   size="sm"
@@ -293,15 +334,15 @@ export default function DashboardPage() {
                 title={isEditMode ? '편집 완료 (Ctrl+S)' : '대시보드 편집 (Ctrl+E)'}
               >
                 <Settings className="h-4 w-4" aria-hidden="true" />
-                <span>{isEditMode ? '편집 완료' : '대시보드 편집'}</span>
+                <span className="hidden sm:inline">{isEditMode ? '편집 완료' : '대시보드 편집'}</span>
               </Button>
               
               {/* 위젯 추가 버튼 - DashboardContainer의 EditModeToolbar 사용하도록 제거 */}
             </nav>
           </div>
 
-          {/* 편집 모드 안내 메시지 */}
-          {isEditMode && (
+          {/* 편집 모드 안내 메시지 - 데스크톱에서만 표시 */}
+          {isEditMode && !isMobile && (
             <div 
               className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6"
               role="status"
@@ -434,6 +475,59 @@ export default function DashboardPage() {
           isOpen={showTemplateManager}
           onClose={() => setShowTemplateManager(false)}
         />
+        
+        {/* 모바일 편집 UI 컴포넌트들 */}
+        {isMobile && isEditMode && (
+          <>
+            {/* 모바일 편집 툴바 */}
+            <MobileEditToolbar
+              onClose={() => setEditMode(false)}
+              onAddWidget={() => setShowMobileAddWidget(true)}
+              onOpenSettings={() => setShowTemplateManager(true)}
+            />
+            
+            {/* 플로팅 액션 버튼 */}
+            <FloatingActionButton
+              onAddWidget={handleMobileAddWidget}
+              onOpenTemplates={() => setShowTemplateManager(true)}
+              onOpenSettings={() => setShowTemplateManager(true)}
+            />
+            
+            {/* 위젯 추가 바텀시트 */}
+            <MobileBottomSheet
+              isOpen={showMobileAddWidget}
+              onClose={() => setShowMobileAddWidget(false)}
+              title="위젯 추가"
+              height="auto"
+            >
+              <div className="p-4">
+                <WidgetLibrary
+                  isOpen={true}
+                  onClose={() => setShowMobileAddWidget(false)}
+                  onAddWidget={(widgetData: any) => {
+                    const widget = {
+                      type: widgetData.type || 'custom',
+                      position: widgetData.position || { x: 0, y: 0, width: 1, height: 1 },
+                      config: widgetData.config || {}
+                    };
+                    addWidget(widget);
+                    setShowMobileAddWidget(false);
+                  }}
+                />
+              </div>
+            </MobileBottomSheet>
+            
+            {/* 위젯 옵션 바텀시트 */}
+            <MobileWidgetOptions
+              isOpen={showMobileWidgetOptions}
+              onClose={() => {
+                setShowMobileWidgetOptions(false);
+                setSelectedMobileWidgetId(null);
+              }}
+              widgetId={selectedMobileWidgetId}
+            />
+          </>
+        )}
       </WorkspacePageContainer>
     </AppLayout>
   );
