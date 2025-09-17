@@ -167,13 +167,14 @@ export function VirtualizedGridLayout({
   // 컨테이너 크기 감지를 위한 state (조건문 밖으로 이동)
   const [containerSize, setContainerSize] = useState({ width: 0, height: 0 })
   const containerRef = useRef<HTMLDivElement>(null)
+  const lastScrollTopRef = useRef(0)
 
   // 스크롤 최적화
   const handleScroll = useCallback(({ scrollTop }: { scrollTop: number }) => {
     // 스크롤 위치에 따른 추가 최적화 로직
     // 예: 스크롤 속도 감지, 프리로딩 등
-    const scrollSpeed = Math.abs(scrollTop - (handleScroll.lastScrollTop || 0))
-    handleScroll.lastScrollTop = scrollTop
+    const scrollSpeed = Math.abs(scrollTop - lastScrollTopRef.current)
+    lastScrollTopRef.current = scrollTop
 
     if (scrollSpeed > 1000) {
       // 빠른 스크롤 중 - 렌더링 최적화
@@ -184,8 +185,6 @@ export function VirtualizedGridLayout({
       }
     }
   }, [])
-
-  handleScroll.lastScrollTop = 0
 
   // ResizeObserver로 컨테이너 크기 감지
   useEffect(() => {
