@@ -7,6 +7,7 @@ import { WorkspacePageContainer } from '@/components/layout/PageContainer';
 import { DashboardContainerWrapper } from '@/components/dashboard/DashboardContainerWrapper';
 import { OnboardingModal } from '@/components/dashboard/OnboardingModal';
 import { TemplateManager } from '@/components/dashboard/TemplateManager';
+import { SkipLinks } from '@/components/accessibility/SkipLinks';
 import Typography from '@/components/ui/Typography';
 import Button from '@/components/ui/Button';
 import { useDashboardStore } from '@/lib/stores/useDashboardStore';
@@ -38,6 +39,7 @@ import {
   PieChart
 } from 'lucide-react';
 import { useKeyboardShortcuts, announceMessage } from '@/lib/dashboard/keyboard-navigation';
+import '@/styles/accessibility.css';
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -178,16 +180,25 @@ export default function DashboardPage() {
 
   return (
     <AppLayout>
+      {/* 스킵 링크 */}
+      <SkipLinks 
+        links={[
+          { id: 'main-content', text: '주요 콘텐츠로 건너뛰기' },
+          { id: 'dashboard-widgets', text: '대시보드 위젯으로 건너뛰기' },
+          { id: 'widget-toolbar', text: '위젯 도구 모음으로 건너뛰기' },
+        ]}
+      />
+      
       <WorkspacePageContainer>
         {/* 헤더 영역 */}
-        <div className="mb-6">
+        <header className="mb-6" role="banner">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3 flex-1 min-w-0">
-              <div className="p-3 bg-weave-primary-light rounded-lg flex-shrink-0">
+              <div className="p-3 bg-weave-primary-light rounded-lg flex-shrink-0" aria-hidden="true">
                 <LayoutGrid className="w-6 h-6 text-weave-primary" />
               </div>
               <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-4 mb-1">
+                <div className="flex items-center gap-4 mb-1" id="main-content">
                   <Typography variant="h2" className="text-2xl text-txt-primary">
                     대시보드
                   </Typography>
@@ -199,16 +210,18 @@ export default function DashboardPage() {
             </div>
             
             {/* 우측 액션 버튼 그룹 */}
-            <div className="flex items-center gap-3 flex-shrink-0">
+            <nav className="flex items-center gap-3 flex-shrink-0" role="navigation" aria-label="대시보드 도구">
               {/* 템플릿 관리 버튼 */}
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => setShowTemplateManager(true)}
                 className="flex items-center gap-2"
+                aria-label="템플릿 관리 열기"
+                title="템플릿 관리 (Ctrl+T)"
               >
-                <Sparkles className="h-4 w-4" />
-                템플릿
+                <Sparkles className="h-4 w-4" aria-hidden="true" />
+                <span>템플릿</span>
               </Button>
               
               {/* 그리드 크기 선택 */}
@@ -217,10 +230,13 @@ export default function DashboardPage() {
                   variant="outline"
                   size="sm"
                   className="flex items-center gap-2"
+                  aria-label="그리드 크기 선택"
+                  aria-haspopup="true"
+                  aria-expanded="false"
                 >
-                  <Grid3x3 className="h-4 w-4" />
+                  <Grid3x3 className="h-4 w-4" aria-hidden="true" />
                   <span>3x3</span>
-                  <ChevronDown className="h-3 w-3" />
+                  <ChevronDown className="h-3 w-3" aria-hidden="true" />
                 </Button>
               </div>
               
@@ -230,20 +246,28 @@ export default function DashboardPage() {
                 size="sm"
                 onClick={() => setEditMode(!isEditMode)}
                 className="flex items-center gap-2"
+                aria-label={isEditMode ? '편집 모드 종료' : '대시보드 편집 모드 시작'}
+                aria-pressed={isEditMode}
+                title={isEditMode ? '편집 완료 (Ctrl+S)' : '대시보드 편집 (Ctrl+E)'}
               >
-                <Settings className="h-4 w-4" />
-                {isEditMode ? '편집 완료' : '대시보드 편집'}
+                <Settings className="h-4 w-4" aria-hidden="true" />
+                <span>{isEditMode ? '편집 완료' : '대시보드 편집'}</span>
               </Button>
               
               {/* 위젯 추가 버튼 - DashboardContainer의 EditModeToolbar 사용하도록 제거 */}
-            </div>
+            </nav>
           </div>
 
           {/* 편집 모드 안내 메시지 */}
           {isEditMode && (
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+            <div 
+              className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6"
+              role="status"
+              aria-live="polite"
+              aria-label="편집 모드 안내"
+            >
               <div className="flex items-start gap-3">
-                <Sparkles className="h-5 w-5 text-blue-600 mt-0.5" />
+                <Sparkles className="h-5 w-5 text-blue-600 mt-0.5" aria-hidden="true" />
                 <div className="flex-1">
                   <h3 className="text-sm font-medium text-blue-900 mb-1">
                     대시보드 편집 모드
@@ -252,43 +276,60 @@ export default function DashboardPage() {
                     실제 위젯을 보면서 편집할 수 있습니다. 위젯을 드래그하여 위치를 변경하거나, 
                     크기를 조절하고, 새로운 위젯을 추가하세요.
                   </p>
+                  <p className="text-xs text-blue-600 mt-2 sr-only">
+                    키보드 단축키: Ctrl+R 자동 정렬, Ctrl+S 저장 및 종료
+                  </p>
                 </div>
-                <div className="flex items-center gap-2">
+                <nav className="flex items-center gap-2" role="navigation" aria-label="편집 도구" id="widget-toolbar">
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={reflowWidgets}
                     className="text-blue-600 hover:text-blue-700"
+                    aria-label="위젯 자동 정렬"
+                    title="위젯 자동 정렬 (Ctrl+R)"
                   >
-                    <RefreshCw className="h-4 w-4 mr-1" />
-                    자동 정렬
+                    <RefreshCw className="h-4 w-4 mr-1" aria-hidden="true" />
+                    <span>자동 정렬</span>
                   </Button>
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => setEditMode(false)}
                     className="text-blue-600 hover:text-blue-700"
+                    aria-label="변경사항 저장 후 편집 종료"
+                    title="저장 (Ctrl+S)"
                   >
-                    <Save className="h-4 w-4 mr-1" />
-                    저장
+                    <Save className="h-4 w-4 mr-1" aria-hidden="true" />
+                    <span>저장</span>
                   </Button>
-                </div>
+                </nav>
               </div>
             </div>
           )}
-        </div>
+        </header>
 
         {/* 대시보드 위젯 컨테이너 */}
-        <div className="bg-white rounded-lg border border-gray-200 min-h-[600px] relative">
+        <main 
+          className="bg-white rounded-lg border border-gray-200 min-h-[600px] relative"
+          id="dashboard-widgets"
+          role="main"
+          aria-label="대시보드 위젯 영역"
+        >
           {/* 편집 모드 인디케이터 */}
           {isEditMode && (
-            <div className="absolute top-2 right-2 z-30 bg-blue-600 text-white px-3 py-1 rounded-full text-xs font-medium shadow-lg flex items-center gap-2">
-              <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
-              편집 모드 활성화
+            <div 
+              className="absolute top-2 right-2 z-30 bg-blue-600 text-white px-3 py-1 rounded-full text-xs font-medium shadow-lg flex items-center gap-2"
+              role="status"
+              aria-live="polite"
+              aria-label="편집 모드 상태"
+            >
+              <div className="w-2 h-2 bg-white rounded-full animate-pulse" aria-hidden="true" />
+              <span>편집 모드 활성화</span>
             </div>
           )}
           <DashboardContainerWrapper showToolbar={isEditMode} />
-        </div>
+        </main>
         
         {/* 온보딩 모달 */}
         <OnboardingModal
