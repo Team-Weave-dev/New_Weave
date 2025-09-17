@@ -4,6 +4,9 @@
 /* Dashboard Animations */
 @import url("../styles/dashboard-animations.css");
 
+/* Smooth Drag Animations */
+@import url("../styles/animations.css");
+
 /* stylelint-disable-next-line at-rule-no-unknown */
 @tailwind base;
 /* stylelint-disable-next-line at-rule-no-unknown */

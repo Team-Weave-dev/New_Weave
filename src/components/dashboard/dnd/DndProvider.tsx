@@ -4,7 +4,6 @@ import React, { ReactNode, useState, useCallback, useRef, useEffect } from 'reac
 import {
   DndContext,
   DragEndEvent,
-  DragOverlay,
   DragStartEvent,
   DragOverEvent,
   closestCenter,
@@ -30,6 +29,8 @@ import { findNearestValidPosition, reflowWidgets } from '@/lib/dashboard/collisi
 import { EnhancedCollisionDetector, CollisionOptions } from '@/lib/dashboard/enhancedCollisionDetection'
 import { DragPreview } from './DragPreview'
 import { GridDropZones } from './GridDropZones'
+import { AnimatedDragOverlay, SpringDragPreview } from './AnimatedDragOverlay'
+import { SwapAnimation, WidgetTransition } from './SwapAnimation'
 import { cn } from '@/lib/utils'
 import { useLazyLoad } from '@/hooks/useIntersectionObserver'
 import { useGridContext } from '@/contexts/GridContext'
@@ -114,6 +115,8 @@ export function DndProvider({ children }: DndProviderProps) {
   const [draggedWidget, setDraggedWidget] = useState<any>(null)
   const [dragPreviewPosition, setDragPreviewPosition] = useState<{x: number, y: number, width: number, height: number} | null>(null)
   const [isValidDropPosition, setIsValidDropPosition] = useState(true)
+  const [swapAnimation, setSwapAnimation] = useState<{source: string, target: string} | null>(null)
+  const [pushedWidgets, setPushedWidgets] = useState<string[]>([])
 
   // 센서 설정 - 포인터와 키보드 지원
   const sensors = useSensors(
@@ -247,9 +250,17 @@ export function DndProvider({ children }: DndProviderProps) {
         moveWidget(activeWidget.id, newPosition)
         endDrag(newPosition)
       } else if (collisionResult.swappableWidget) {
-        // 스왑 가능한 위젯이 있으면 교환
-        swapWidgets(activeWidget.id, collisionResult.swappableWidget.id)
-        endDrag()
+        // 스왑 가능한 위젯이 있으면 교환 애니메이션 실행
+        setSwapAnimation({
+          source: activeWidget.id,
+          target: collisionResult.swappableWidget.id
+        })
+        // 애니메이션 후 실제 스왑 실행
+        setTimeout(() => {
+          swapWidgets(activeWidget.id, collisionResult.swappableWidget.id)
+          setSwapAnimation(null)
+          endDrag()
+        }, 400)
       } else if (collisionResult.suggestedPosition) {
         // 제안된 대체 위치로 이동
         moveWidget(activeWidget.id, collisionResult.suggestedPosition)
@@ -268,9 +279,14 @@ export function DndProvider({ children }: DndProviderProps) {
         // 밀어내기 시도
         const updatedWidgets = collisionDetector.pushWidgets(activeWidget, newPosition)
         if (updatedWidgets.length > 0) {
-          // 밀어내기 성공 시 위젯 재배치
-          reflowWidgets()
-          endDrag()
+          // 밀어내기 애니메이션 실행
+          setPushedWidgets(updatedWidgets.map(w => w.id))
+          // 애니메이션 후 실제 재배치
+          setTimeout(() => {
+            reflowWidgets()
+            setPushedWidgets([])
+            endDrag()
+          }, 350)
         } else {
           // 모든 시도 실패 시 원래 위치로
           cancelDrag()
@@ -347,13 +363,20 @@ export function DndProvider({ children }: DndProviderProps) {
         </div>
       </SortableContext>
       
+      {/* 스왑 애니메이션 */}
+      {swapAnimation && (
+        <SwapAnimation
+          sourceId={swapAnimation.source}
+          targetId={swapAnimation.target}
+          onSwapComplete={() => setSwapAnimation(null)}
+        />
+      )}
+      
       {/* 드래그 오버레이 */}
       {typeof window !== 'undefined' && createPortal(
-        <DragOverlay
-          dropAnimation={{
-            duration: 350,
-            easing: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)',
-          }}
+        <AnimatedDragOverlay
+          isDragging={!!activeId}
+          isValidDrop={isValidDropPosition}
         >
           {activeId && draggedWidget ? (
             <div 
@@ -361,23 +384,16 @@ export function DndProvider({ children }: DndProviderProps) {
                 width: `${calculateWidgetSize(draggedWidget.position.width, 1, cellSize, gap).width}px`,
                 height: `${calculateWidgetSize(1, draggedWidget.position.height, cellSize, gap).height}px`,
               }}
-              className={cn(
-                'transition-all duration-200',
-                isValidDropPosition ? 'opacity-90' : 'opacity-50'
-              )}
+              className="gpu-accelerated"
             >
-              <DragPreview widget={draggedWidget} />
-              {/* 드롭 가능 여부 표시 */}
-              {!isValidDropPosition && (
-                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                  <div className="bg-red-600 text-white px-3 py-2 rounded-lg text-sm font-medium shadow-lg">
-                    이 위치에 놓을 수 없습니다
-                  </div>
-                </div>
-              )}
+              <SpringDragPreview 
+                widget={draggedWidget}
+                isValidDrop={isValidDropPosition}
+                showDropIndicator={true}
+              />
             </div>
           ) : null}
-        </DragOverlay>,
+        </AnimatedDragOverlay>,
         document.body
       )}
     </DndContext>

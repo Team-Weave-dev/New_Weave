@@ -41,7 +41,11 @@ export function SortableWidget({
     zIndex: isDragging ? 999 : undefined,
     opacity: isDragging ? 0.3 : 1, // 드래그 중 원본 위젯 반투명 처리
     cursor: isDragging ? 'grabbing' : disabled ? 'default' : 'grab',
-    willChange: isDragging ? 'transform' : undefined, // 성능 최적화
+    // GPU 가속 최적화
+    willChange: isDragging ? 'transform, opacity' : 'auto',
+    backfaceVisibility: 'hidden' as const,
+    perspective: '1000px',
+    transformStyle: 'preserve-3d' as const,
   }
 
   // ARIA 속성 추가
@@ -61,7 +65,7 @@ export function SortableWidget({
       ref={setNodeRef}
       style={style}
       className={cn(
-        'relative h-full w-full focus:outline-none focus:ring-2 focus:ring-blue-500',
+        'relative h-full w-full focus:outline-none focus:ring-2 focus:ring-blue-500 gpu-accelerated',
         {
           // 드래그 중 스타일
           'widget-dragging': isDragging,
@@ -71,10 +75,10 @@ export function SortableWidget({
           'ring-2 ring-green-500 ring-offset-2 bg-green-50 scale-102': isOver && !isDragging,
           // 호버 스타일
           'widget-hoverable': !disabled && !isDragging,
-          'hover:shadow-lg hover:scale-101 transition-all duration-300': !disabled && !isDragging,
+          'hover:shadow-lg hover:scale-101': !disabled && !isDragging,
           // 정렬 중 스타일
           'widget-sorting': isSorting,
-          'transition-transform duration-300': isSorting,
+          'spring-transition': isSorting && !isDragging,
         },
         className
       )}
@@ -85,11 +89,11 @@ export function SortableWidget({
       {isDragging && (
         <>
           {/* 점선 테두리 */}
-          <div className="absolute inset-0 border-2 border-dashed border-gray-400 rounded-lg pointer-events-none" />
+          <div className="absolute inset-0 border-2 border-dashed border-gray-400 rounded-lg pointer-events-none animate-pulse" />
           
           {/* "이동 중" 라벨 */}
           <div className="absolute top-2 left-2 z-10 pointer-events-none">
-            <div className="bg-gray-800 text-white px-2 py-1 rounded text-xs font-medium shadow-lg">
+            <div className="bg-gray-800 text-white px-2 py-1 rounded text-xs font-medium shadow-lg animate-bounce">
               이동 중
             </div>
           </div>
@@ -98,10 +102,10 @@ export function SortableWidget({
       
       {/* 드롭 영역 표시 */}
       {isOver && !isDragging && (
-        <div className="absolute inset-0 bg-green-400 bg-opacity-10 rounded-lg pointer-events-none">
-          <div className="absolute inset-0 border-2 border-green-500 border-dashed rounded-lg" />
+        <div className="absolute inset-0 bg-green-400 bg-opacity-10 rounded-lg pointer-events-none animate-pulse-glow">
+          <div className="absolute inset-0 border-2 border-green-500 border-dashed rounded-lg animate-pulse" />
           <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-            <div className="bg-green-600 text-white px-3 py-2 rounded-lg text-sm font-medium shadow-lg">
+            <div className="bg-green-600 text-white px-3 py-2 rounded-lg text-sm font-medium shadow-lg animate-drop-bounce">
               여기에 놓기
             </div>
           </div>
