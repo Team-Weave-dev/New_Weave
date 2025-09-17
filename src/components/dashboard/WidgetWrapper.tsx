@@ -21,6 +21,8 @@ import { WidgetRegistry } from '@/lib/dashboard/WidgetRegistry'
 import { ResizeHandle } from './ResizeHandle'
 import { ResizeGhost } from './ResizeGhost'
 import { hasCollisionWithWidgets } from '@/lib/dashboard/collisionDetection'
+import { HoverEffect } from './animations/HoverEffect'
+import { RippleEffect } from './animations/RippleEffect'
 
 interface WidgetWrapperProps {
   id: string
@@ -280,7 +282,7 @@ export function WidgetWrapper({
     return () => document.removeEventListener('click', handleClickOutside)
   }, [showSizeMenu])
 
-  return (
+  const widgetContent = (
     <div
       ref={containerRef}
       className={cn(
@@ -289,7 +291,6 @@ export function WidgetWrapper({
           'border-blue-500 shadow-lg': isSelected && isEditMode,
           'border-gray-200': !isSelected || !isEditMode,
           'opacity-50': isDragging,
-          'hover:shadow-md': isEditMode && !locked && !isResizing,
           'cursor-move': isEditMode && !locked && !isResizing,
           'fixed inset-4 z-50': isFullscreen,
         },
@@ -634,4 +635,22 @@ export function WidgetWrapper({
       )}
     </div>
   )
+
+  // 편집 모드가 아닐 때만 HoverEffect 적용
+  if (!isEditMode && !isDragging) {
+    return (
+      <HoverEffect 
+        scaleAmount={1.01} 
+        shadowIntensity="medium"
+        disabled={locked}
+      >
+        <RippleEffect disabled={locked}>
+          {widgetContent}
+        </RippleEffect>
+      </HoverEffect>
+    )
+  }
+
+  // 편집 모드일 때는 애니메이션 없이 반환
+  return widgetContent
 }
