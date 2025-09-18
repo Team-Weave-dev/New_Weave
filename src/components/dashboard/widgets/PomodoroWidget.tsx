@@ -28,6 +28,9 @@ interface PomodoroWidgetProps {
 }
 
 export function PomodoroWidget({ id, config, isEditMode }: PomodoroWidgetProps) {
+  // 프리뷰 모드 체크
+  const isPreviewMode = config?.isPreviewMode || config?.disableTimers
+  
   // 설정값
   const workDuration = (config?.workDuration || 25) * 60 // 25분을 초로 변환
   const shortBreakDuration = (config?.shortBreakDuration || 5) * 60 // 5분
@@ -170,6 +173,9 @@ export function PomodoroWidget({ id, config, isEditMode }: PomodoroWidgetProps) 
 
   // 타이머 시작/일시정지
   const toggleTimer = useCallback(() => {
+    // 프리뷰 모드에서는 타이머 작동 안함
+    if (isPreviewMode) return
+    
     if (!isRunning) {
       // 시작
       setIsRunning(true)
@@ -204,7 +210,7 @@ export function PomodoroWidget({ id, config, isEditMode }: PomodoroWidgetProps) 
         intervalRef.current = null
       }
     }
-  }, [isRunning, currentMode, completeSession, switchMode])
+  }, [isRunning, currentMode, completeSession, switchMode, isPreviewMode])
 
   // 타이머 리셋
   const resetTimer = useCallback(() => {
@@ -257,7 +263,9 @@ export function PomodoroWidget({ id, config, isEditMode }: PomodoroWidgetProps) 
     return () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current)
+        intervalRef.current = null
       }
+      setIsRunning(false)
     }
   }, [])
 

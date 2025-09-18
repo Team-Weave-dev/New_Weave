@@ -28,17 +28,21 @@ interface TeamMember {
 }
 
 interface TeamStatusWidgetProps {
+  id?: string;
+  config?: any;
   teamMembers?: TeamMember[];
 }
 
-export default function TeamStatusWidget() {
-  const teamMembers: TeamMember[] = [];
+export default function TeamStatusWidget({ id, config, teamMembers = [] }: TeamStatusWidgetProps) {
   const [members, setMembers] = useState<TeamMember[]>([]);
   const [filter, setFilter] = useState<'all' | 'online' | 'offline' | 'busy' | 'away' | 'meeting'>('all');
   const [view, setView] = useState<'grid' | 'list'>('grid');
+  
+  // 프리뷰 모드 체크
+  const isPreviewMode = config?.isPreviewMode || config?.disableRealtime;
 
-  // 실시간 업데이트 연결
-  useWidgetRealtime('team-status');
+  // 실시간 업데이트 연결 (프리뷰 모드가 아닐 때만)
+  useWidgetRealtime(isPreviewMode ? 'preview-disabled' : 'team-status');
 
   // Mock 데이터 초기화
   useEffect(() => {
@@ -145,7 +149,7 @@ export default function TeamStatusWidget() {
       ];
       setMembers(mockMembers);
     }
-  }, [teamMembers]);
+  }, []); // 빈 dependency 배열로 변경 - 초기 로드 시 한 번만 실행
 
   // 필터링된 멤버 목록
   const filteredMembers = filter === 'all' 

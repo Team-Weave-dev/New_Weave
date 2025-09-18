@@ -19,9 +19,12 @@ interface UpdateData {
   timestamp: number;
 }
 
-export function RealtimeTestWidget({ id: widgetId }: WidgetProps) {
+export function RealtimeTestWidget({ id: widgetId, config }: WidgetProps) {
   const [updates, setUpdates] = useState<UpdateData[]>([]);
   const [updateCount, setUpdateCount] = useState(0);
+  
+  // 프리뷰 모드 체크
+  const isPreviewMode = config?.isPreviewMode || config?.disableRealtime;
   
   const {
     isConnected,
@@ -31,10 +34,13 @@ export function RealtimeTestWidget({ id: widgetId }: WidgetProps) {
     broadcast,
     connect,
     disconnect
-  } = useWidgetRealtime<any>(widgetId);
+  } = useWidgetRealtime<any>(isPreviewMode ? 'preview-disabled' : widgetId);
 
   // 실시간 업데이트 구독
   useEffect(() => {
+    // 프리뷰 모드에서는 구독하지 않음
+    if (isPreviewMode) return;
+    
     const unsubscribe = subscribe('update', (event: RealtimeEvent<any>) => {
       console.log('Received realtime update:', event);
       
@@ -47,7 +53,7 @@ export function RealtimeTestWidget({ id: widgetId }: WidgetProps) {
     });
 
     return unsubscribe;
-  }, [subscribe, widgetId]);
+  }, [subscribe, widgetId, isPreviewMode]);
 
   // 테스트 업데이트 전송
   const sendTestUpdate = () => {

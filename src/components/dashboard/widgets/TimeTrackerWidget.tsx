@@ -32,6 +32,9 @@ interface TimeTrackerWidgetProps {
 }
 
 export function TimeTrackerWidget({ id, config, isEditMode }: TimeTrackerWidgetProps) {
+  // 프리뷰 모드 체크
+  const isPreviewMode = config?.isPreviewMode || config?.disableTimers
+  
   const [isTracking, setIsTracking] = useState(false)
   const [currentProject, setCurrentProject] = useState('')
   const [currentDescription, setCurrentDescription] = useState('')
@@ -54,6 +57,9 @@ export function TimeTrackerWidget({ id, config, isEditMode }: TimeTrackerWidgetP
 
   // 타이머 시작
   const startTimer = useCallback(() => {
+    // 프리뷰 모드에서는 타이머 작동 안함
+    if (isPreviewMode) return
+    
     if (!currentProject) {
       alert('프로젝트를 선택해주세요.')
       return
@@ -68,7 +74,7 @@ export function TimeTrackerWidget({ id, config, isEditMode }: TimeTrackerWidgetP
         setElapsedTime(elapsed)
       }
     }, 1000)
-  }, [currentProject])
+  }, [currentProject, isPreviewMode])
 
   // 타이머 정지
   const stopTimer = useCallback(() => {

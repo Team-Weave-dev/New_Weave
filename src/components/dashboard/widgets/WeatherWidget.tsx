@@ -10,12 +10,22 @@ import { useWeatherService } from '@/lib/dashboard/services/weatherService'
 interface WeatherWidgetProps {
   id: string
   data?: any
+  config?: any
 }
 
-export function WeatherWidget({ id }: WeatherWidgetProps) {
+export function WeatherWidget({ id, config }: WeatherWidgetProps) {
+  // 프리뷰 모드 체크
+  const isPreviewMode = config?.isPreviewMode || config?.disableRealtime;
+  
   const { currentWeather, forecast, location, updateLocation, refreshWeather, loading } = useWeatherService()
   const [isEditingLocation, setIsEditingLocation] = useState(false)
   const [newLocation, setNewLocation] = useState('')
+  
+  // 프리뷰 모드에서는 API 호출 방지
+  useEffect(() => {
+    if (isPreviewMode) return;
+    // 실제 날씨 데이터는 프리뷰 모드가 아닐 때만 로드
+  }, [isPreviewMode])
 
   const getWeatherIcon = (condition: string) => {
     switch (condition.toLowerCase()) {
@@ -59,6 +69,21 @@ export function WeatherWidget({ id }: WeatherWidgetProps) {
     return date.toLocaleDateString('ko-KR', { weekday: 'short' })
   }
 
+  // 프리뷰 모드에서 사용할 기본 데이터
+  const previewWeather = {
+    temperature: 22,
+    condition: 'Sunny',
+    feelsLike: 24,
+    humidity: 60,
+    windSpeed: 10
+  };
+  
+  const previewForecast = [
+    { date: '2024-01-01', high: 25, low: 18, condition: 'Sunny' },
+    { date: '2024-01-02', high: 23, low: 17, condition: 'Partly Cloudy' },
+    { date: '2024-01-03', high: 22, low: 16, condition: 'Cloudy' }
+  ];
+
   return (
     <Card className="p-4 h-full flex flex-col">
       {/* Header */}
@@ -67,11 +92,12 @@ export function WeatherWidget({ id }: WeatherWidgetProps) {
         <Button
           variant="ghost"
           size="sm"
-          onClick={() => setIsEditingLocation(!isEditingLocation)}
+          onClick={() => !isPreviewMode && setIsEditingLocation(!isEditingLocation)}
           className="flex items-center gap-1 text-xs"
+          disabled={isPreviewMode}
         >
           <MapPin className="w-3 h-3" />
-          {location}
+          {isPreviewMode ? '서울' : location}
         </Button>
       </div>
 
@@ -102,50 +128,50 @@ export function WeatherWidget({ id }: WeatherWidgetProps) {
         </div>
       )}
 
-      {loading ? (
+      {loading && !isPreviewMode ? (
         <div className="flex-1 flex items-center justify-center">
           <div className="animate-pulse text-gray-400">날씨 정보를 불러오는 중...</div>
         </div>
       ) : (
         <>
           {/* Current Weather */}
-          {currentWeather && (
+          {(isPreviewMode ? previewWeather : currentWeather) && (
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-4">
-                {getWeatherIcon(currentWeather.condition)}
+                {getWeatherIcon(isPreviewMode ? previewWeather.condition : currentWeather?.condition || '')}
                 <div>
                   <Typography variant="h3" className="font-bold">
-                    {currentWeather.temperature}°
+                    {isPreviewMode ? previewWeather.temperature : currentWeather?.temperature}°
                   </Typography>
                   <Typography variant="body2" className="text-gray-600">
-                    {currentWeather.condition}
+                    {isPreviewMode ? previewWeather.condition : currentWeather?.condition}
                   </Typography>
                 </div>
               </div>
               <div className="text-right">
                 <div className="flex items-center gap-1 text-sm text-gray-600">
                   <Wind className="w-3 h-3" />
-                  {currentWeather.windSpeed} km/h
+                  {isPreviewMode ? previewWeather.windSpeed : currentWeather?.windSpeed} km/h
                 </div>
                 <Typography variant="caption" className="text-gray-600">
-                  습도: {currentWeather.humidity}%
+                  습도: {isPreviewMode ? previewWeather.humidity : currentWeather?.humidity}%
                 </Typography>
                 <br />
                 <Typography variant="caption" className="text-gray-600">
-                  체감: {currentWeather.feelsLike}°
+                  체감: {isPreviewMode ? previewWeather.feelsLike : currentWeather?.feelsLike}°
                 </Typography>
               </div>
             </div>
           )}
 
           {/* 5-Day Forecast */}
-          {forecast && forecast.length > 0 && (
+          {((isPreviewMode ? previewForecast : forecast) && (isPreviewMode ? previewForecast : forecast).length > 0) && (
             <div className="flex-1">
               <Typography variant="body2" className="mb-2 text-gray-700 font-semibold">
                 5일 예보
               </Typography>
               <div className="grid grid-cols-5 gap-2">
-                {forecast.map((day, index) => (
+                {(isPreviewMode ? previewForecast.slice(0, 5) : forecast || []).map((day, index) => (
                   <div
                     key={index}
                     className="text-center p-2 bg-gray-50 rounded-lg"

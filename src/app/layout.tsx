@@ -29,9 +29,11 @@ export const metadata: Metadata = {
   },
   // viewport는 별도 export로 분리됨
   appleWebApp: {
-    capable: true,
     statusBarStyle: "default",
     title: "Weave"
+  },
+  other: {
+    "mobile-web-app-capable": "yes"
   }
 };
 
