@@ -26,6 +26,8 @@ interface TimeTrackerWidgetProps {
   id: string
   config?: {
     projects?: string[]
+    isPreviewMode?: boolean // 프리뷰 모드 플래그
+    disableTimers?: boolean // 타이머 비활성화 플래그
   }
   isEditMode: boolean
   onConfigChange?: (config: any) => void

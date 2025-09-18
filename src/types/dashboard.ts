@@ -84,7 +84,7 @@ export interface WidgetMetadata {
 export interface WidgetProps {
   id: string
   type: WidgetType
-  config?: any
+  config?: any // 각 위젯이 자체 config 타입을 정의하도록 유연하게 처리
   isEditMode: boolean
   onConfigChange?: (config: any) => void
   onRemove?: () => void

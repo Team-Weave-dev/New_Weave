@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, lazy, useState, useEffect } from 'react';
+import React, { Suspense, lazy, useState, useEffect } from 'react';
 import { WidgetInfo } from './widgetData';
 import { Card } from '@/components/ui/Card';
 import Typography from '@/components/ui/Typography';
@@ -126,15 +126,15 @@ export function WidgetPreviewCard({ widget }: WidgetPreviewCardProps) {
             <Suspense fallback={<LoadingPreview />}>
               {WidgetComponent ? (
                 <div className="transform scale-90 origin-top-left pointer-events-none">
-                  <WidgetComponent 
-                    id={`preview-${widget.id}`}
-                    isEditMode={false}
-                    config={{
+                  {React.createElement(WidgetComponent as any, {
+                    id: `preview-${widget.id}`,
+                    isEditMode: false,
+                    config: {
                       isPreviewMode: true, // 프리뷰 모드 플래그 추가
                       disableTimers: true, // 타이머 비활성화
                       disableRealtime: true // 실시간 업데이트 비활성화
-                    }}
-                  />
+                    }
+                  })}
                 </div>
               ) : (
                 <div className="flex items-center justify-center h-[200px]">
