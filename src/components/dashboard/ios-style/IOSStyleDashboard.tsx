@@ -23,7 +23,7 @@ import { AnimationController } from '@/lib/dashboard/ios-animations/AnimationCon
 import { FlexibleGridEngine } from '@/lib/dashboard/flexible-grid/FlexibleGridEngine';
 import { IOSStyleWidget, EditModeState, LayoutTemplate } from '@/types/ios-dashboard';
 import { useDashboardStore } from '@/lib/stores/dashboardStore';
-import { FlexibleGridContainer } from './FlexibleGridContainer';
+import { SortableGridContainer } from './SortableGridContainer';
 import { SortableWidget } from './SortableWidget';
 import { EditModeToolbar } from './EditModeToolbar';
 import { useToast } from '@/hooks/useToast';
@@ -385,7 +385,7 @@ export function IOSStyleDashboard({
   }, []);
   
 
-  // 드래그 종료 - arrayMove로 순서 변경
+  // 드래그 종료 - arrayMove로 순서 변경 및 위치 재계산
   const handleDragEnd = useCallback((event: DragEndEvent) => {
     const { active, over } = event;
     
@@ -394,15 +394,39 @@ export function IOSStyleDashboard({
       const newIndex = widgets.findIndex((w) => w.id === over.id);
       
       if (oldIndex !== -1 && newIndex !== -1) {
-        const newWidgets = arrayMove(widgets, oldIndex, newIndex);
-        setWidgets(newWidgets);
+        // 위젯 순서 변경
+        const reorderedWidgets = arrayMove(widgets, oldIndex, newIndex);
         
-        console.log('[DnD] 위젯 순서 변경:', oldIndex, '->', newIndex);
+        // 그리드 위치 재계산
+        const updatedWidgets = reorderedWidgets.map((widget, index) => {
+          // 간단한 그리드 레이아웃 계산 (3열 또는 4열)
+          const columns = window.innerWidth >= 768 ? 4 : 3;
+          const row = Math.floor(index / columns);
+          const col = index % columns;
+          
+          return {
+            ...widget,
+            position: {
+              gridColumn: `${col + 1} / span ${widget.size?.width || 1}`,
+              gridRow: `${row + 1} / span ${widget.size?.height || 1}`,
+              gridColumnStart: col + 1,
+              gridColumnEnd: col + 1 + (widget.size?.width || 1),
+              gridRowStart: row + 1,
+              gridRowEnd: row + 1 + (widget.size?.height || 1),
+              width: widget.size?.width || 1,
+              height: widget.size?.height || 1,
+            },
+          };
+        });
+        
+        setWidgets(updatedWidgets);
+        
+        console.log('[DnD] 위젯 순서 변경 및 위치 재계산:', oldIndex, '->', newIndex);
         
         showToast({
           title: '위젯 이동',
-          description: '위젯이 이동되었습니다',
-          type: 'info',
+          description: '위젯이 새로운 위치로 이동했습니다',
+          type: 'success',
         });
       }
     }
@@ -602,7 +626,7 @@ export function IOSStyleDashboard({
           strategy={rectSortingStrategy}
         >
           {/* 그리드 컨테이너 */}
-          <FlexibleGridContainer
+          <SortableGridContainer
             widgets={widgets}
             isEditMode={editMode.isEditing}
             onLongPressStart={handleLongPressStart}
@@ -618,7 +642,7 @@ export function IOSStyleDashboard({
                 onConfig={() => handleConfigWidget(widget.id)}
               />
             ))}
-          </FlexibleGridContainer>
+          </SortableGridContainer>
         </SortableContext>
 
         {/* 드래그 오버레이 */}
