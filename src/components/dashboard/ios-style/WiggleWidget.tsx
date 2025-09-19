@@ -4,11 +4,11 @@ import React, { useMemo } from 'react';
 import { useDraggable } from '@dnd-kit/core';
 import { motion, AnimatePresence } from 'framer-motion';
 import { IOSStyleWidget } from '@/types/ios-dashboard';
-import { animations } from '@/lib/dashboard/ios-animations/animations';
+import { wiggleAnimation, deleteButtonAnimation, settingsButtonAnimation } from '@/lib/dashboard/ios-animations/animations';
 import { cn } from '@/lib/utils';
 import { X, Settings } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
+import Button from '@/components/ui/Button';
 
 interface WiggleWidgetProps {
   widget: IOSStyleWidget;
@@ -52,11 +52,11 @@ export function WiggleWidget({
       // 위젯마다 약간 다른 애니메이션 타이밍 적용
       const delay = Math.random() * 0.2;
       return {
-        ...animations.wiggle,
-        animate: {
-          ...animations.wiggle.animate,
+        ...wiggleAnimation,
+        wiggle: {
+          ...wiggleAnimation.wiggle,
           transition: {
-            ...animations.wiggle.animate.transition,
+            ...wiggleAnimation.wiggle.transition,
             delay,
           },
         },
@@ -95,7 +95,7 @@ export function WiggleWidget({
       )}
       variants={wiggleVariants}
       initial="initial"
-      animate={isWiggling && !isDragging ? "animate" : "initial"}
+      animate={isWiggling && !isDragging ? "wiggle" : "initial"}
       exit="exit"
       {...(isEditing ? { ...attributes, ...listeners } : {})}
     >
@@ -117,7 +117,7 @@ export function WiggleWidget({
             {/* 삭제 버튼 */}
             <motion.div
               className="absolute -top-2 -left-2 z-20"
-              variants={animations.deleteButton}
+              variants={deleteButtonAnimation}
               initial="hidden"
               animate="visible"
               exit="hidden"
@@ -147,7 +147,7 @@ export function WiggleWidget({
             {/* 설정 버튼 */}
             <motion.div
               className="absolute -top-2 -right-2 z-20"
-              variants={animations.editButton}
+              variants={settingsButtonAnimation}
               initial="hidden"
               animate="visible"
               exit="hidden"
