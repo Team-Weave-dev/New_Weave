@@ -8,6 +8,7 @@ import { wiggleAnimation, deleteButtonAnimation, settingsButtonAnimation } from 
 import { cn } from '@/lib/utils';
 import { X, Settings } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
+import { CompatibilityWrapper, useCompatibilityMode } from './CompatibilityWrapper';
 // import Button from '../../ui/Button'; // 임시 주석 처리
 
 interface WiggleWidgetProps {

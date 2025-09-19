@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState, ReactNode } from 'react';
 import { IOSStyleWidget } from '@/types/ios-dashboard';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
+import { CompatibilityWrapper } from './CompatibilityWrapper';
 
 interface FlexibleGridContainerProps {
   widgets: IOSStyleWidget[];
