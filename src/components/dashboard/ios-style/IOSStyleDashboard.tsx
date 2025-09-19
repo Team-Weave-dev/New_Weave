@@ -1,14 +1,30 @@
 'use client';
 
 import React, { useCallback, useEffect, useState, useRef } from 'react';
-import { DndContext, DragEndEvent, DragStartEvent, DragOverlay, DragMoveEvent } from '@dnd-kit/core';
+import { 
+  DndContext, 
+  DragEndEvent, 
+  DragStartEvent, 
+  DragOverlay,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  rectSortingStrategy,
+} from '@dnd-kit/sortable';
 import { useIOSAnimations } from '@/lib/dashboard/ios-animations/useIOSAnimations';
 import { AnimationController } from '@/lib/dashboard/ios-animations/AnimationController';
 import { FlexibleGridEngine } from '@/lib/dashboard/flexible-grid/FlexibleGridEngine';
 import { IOSStyleWidget, EditModeState, LayoutTemplate } from '@/types/ios-dashboard';
 import { useDashboardStore } from '@/lib/stores/dashboardStore';
 import { FlexibleGridContainer } from './FlexibleGridContainer';
-import { WiggleWidget } from './WiggleWidget';
+import { SortableWidget } from './SortableWidget';
 import { EditModeToolbar } from './EditModeToolbar';
 import { useToast } from '@/hooks/useToast';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -70,8 +86,19 @@ export function IOSStyleDashboard({
   
   // 위젯 상태 (테스트용 샘플 위젯 - 반응형 크기)
   const [widgets, setWidgets] = useState<IOSStyleWidget[]>([]);
-  const [activeWidget, setActiveWidget] = useState<IOSStyleWidget | null>(null);
-  const [predictedPosition, setPredictedPosition] = useState<any>(null);
+  const [activeId, setActiveId] = useState<string | null>(null);
+  
+  // DnD sensors 설정
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
   
   useEffect(() => {
     if (initialWidgets.length > 0) {
@@ -347,118 +374,46 @@ export function IOSStyleDashboard({
 
   // 드래그 시작
   const handleDragStart = useCallback((event: DragStartEvent) => {
-    const widget = widgets.find(w => w.id === event.active.id);
-    if (widget) {
-      setActiveWidget(widget);
-      setEditMode(prev => ({
-        ...prev,
-        isDragging: true,
-        draggedWidget: widget.id,
-      }));
-      
-      // 드래그 시작 애니메이션 - 선택된 위젯 확대
-      animationController.current.scale(`widget-${widget.id}`, 1.1);
-      
-      // Phase 3: 배치 히스토리에 추가 (학습 시스템)
-      console.log('[Phase 3] 드래그 시작 - 배치 히스토리 기록');
-    }
-  }, [widgets]);
+    setActiveId(event.active.id as string);
+    setEditMode(prev => ({
+      ...prev,
+      isDragging: true,
+      draggedWidget: event.active.id as string,
+    }));
+    
+    console.log('[DnD] 드래그 시작:', event.active.id);
+  }, []);
   
-  // 드래그 이동 중 - Phase 3 실시간 위치 예측
-  const handleDragMove = useCallback((event: DragMoveEvent) => {
-    if (!activeWidget) return;
-    
-    const { active, delta } = event;
-    
-    // Phase 3: 드롭 위치 예측
-    const prediction = gridEngine.predictDropPosition(
-      { x: delta.x, y: delta.y },
-      activeWidget.size || { width: 2, height: 2 }
-    );
-    
-    if (prediction) {
-      setPredictedPosition(prediction);
-      
-      // 예측 위치에 충돌이 있는지 확인
-      if (prediction.willCollide) {
-        console.log('[Phase 3] 드롭 예측 - 충돌 예상:', prediction.collidingWidgets);
-      } else {
-        console.log('[Phase 3] 드롭 예측 - 안전한 위치');
-      }
-    }
-  }, [activeWidget]);
 
-  // 드래그 종료 - 위젯 간 스왑 방식으로 수정
-  const handleDragEnd = useCallback(async (event: DragEndEvent) => {
+  // 드래그 종료 - arrayMove로 순서 변경
+  const handleDragEnd = useCallback((event: DragEndEvent) => {
     const { active, over } = event;
     
-    if (!active.id) {
-      setActiveWidget(null);
-      setEditMode(prev => ({
-        ...prev,
-        isDragging: false,
-        draggedWidget: null,
-      }));
-      return;
-    }
-    
-    // 드래그한 위젯 찾기
-    const draggedWidget = widgets.find(w => w.id === active.id);
-    if (!draggedWidget) {
-      setActiveWidget(null);
-      setEditMode(prev => ({
-        ...prev,
-        isDragging: false,
-        draggedWidget: null,
-      }));
-      return;
-    }
-    
-    // over가 있으면 해당 위젯과 위치 교환
-    if (over && over.id && over.id !== active.id) {
-      const overWidget = widgets.find(w => w.id === over.id);
+    if (over && active.id !== over.id) {
+      const oldIndex = widgets.findIndex((w) => w.id === active.id);
+      const newIndex = widgets.findIndex((w) => w.id === over.id);
       
-      if (overWidget) {
-        // 두 위젯의 위치를 교환
-        const updatedWidgets = widgets.map(widget => {
-          if (widget.id === draggedWidget.id) {
-            // 드래그한 위젯은 over 위젯의 위치로
-            return {
-              ...widget,
-              position: { ...overWidget.position },
-            };
-          } else if (widget.id === overWidget.id) {
-            // over 위젯은 드래그한 위젯의 원래 위치로
-            return {
-              ...widget,
-              position: { ...draggedWidget.position },
-            };
-          }
-          return widget;
-        });
+      if (oldIndex !== -1 && newIndex !== -1) {
+        const newWidgets = arrayMove(widgets, oldIndex, newIndex);
+        setWidgets(newWidgets);
         
-        setWidgets(updatedWidgets);
-        gridEngine.setWidgets(updatedWidgets);
+        console.log('[DnD] 위젯 순서 변경:', oldIndex, '->', newIndex);
         
         showToast({
-          title: '위젯 위치 교환',
-          description: '위젯 위치가 교환되었습니다',
+          title: '위젯 이동',
+          description: '위젯이 이동되었습니다',
           type: 'info',
         });
-        
-        // 재배치 애니메이션
-        animationController.current.bounce('dashboard-container', 5);
       }
     }
     
-    setActiveWidget(null);
-    setPredictedPosition(null);
+    setActiveId(null);
     setEditMode(prev => ({
       ...prev,
       isDragging: false,
       draggedWidget: null,
     }));
-  }, [widgets, showToast, gridEngine]);
+  }, [widgets, showToast]);
 
   // 위젯 삭제
   const handleDeleteWidget = useCallback(async (widgetId: string) => {
@@ -637,56 +592,48 @@ export function IOSStyleDashboard({
 
       {/* DnD Context */}
       <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
         onDragStart={handleDragStart}
-        onDragMove={handleDragMove}
         onDragEnd={handleDragEnd}
       >
-        {/* 그리드 컨테이너 */}
-        <FlexibleGridContainer
-          widgets={widgets}
-          isEditMode={editMode.isEditing}
-          onLongPressStart={handleLongPressStart}
-          onLongPressEnd={handleLongPressEnd}
+        <SortableContext
+          items={widgets.map(w => w.id)}
+          strategy={rectSortingStrategy}
         >
-          {widgets.map(widget => (
-            <WiggleWidget
-              key={widget.id}
-              widget={widget}
-              isEditing={editMode.isEditing}
-              isWiggling={isWiggling}
-              isDragging={editMode.draggedWidget === widget.id}
-              onDelete={() => handleDeleteWidget(widget.id)}
-              onConfig={() => handleConfigWidget(widget.id)}
-            />
-          ))}
-        </FlexibleGridContainer>
+          {/* 그리드 컨테이너 */}
+          <FlexibleGridContainer
+            widgets={widgets}
+            isEditMode={editMode.isEditing}
+            onLongPressStart={handleLongPressStart}
+            onLongPressEnd={handleLongPressEnd}
+          >
+            {widgets.map(widget => (
+              <SortableWidget
+                key={widget.id}
+                widget={widget}
+                isEditing={editMode.isEditing}
+                isWiggling={isWiggling}
+                onDelete={() => handleDeleteWidget(widget.id)}
+                onConfig={() => handleConfigWidget(widget.id)}
+              />
+            ))}
+          </FlexibleGridContainer>
+        </SortableContext>
 
         {/* 드래그 오버레이 */}
-        <DragOverlay
-          dropAnimation={null}
-          style={{
-            zIndex: 1000,
-          }}
-        >
-          {activeWidget && (
-            <div
-              style={{
-                width: `${(activeWidget.size?.width || 2) * 100}px`,
-                height: `${(activeWidget.size?.height || 2) * 100}px`,
-                opacity: 0.8,
-              }}
-            >
-              <WiggleWidget
-                widget={activeWidget}
+        <DragOverlay>
+          {activeId ? (
+            <div className="opacity-80">
+              <SortableWidget
+                widget={widgets.find(w => w.id === activeId)!}
                 isEditing={true}
                 isWiggling={false}
-                isDragging={true}
                 onDelete={() => {}}
                 onConfig={() => {}}
-                className="w-full h-full"
               />
             </div>
-          )}
+          ) : null}
         </DragOverlay>
       </DndContext>
 
