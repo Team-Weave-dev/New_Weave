@@ -1,8 +1,6 @@
 'use client';
 
 import React from 'react';
-import { useSortable } from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
 import { motion } from 'framer-motion';
 import { IOSStyleWidget } from '@/types/ios-dashboard';
 import { cn } from '@/lib/utils';
@@ -26,25 +24,6 @@ export function SortableWidget({
   onConfig,
   className,
 }: SortableWidgetProps) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({
-    id: widget.id,
-    disabled: !isEditing,
-  });
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    zIndex: isDragging ? 1000 : 1,
-    opacity: isDragging ? 0.5 : 1,
-  };
-
   // 위젯 컨텐츠 렌더링
   const renderWidgetContent = () => {
     return (
@@ -61,21 +40,17 @@ export function SortableWidget({
 
   return (
     <div
-      ref={setNodeRef}
-      style={style}
       className={cn(
         'sortable-widget',
         'relative',
         'w-full h-full',
-        isDragging && 'cursor-grabbing',
-        isEditing && !isDragging && 'cursor-grab',
+        isEditing && 'cursor-grab',
         className
       )}
-      {...(isEditing ? { ...attributes, ...listeners } : {})}
     >
       <motion.div
         className="w-full h-full"
-        animate={isWiggling && !isDragging ? {
+        animate={isWiggling ? {
           rotate: [0, -1, 1, -1, 1, 0],
           transition: {
             duration: 0.25,

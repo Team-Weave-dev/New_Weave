@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils';
 import { X, Settings } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { CompatibilityWrapper, useCompatibilityMode } from './CompatibilityWrapper';
+import { useAnimationPerformance } from '@/hooks/useAnimationPerformance';
 // import Button from '../../ui/Button'; // 임시 주석 처리
 
 interface WiggleWidgetProps {
@@ -30,6 +31,17 @@ export function WiggleWidget({
   onConfig,
   className,
 }: WiggleWidgetProps) {
+  // 애니메이션 성능 최적화
+  const { 
+    getWidgetStyles, 
+    getAnimationPreset,
+    scheduleAnimation,
+    performanceLevel 
+  } = useAnimationPerformance({
+    enabled: true,
+    autoOptimize: true
+  });
+
   // Draggable 설정
   const {
     attributes,
@@ -70,24 +82,32 @@ export function WiggleWidget({
     position: 'relative' as const,
   } : undefined;
 
-  // Wiggle 애니메이션 variants
+  // Wiggle 애니메이션 variants (성능 최적화 적용)
   const wiggleVariants = useMemo(() => {
     if (isWiggling && isEditing && !isDragging) {
+      // 성능 레벨에 따른 애니메이션 조정
+      const preset = getAnimationPreset('wiggle');
+      
+      if (performanceLevel === 'low') {
+        // 낮은 성능: 애니메이션 비활성화
+        return {};
+      }
+      
       // 위젯마다 약간 다른 애니메이션 타이밍 적용
       const delay = Math.random() * 0.2;
       return {
-        ...wiggleAnimation,
-        wiggle: {
-          ...wiggleAnimation.wiggle,
+        ...preset,
+        animate: {
+          ...preset.animate,
           transition: {
-            ...wiggleAnimation.wiggle.transition,
+            ...preset.transition,
             delay,
           },
         },
       };
     }
     return {};
-  }, [isWiggling, isEditing, isDragging]);
+  }, [isWiggling, isEditing, isDragging, getAnimationPreset, performanceLevel]);
 
   // 위젯 컨텐츠 렌더링
   const renderWidgetContent = () => {
@@ -105,10 +125,16 @@ export function WiggleWidget({
     );
   };
 
+  // 최적화된 스타일 결합
+  const optimizedStyle = useMemo(() => ({
+    ...dragStyle,
+    ...getWidgetStyles(isWiggling || isDragging),
+  }), [dragStyle, getWidgetStyles, isWiggling, isDragging]);
+
   return (
     <motion.div
       ref={setNodeRef}
-      style={dragStyle}
+      style={optimizedStyle}
       className={cn(
         'wiggle-widget',
         'relative',
@@ -150,7 +176,7 @@ export function WiggleWidget({
             {/* 삭제 버튼 */}
             <motion.div
               className="absolute -top-2 -left-2 z-20"
-              variants={deleteButtonAnimation}
+              variants={performanceLevel === 'low' ? {} : deleteButtonAnimation}
               initial="hidden"
               animate="visible"
               exit="hidden"
@@ -159,7 +185,7 @@ export function WiggleWidget({
                 onClick={(e) => {
                   e.stopPropagation();
                   e.preventDefault();
-                  onDelete();
+                  scheduleAnimation('delete-' + widget.id, onDelete);
                 }}
                 className={cn(
                   'rounded-full',
@@ -183,7 +209,7 @@ export function WiggleWidget({
             {/* 설정 버튼 */}
             <motion.div
               className="absolute -top-2 -right-2 z-20"
-              variants={settingsButtonAnimation}
+              variants={performanceLevel === 'low' ? {} : settingsButtonAnimation}
               initial="hidden"
               animate="visible"
               exit="hidden"
@@ -192,7 +218,7 @@ export function WiggleWidget({
                 onClick={(e) => {
                   e.stopPropagation();
                   e.preventDefault();
-                  onConfig();
+                  scheduleAnimation('config-' + widget.id, onConfig);
                 }}
                 className={cn(
                   'rounded-full',

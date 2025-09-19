@@ -1,34 +1,37 @@
 'use client';
 
 import React, { useCallback, useEffect, useState, useRef } from 'react';
-import { 
-  DndContext, 
-  DragEndEvent, 
-  DragStartEvent, 
-  DragOverlay,
-  closestCenter,
-  KeyboardSensor,
-  PointerSensor,
-  useSensor,
-  useSensors,
-} from '@dnd-kit/core';
 import {
-  arrayMove,
-  SortableContext,
-  sortableKeyboardCoordinates,
-  rectSortingStrategy,
-} from '@dnd-kit/sortable';
+  DragDropContext,
+  Droppable,
+  Draggable,
+  DropResult,
+  DragStart,
+} from 'react-beautiful-dnd';
 import { useIOSAnimations } from '@/lib/dashboard/ios-animations/useIOSAnimations';
 import { AnimationController } from '@/lib/dashboard/ios-animations/AnimationController';
 import { FlexibleGridEngine } from '@/lib/dashboard/flexible-grid/FlexibleGridEngine';
 import { IOSStyleWidget, EditModeState, LayoutTemplate } from '@/types/ios-dashboard';
-import { useDashboardStore } from '@/lib/stores/dashboardStore';
+import { 
+  useIOSDashboardStore,
+  selectWidgets,
+  selectEditMode,
+  selectWiggling,
+  selectEditState,
+  selectHistoryState,
+  selectPerformanceState,
+  shallow
+} from '@/lib/stores/useIOSDashboardStore';
 import { SortableGridContainer } from './SortableGridContainer';
 import { SortableWidget } from './SortableWidget';
 import { EditModeToolbar } from './EditModeToolbar';
 import { useToast } from '@/hooks/useToast';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useIOSTouchInteraction } from '@/hooks/useIOSTouchInteraction';
+import { VirtualizedGrid, useVirtualizedGrid } from './VirtualizedGrid';
+import { useIOSFeatureFlags } from '@/hooks/useIOSFeatureFlags';
+import { useAnimationPerformance, AnimationPerformanceMonitor } from '@/hooks/useAnimationPerformance';
+import { AnimationPerformanceOptimizer } from '@/lib/dashboard/ios-animations/performance-optimizer';
 
 interface IOSStyleDashboardProps {
   widgets?: IOSStyleWidget[];
@@ -43,6 +46,47 @@ export function IOSStyleDashboard({
 }: IOSStyleDashboardProps) {
   const { showToast } = useToast();
   const animationController = useRef(new AnimationController());
+  const containerRef = useRef<HTMLDivElement>(null);
+  
+  // 최적화된 스토어 구독 - 선택적 구독으로 불필요한 리렌더링 방지
+  const widgets = useIOSDashboardStore(selectWidgets);
+  const isEditMode = useIOSDashboardStore(selectEditMode);
+  const isWiggling = useIOSDashboardStore(selectWiggling);
+  const editState = useIOSDashboardStore(selectEditState, shallow);
+  const { canUndo, canRedo } = useIOSDashboardStore(selectHistoryState, shallow);
+  const { performanceLevel, isVirtualizationEnabled } = useIOSDashboardStore(selectPerformanceState, shallow);
+  
+  // 스토어 액션들
+  const setWidgets = useIOSDashboardStore(state => state.setWidgets);
+  const updateWidget = useIOSDashboardStore(state => state.updateWidget);
+  const removeWidget = useIOSDashboardStore(state => state.removeWidget);
+  const addWidget = useIOSDashboardStore(state => state.addWidget);
+  const enterEditMode = useIOSDashboardStore(state => state.enterEditMode);
+  const exitEditMode = useIOSDashboardStore(state => state.exitEditMode);
+  const moveWidget = useIOSDashboardStore(state => state.moveWidget);
+  const setWiggling = useIOSDashboardStore(state => state.setWiggling);
+  const undo = useIOSDashboardStore(state => state.undo);
+  const redo = useIOSDashboardStore(state => state.redo);
+  const pushHistory = useIOSDashboardStore(state => state.pushHistory);
+  const setDraggedWidget = useIOSDashboardStore(state => state.setDraggedWidget);
+  const selectWidget = useIOSDashboardStore(state => state.selectWidget);
+  const setPerformanceLevel = useIOSDashboardStore(state => state.setPerformanceLevel);
+  const updateVisibleWidgets = useIOSDashboardStore(state => state.updateVisibleWidgets);
+  
+  // 애니메이션 성능 최적화
+  const {
+    optimizeScroll,
+    createOptimizedResizeHandler,
+    batchDOMUpdates,
+  } = useAnimationPerformance({
+    enabled: true,
+    monitorFPS: process.env.NODE_ENV === 'development',
+    autoOptimize: true
+  });
+  
+  // Feature Flags 사용
+  const { isVirtualizationEnabled: featureFlagVirtualization } = useIOSFeatureFlags();
+  
   // 고정 그리드 크기 제거 - 위젯별 개별 크기 지원
   const [gridColumns, setGridColumns] = useState(12); // 12컬럼 그리드로 유연한 배치
   const [gridEngine] = useState(() => new FlexibleGridEngine({
@@ -58,47 +102,35 @@ export function IOSStyleDashboard({
     },
   }));
   
-  // 편집 모드 상태
-  const [editMode, setEditMode] = useState<EditModeState>({
-    isEditing: false,
-    selectedWidget: null,
-    isDragging: false,
-    draggedWidget: null,
-  });
+  // 로컬 상태만 유지 (스토어에서 관리하지 않는 것들)
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const [isPressing, setIsPressing] = useState(false);
   
-  // 반응형 그리드 컬럼 설정
+  // 반응형 그리드 컬럼 설정 (최적화된 리사이즈 핸들러)
   useEffect(() => {
     const updateGridColumns = () => {
-      const width = window.innerWidth;
-      if (width < 640) {
-        setGridColumns(4); // 모바일
-      } else if (width < 1024) {
-        setGridColumns(8); // 태블릿
-      } else {
-        setGridColumns(12); // 데스크탑
-      }
+      batchDOMUpdates([
+        () => {
+          const width = window.innerWidth;
+          if (width < 640) {
+            setGridColumns(4); // 모바일
+          } else if (width < 1024) {
+            setGridColumns(8); // 태블릿
+          } else {
+            setGridColumns(12); // 데스크탑
+          }
+        }
+      ]);
     };
 
+    const optimizedResizeHandler = createOptimizedResizeHandler(updateGridColumns, 100);
+    
     updateGridColumns();
-    window.addEventListener('resize', updateGridColumns);
-    return () => window.removeEventListener('resize', updateGridColumns);
-  }, []);
+    window.addEventListener('resize', optimizedResizeHandler);
+    return () => window.removeEventListener('resize', optimizedResizeHandler);
+  }, [batchDOMUpdates, createOptimizedResizeHandler]);
   
-  // 위젯 상태 (테스트용 샘플 위젯 - 반응형 크기)
-  const [widgets, setWidgets] = useState<IOSStyleWidget[]>([]);
-  const [activeId, setActiveId] = useState<string | null>(null);
-  
-  // DnD sensors 설정
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 8,
-      },
-    }),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    })
-  );
+  // 초기 위젯 설정
   
   useEffect(() => {
     if (initialWidgets.length > 0) {
@@ -219,14 +251,18 @@ export function IOSStyleDashboard({
     }
   }, [initialWidgets]);
   
+  // 컨테이너 스크롤 최적화
+  useEffect(() => {
+    if (containerRef.current) {
+      optimizeScroll(containerRef.current);
+    }
+  }, [optimizeScroll]);
+  
   // 애니메이션 훅 사용
   const [animationState, animationActions, animationControls] = useIOSAnimations();
-  const { isWiggling } = animationState;
-  const { startWiggle, stopWiggle } = animationActions;
   
   // Long Press 감지를 위한 타이머
   const longPressTimer = useRef<NodeJS.Timeout | null>(null);
-  const [isPressing, setIsPressing] = useState(false);
 
   // GridEngine과 위젯 동기화
   useEffect(() => {
@@ -251,14 +287,9 @@ export function IOSStyleDashboard({
       // 편집 모드 진입 애니메이션 - 전체 대시보드에 pulse 효과
       animationController.current.pulse('dashboard-container', 1.02);
       
-      setEditMode(prev => ({
-        ...prev,
-        isEditing: true,
-        selectedWidget: widgetId,
-      }));
-      
-      // Wiggle 애니메이션 시작
-      startWiggle();
+      // 스토어 액션 호출
+      selectWidget(widgetId);
+      enterEditMode();
       
       // 햅틱 피드백 시뮬레이션
       if (navigator.vibrate) {
@@ -271,7 +302,7 @@ export function IOSStyleDashboard({
         type: 'info',
       });
     }, 1000); // 1초 Long Press
-  }, [startWiggle, showToast]);
+  }, [selectWidget, enterEditMode, showToast]);
 
   const handleLongPressEnd = useCallback(() => {
     setIsPressing(false);
@@ -344,14 +375,8 @@ export function IOSStyleDashboard({
     // 편집 모드 종료 애니메이션 - scale 효과로 정리 느낌
     animationController.current.scale('dashboard-container', 1.0);
     
-    setEditMode({
-      isEditing: false,
-      selectedWidget: null,
-      isDragging: false,
-      draggedWidget: null,
-    });
-    
-    stopWiggle();
+    // 스토어 액션 호출
+    exitEditMode(true);
     
     // 레이아웃 저장
     if (onLayoutChange) {
@@ -363,80 +388,78 @@ export function IOSStyleDashboard({
       description: '레이아웃이 저장되었습니다',
       type: 'success',
     });
-  }, [stopWiggle, widgets, onLayoutChange, showToast, gridEngine]);
+  }, [widgets, onLayoutChange, showToast, gridEngine, exitEditMode, setWidgets]);
 
   // 편집 모드 취소
   const handleCancelEditMode = useCallback(() => {
-    // 원래 레이아웃으로 복원
-    setWidgets(initialWidgets);
-    handleExitEditMode();
-  }, [initialWidgets, handleExitEditMode]);
+    // 원래 레이아웃으로 복원 (스토어의 undo 사용)
+    if (canUndo) {
+      undo();
+    }
+    exitEditMode(false);
+  }, [canUndo, undo, exitEditMode]);
 
   // 드래그 시작
-  const handleDragStart = useCallback((event: DragStartEvent) => {
-    setActiveId(event.active.id as string);
-    setEditMode(prev => ({
-      ...prev,
-      isDragging: true,
-      draggedWidget: event.active.id as string,
-    }));
+  const handleDragStart = useCallback((start: DragStart) => {
+    setActiveId(start.draggableId);
+    setDraggedWidget(start.draggableId);
     
-    console.log('[DnD] 드래그 시작:', event.active.id);
-  }, []);
+    console.log('[DnD] 드래그 시작:', start.draggableId);
+  }, [setDraggedWidget]);
   
 
-  // 드래그 종료 - arrayMove로 순서 변경 및 위치 재계산
-  const handleDragEnd = useCallback((event: DragEndEvent) => {
-    const { active, over } = event;
+  // 드래그 종료 - 순서 변경 및 위치 재계산
+  const handleDragEnd = useCallback((result: DropResult) => {
+    if (!result.destination) {
+      setActiveId(null);
+      setDraggedWidget(null);
+      return;
+    }
     
-    if (over && active.id !== over.id) {
-      const oldIndex = widgets.findIndex((w) => w.id === active.id);
-      const newIndex = widgets.findIndex((w) => w.id === over.id);
+    const sourceIndex = result.source.index;
+    const destinationIndex = result.destination.index;
+    
+    if (sourceIndex !== destinationIndex) {
+      // 위젯 순서 변경
+      const reorderedWidgets = Array.from(widgets);
+      const [removed] = reorderedWidgets.splice(sourceIndex, 1);
+      reorderedWidgets.splice(destinationIndex, 0, removed);
       
-      if (oldIndex !== -1 && newIndex !== -1) {
-        // 위젯 순서 변경
-        const reorderedWidgets = arrayMove(widgets, oldIndex, newIndex);
+      // 그리드 위치 재계산
+      const updatedWidgets = reorderedWidgets.map((widget, index) => {
+        // 간단한 그리드 레이아웃 계산 (3열 또는 4열)
+        const columns = window.innerWidth >= 768 ? 4 : 3;
+        const row = Math.floor(index / columns);
+        const col = index % columns;
         
-        // 그리드 위치 재계산
-        const updatedWidgets = reorderedWidgets.map((widget, index) => {
-          // 간단한 그리드 레이아웃 계산 (3열 또는 4열)
-          const columns = window.innerWidth >= 768 ? 4 : 3;
-          const row = Math.floor(index / columns);
-          const col = index % columns;
-          
-          return {
-            ...widget,
-            position: {
-              gridColumn: `${col + 1} / span ${widget.size?.width || 1}`,
-              gridRow: `${row + 1} / span ${widget.size?.height || 1}`,
-              gridColumnStart: col + 1,
-              gridColumnEnd: col + 1 + (widget.size?.width || 1),
-              gridRowStart: row + 1,
-              gridRowEnd: row + 1 + (widget.size?.height || 1),
-              width: widget.size?.width || 1,
-              height: widget.size?.height || 1,
-            },
-          };
-        });
-        
-        setWidgets(updatedWidgets);
-        
-        console.log('[DnD] 위젯 순서 변경 및 위치 재계산:', oldIndex, '->', newIndex);
-        
-        showToast({
-          title: '위젯 이동',
-          description: '위젯이 새로운 위치로 이동했습니다',
-          type: 'success',
-        });
-      }
+        return {
+          ...widget,
+          position: {
+            gridColumn: `${col + 1} / span ${widget.size?.width || 1}`,
+            gridRow: `${row + 1} / span ${widget.size?.height || 1}`,
+            gridColumnStart: col + 1,
+            gridColumnEnd: col + 1 + (widget.size?.width || 1),
+            gridRowStart: row + 1,
+            gridRowEnd: row + 1 + (widget.size?.height || 1),
+            width: widget.size?.width || 1,
+            height: widget.size?.height || 1,
+          },
+        };
+      });
+      
+      setWidgets(updatedWidgets);
+      
+      console.log('[DnD] 위젯 순서 변경 및 위치 재계산:', sourceIndex, '->', destinationIndex);
+      
+      showToast({
+        title: '위젯 이동',
+        description: '위젯이 새로운 위치로 이동했습니다',
+        type: 'success',
+      });
     }
     
     setActiveId(null);
-    setEditMode(prev => ({
-      ...prev,
-      isDragging: false,
-      draggedWidget: null,
-    }));
+    setDraggedWidget(null);
   }, [widgets, showToast]);
 
   // 위젯 삭제
@@ -575,14 +598,14 @@ export function IOSStyleDashboard({
   // ESC 키로 편집 모드 종료
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && editMode.isEditing) {
+      if (e.key === 'Escape' && isEditMode) {
         handleExitEditMode();
       }
     };
     
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [editMode.isEditing, handleExitEditMode]);
+  }, [isEditMode, handleExitEditMode]);
 
   // AnimationController에 dashboard-container 등록
   useEffect(() => {
@@ -596,6 +619,41 @@ export function IOSStyleDashboard({
     };
   }, [animationControls]);
 
+  // 가상화 메트릭 계산
+  const virtualizationMetrics = useVirtualizedGrid({
+    widgets,
+    containerHeight: typeof window !== 'undefined' ? window.innerHeight : 800,
+    rowHeight: 100,
+    gap: 16,
+  });
+
+  // 위젯 렌더링 함수 (가상화용)
+  const renderVirtualizedWidget = useCallback((widget: IOSStyleWidget, isVisible: boolean) => {
+    if (!isVisible) {
+      // 뷰포트 밖 위젯은 플레이스홀더 표시
+      return (
+        <div className="bg-muted/10 rounded-lg flex items-center justify-center h-full">
+          <span className="text-muted-foreground/40 text-sm">Loading...</span>
+        </div>
+      );
+    }
+
+    return (
+      <SortableWidget
+        widget={widget}
+        isEditing={isEditMode}
+        isWiggling={isWiggling}
+        onDelete={() => handleDeleteWidget(widget.id)}
+        onConfig={() => handleConfigWidget(widget.id)}
+      />
+    );
+  }, [isEditMode, isWiggling, handleDeleteWidget, handleConfigWidget]);
+
+  // 가상화 활성화 여부 결정
+  const shouldUseVirtualization = isVirtualizationEnabled && 
+                                  virtualizationMetrics.needsVirtualization &&
+                                  !isEditMode; // 편집 모드에서는 가상화 비활성화
+
   return (
     <div 
       id="dashboard-container"
@@ -603,68 +661,92 @@ export function IOSStyleDashboard({
     >
       {/* 편집 모드 툴바 */}
       <AnimatePresence>
-        {editMode.isEditing && (
+        {isEditMode && (
           <EditModeToolbar
             onDone={handleExitEditMode}
             onCancel={handleCancelEditMode}
             onAddWidget={handleAddWidget}
             onApplyTemplate={handleApplyTemplate}
-            isVisible={editMode.isEditing}
+            isVisible={isEditMode}
           />
         )}
       </AnimatePresence>
 
-      {/* DnD Context */}
-      <DndContext
-        sensors={sensors}
-        collisionDetection={closestCenter}
-        onDragStart={handleDragStart}
-        onDragEnd={handleDragEnd}
-      >
-        <SortableContext
-          items={widgets.map(w => w.id)}
-          strategy={rectSortingStrategy}
+      {/* 가상화 모드와 일반 모드 분기 */}
+      {shouldUseVirtualization ? (
+        // 가상화 그리드 (대규모 위젯 최적화)
+        <VirtualizedGrid
+          widgets={widgets}
+          columns={gridColumns}
+          rowHeight={100}
+          gap={16}
+          overscan={virtualizationMetrics.optimalOverscan}
+          renderWidget={renderVirtualizedWidget}
+          className="p-4"
+          onVisibilityChange={(visibleIds) => {
+            console.log('[Virtualization] Visible widgets:', visibleIds.size);
+          }}
+        />
+      ) : (
+        // 일반 DnD 그리드 (편집 모드 및 소규모 위젯)
+        <DragDropContext
+          onDragStart={handleDragStart}
+          onDragEnd={handleDragEnd}
         >
-          {/* 그리드 컨테이너 */}
-          <SortableGridContainer
-            widgets={widgets}
-            isEditMode={editMode.isEditing}
-            onLongPressStart={handleLongPressStart}
-            onLongPressEnd={handleLongPressEnd}
-          >
-            {widgets.map(widget => (
-              <SortableWidget
-                key={widget.id}
-                widget={widget}
-                isEditing={editMode.isEditing}
-                isWiggling={isWiggling}
-                onDelete={() => handleDeleteWidget(widget.id)}
-                onConfig={() => handleConfigWidget(widget.id)}
-              />
-            ))}
-          </SortableGridContainer>
-        </SortableContext>
-
-        {/* 드래그 오버레이 */}
-        <DragOverlay>
-          {activeId ? (
-            <div className="opacity-80">
-              <SortableWidget
-                widget={widgets.find(w => w.id === activeId)!}
-                isEditing={true}
-                isWiggling={false}
-                onDelete={() => {}}
-                onConfig={() => {}}
-              />
-            </div>
-          ) : null}
-        </DragOverlay>
-      </DndContext>
+          <Droppable droppableId="dashboard-grid" type="WIDGET">
+            {(provided, snapshot) => (
+              <div
+                ref={provided.innerRef}
+                {...provided.droppableProps}
+                className={`grid-container ${snapshot.isDraggingOver ? 'dragging-over' : ''}`}
+              >
+                {/* 그리드 컨테이너 */}
+                <SortableGridContainer
+                  widgets={widgets}
+                  isEditMode={isEditMode}
+                  onLongPressStart={handleLongPressStart}
+                  onLongPressEnd={handleLongPressEnd}
+                >
+                  {widgets.map((widget, index) => (
+                    <Draggable
+                      key={widget.id}
+                      draggableId={widget.id}
+                      index={index}
+                      isDragDisabled={!isEditMode}
+                    >
+                      {(provided, snapshot) => (
+                        <div
+                          ref={provided.innerRef}
+                          {...provided.draggableProps}
+                          {...provided.dragHandleProps}
+                          style={{
+                            ...provided.draggableProps.style,
+                            opacity: snapshot.isDragging ? 0.8 : 1,
+                          }}
+                        >
+                          <SortableWidget
+                            widget={widget}
+                            isEditing={isEditMode}
+                            isWiggling={isWiggling}
+                            onDelete={() => handleDeleteWidget(widget.id)}
+                            onConfig={() => handleConfigWidget(widget.id)}
+                          />
+                        </div>
+                      )}
+                    </Draggable>
+                  ))}
+                  {provided.placeholder}
+                </SortableGridContainer>
+              </div>
+            )}
+          </Droppable>
+        </DragDropContext>
+      )}
 
 
       {/* Long Press 인디케이터 */}
       <AnimatePresence>
-        {isPressing && !editMode.isEditing && (
+        {isPressing && !isEditMode && (
           <motion.div
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
@@ -675,6 +757,11 @@ export function IOSStyleDashboard({
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* 애니메이션 성능 모니터 (개발 환경) */}
+      {process.env.NODE_ENV === 'development' && (
+        <AnimationPerformanceMonitor />
+      )}
     </div>
   );
 }

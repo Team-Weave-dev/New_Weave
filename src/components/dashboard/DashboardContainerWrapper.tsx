@@ -2,7 +2,7 @@
 
 import React, { Suspense, useState, useEffect } from 'react'
 import { DashboardContainer } from './DashboardContainer'
-import { BeautifulDndDashboard } from './ios-style/BeautifulDndDashboard'
+import { IOSStyleDashboard } from './ios-style/IOSStyleDashboard'
 import { Loader2 } from 'lucide-react'
 import { useIOSFeatureFlags, FeatureFlagDebugPanel } from '@/hooks/useFeatureFlag'
 import { IOSFeatureFlags } from '@/lib/features/types'
@@ -119,7 +119,7 @@ export function DashboardContainerWrapper(props: DashboardContainerWrapperProps)
             </div>
           }
         >
-          <BeautifulDndDashboard />
+          <IOSStyleDashboard />
         </Suspense>
       ) : (
         <Suspense 
