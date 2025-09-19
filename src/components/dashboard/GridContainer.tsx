@@ -4,7 +4,7 @@ import React, { ReactNode, useRef, useCallback, useMemo, memo } from 'react'
 import { cn } from '@/lib/utils'
 import { GridSize } from '@/types/dashboard'
 import { useDashboardStore } from '@/lib/stores/useDashboardStore'
-import { UnifiedDndProvider } from './dnd/UnifiedDndProvider'
+// import { UnifiedDndProvider } from './dnd/UnifiedDndProvider' // Removed - using BeautifulDndDashboard
 import { GridProvider } from '@/contexts/GridContext'
 import { useGridCellSize } from '@/hooks/useGridCellSize'
 import { useGridNavigation, useKeyboardShortcuts } from '@/lib/dashboard/keyboard-navigation'
@@ -162,11 +162,7 @@ export const GridContainer = memo(function GridContainer({
     </GridProvider>
   )
   
-  // DnD 활성화 여부에 따라 래핑
-  if (enableDnd && isEditMode) {
-    return <UnifiedDndProvider>{content}</UnifiedDndProvider>
-  }
-  
+  // DnD는 BeautifulDndDashboard에서 처리하므로 여기서는 content만 반환
   return content
 })
 

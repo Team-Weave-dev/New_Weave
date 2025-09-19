@@ -187,4 +187,4 @@ export async function POST(request) {
   - [`docs/dashboard-widget-improvement-tasks.md`](./docs/dashboard-widget-improvement-tasks.md) - 위젯 시스템 개선
   - [`docs/dashboard-widget-tasks.md`](./docs/dashboard-widget-tasks.md) - Phase 1-6 완료
 - **시스템 설계**: [`docs/dashboard-widget-system-design.md`](./docs/dashboard-widget-system-design.md)
-- **기술 스택**: Next.js 14, TypeScript, Tailwind CSS, @dnd-kit, Zustand, Framer Motion
+- **기술 스택**: Next.js 14, TypeScript, Tailwind CSS
