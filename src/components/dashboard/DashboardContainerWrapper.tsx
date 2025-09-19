@@ -12,21 +12,33 @@ interface DashboardContainerWrapperProps {
 }
 
 export function DashboardContainerWrapper(props: DashboardContainerWrapperProps) {
-  const [useIOSStyle, setUseIOSStyle] = useState(false);
+  // iOS 스타일을 기본값으로 설정
+  const [useIOSStyle, setUseIOSStyle] = useState(true);
 
-  // Feature flag 체크 (개발 환경에서는 URL 파라미터로 제어)
+  // Feature flag 체크 (개발 환경에서 일반 대시보드로 전환 가능)
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const urlParams = new URLSearchParams(window.location.search);
-      const enableIOS = urlParams.get('ios') === 'true';
+      const disableIOS = urlParams.get('ios') === 'false';
       
-      // 개발 환경에서는 URL 파라미터 또는 localStorage로 제어
+      console.log('[DashboardContainerWrapper] URL params:', window.location.search);
+      console.log('[DashboardContainerWrapper] disableIOS from URL:', disableIOS);
+      
+      // 개발 환경에서는 URL 파라미터로 일반 대시보드로 전환 가능
       if (process.env.NODE_ENV === 'development') {
         const savedPreference = localStorage.getItem('weave-ios-style');
-        setUseIOSStyle(enableIOS || savedPreference === 'true');
+        console.log('[DashboardContainerWrapper] savedPreference:', savedPreference);
+        
+        // 기본값은 true (iOS 스타일), false로 명시한 경우만 일반 대시보드 사용
+        const shouldUseIOS = !disableIOS && savedPreference !== 'false';
+        console.log('[DashboardContainerWrapper] shouldUseIOS:', shouldUseIOS);
+        
+        setUseIOSStyle(shouldUseIOS);
         
         // URL 파라미터가 있으면 localStorage에 저장
-        if (enableIOS) {
+        if (disableIOS) {
+          localStorage.setItem('weave-ios-style', 'false');
+        } else if (urlParams.get('ios') === 'true') {
           localStorage.setItem('weave-ios-style', 'true');
         }
       }
@@ -41,11 +53,19 @@ export function DashboardContainerWrapper(props: DashboardContainerWrapperProps)
         setUseIOSStyle(newValue);
         localStorage.setItem('weave-ios-style', newValue.toString());
         console.log(`iOS 스타일: ${newValue ? '활성화' : '비활성화'}`);
+        console.log(`일반 대시보드로 전환하려면 URL에 ?ios=false 추가 또는 toggleIOSStyle() 실행`);
       };
+      
+      // 개발자 콘솔에 안내 메시지 출력
+      console.log('%c🎨 iOS 스타일 대시보드가 기본으로 활성화되었습니다', 'color: #007AFF; font-weight: bold');
+      console.log('일반 대시보드로 전환: ?ios=false 또는 콘솔에서 toggleIOSStyle() 실행');
     }
   }, [useIOSStyle]);
 
+  console.log('[DashboardContainerWrapper] Rendering with useIOSStyle:', useIOSStyle);
+  
   if (useIOSStyle) {
+    console.log('[DashboardContainerWrapper] Rendering IOSStyleDashboard');
     return (
       <Suspense 
         fallback={

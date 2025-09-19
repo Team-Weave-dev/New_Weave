@@ -1,6 +1,7 @@
 /**
  * FlexibleGridEngine
  * 자동 재배치 및 충돌 감지 엔진
+ * Phase 3: 고급 자동 재배치 시스템 통합
  */
 
 import {
@@ -9,6 +10,24 @@ import {
   CollisionResult,
   GridConfig,
 } from '@/types/ios-dashboard';
+
+// Phase 3 고급 모듈들
+import { 
+  CollisionDetectionEngine,
+  AdvancedCollisionResult,
+  CollisionResolutionStrategy 
+} from './collision-detection';
+import { 
+  AutoReflowEngine,
+  ReflowResult,
+  ReflowConfig 
+} from './auto-reflow';
+import {
+  SmartPlacementEngine,
+  PlacementSuggestion,
+  PlacementContext,
+  DropPrediction
+} from './smart-placement';
 
 /**
  * 2D Occupancy Map을 위한 셀 타입
@@ -19,18 +38,33 @@ interface GridCell {
 }
 
 /**
- * 유연한 그리드 엔진 클래스
+ * 유연한 그리드 엔진 클래스 (Phase 3 업그레이드)
  * 충돌 감지, 자동 재배치, 최적 위치 추천 기능 제공
+ * 
+ * Phase 3 새 기능:
+ * - 고급 충돌 감지 및 해결 전략
+ * - 스마트 자동 재배치 시스템
+ * - 지능형 배치 추천
  */
 export class FlexibleGridEngine {
   private occupancyMap: GridCell[][];
   private gridConfig: GridConfig;
   private widgets: Map<string, IOSStyleWidget>;
 
-  constructor(config: GridConfig) {
+  // Phase 3 고급 엔진들
+  private collisionEngine: CollisionDetectionEngine;
+  private reflowEngine: AutoReflowEngine;
+  private placementEngine: SmartPlacementEngine;
+
+  constructor(config: GridConfig, reflowConfig?: Partial<ReflowConfig>) {
     this.gridConfig = config;
     this.widgets = new Map();
     this.occupancyMap = this.createEmptyOccupancyMap();
+
+    // Phase 3 엔진 초기화
+    this.collisionEngine = new CollisionDetectionEngine(config, this.widgets);
+    this.reflowEngine = new AutoReflowEngine(config, this.widgets, reflowConfig);
+    this.placementEngine = new SmartPlacementEngine(config, this.widgets);
   }
 
   /**
@@ -116,6 +150,36 @@ export class FlexibleGridEngine {
     this.removeWidgetFromMap(widget.id);
     this.widgets.set(widget.id, widget);
     this.placeWidgetOnMap(widget);
+  }
+
+  /**
+   * 위젯 목록 전체 설정 (동기화용)
+   */
+  public setWidgets(widgets: IOSStyleWidget[]): void {
+    // 기존 위젯 모두 제거
+    this.widgets.clear();
+    this.resetOccupancyMap();
+    
+    // 새 위젯들 추가
+    widgets.forEach(widget => {
+      this.widgets.set(widget.id, widget);
+      this.placeWidgetOnMap(widget);
+    });
+    
+    // Phase 3 엔진들도 동기화
+    this.syncEngines();
+  }
+  
+  /**
+   * Occupancy Map 업데이트 - 위젯 목록을 기반으로 재구성
+   */
+  private updateOccupancyMap(): void {
+    this.resetOccupancyMap();
+    
+    // 모든 위젯을 occupancy map에 다시 배치
+    this.widgets.forEach(widget => {
+      this.placeWidgetOnMap(widget);
+    });
   }
 
   /**
@@ -444,11 +508,16 @@ export class FlexibleGridEngine {
   }
 
   /**
-   * 그리드 설정 업데이트
+   * 그리드 설정 업데이트 (Phase 3 업그레이드)
    */
   public updateGridConfig(config: GridConfig): void {
     this.gridConfig = config;
     this.resetOccupancyMap();
+    
+    // Phase 3 엔진들도 업데이트
+    this.collisionEngine.updateGridConfig(config);
+    this.reflowEngine.updateGridConfig(config);
+    this.placementEngine.updateGridConfig(config);
     
     // 모든 위젯 재배치
     const widgets = Array.from(this.widgets.values());
@@ -479,5 +548,326 @@ export class FlexibleGridEngine {
       }
       console.log(`Row ${row + 1}: ${rowStr}`);
     }
+  }
+
+  // ========================================
+  // Phase 3: 고급 자동 재배치 시스템 메서드들
+  // ========================================
+
+  /**
+   * 고급 충돌 감지 (Phase 3)
+   * 해결 전략과 함께 충돌 정보 제공
+   */
+  public detectAdvancedCollision(
+    position: FlexibleWidgetPosition,
+    excludeWidgetId?: string
+  ): AdvancedCollisionResult {
+    this.syncEngines();
+    return this.collisionEngine.detectCollisionRealtime(position, excludeWidgetId);
+  }
+
+  /**
+   * 증분 충돌 감지 (Phase 3)
+   * 성능 최적화를 위한 변경 영역만 검사
+   */
+  public detectIncrementalCollision(
+    position: FlexibleWidgetPosition,
+    previousPosition?: FlexibleWidgetPosition,
+    excludeWidgetId?: string
+  ): AdvancedCollisionResult {
+    this.syncEngines();
+    return this.collisionEngine.detectCollisionIncremental(
+      position,
+      previousPosition,
+      excludeWidgetId
+    );
+  }
+
+  /**
+   * 스마트 자동 재배치 실행 (Phase 3)
+   * iOS 스타일의 gravity와 최적화된 배치
+   */
+  public async executeSmartReflow(): Promise<ReflowResult> {
+    this.syncEngines();
+    const result = await this.reflowEngine.executeReflow();
+    
+    // 결과를 기본 occupancy map에 반영
+    this.updateOccupancyMap();
+    
+    return result;
+  }
+
+  /**
+   * 부분 영역 재배치 (Phase 3)
+   * 변경된 영역만 효율적으로 재배치
+   */
+  public async executePartialReflow(area: {
+    minRow: number;
+    maxRow: number;
+    minCol: number;
+    maxCol: number;
+  }): Promise<ReflowResult> {
+    this.syncEngines();
+    const result = await this.reflowEngine.executePartialReflow(area);
+    
+    this.updateOccupancyMap();
+    return result;
+  }
+
+  /**
+   * 빈 공간 최소화 (Phase 3)
+   * 레이아웃을 가장 compact하게 정리
+   */
+  public minimizeEmptySpace(): ReflowResult {
+    this.syncEngines();
+    const result = this.reflowEngine.minimizeEmptySpace();
+    
+    this.updateOccupancyMap();
+    return result;
+  }
+
+  /**
+   * 스마트 배치 제안 생성 (Phase 3)
+   * 컨텍스트 기반 최적 위치 추천
+   */
+  public generateSmartPlacementSuggestions(
+    context: PlacementContext,
+    maxSuggestions: number = 5
+  ): PlacementSuggestion[] {
+    this.syncEngines();
+    return this.placementEngine.generatePlacementSuggestions(context, maxSuggestions);
+  }
+
+  /**
+   * 픽셀 좌표를 그리드 위치로 변환
+   */
+  public pixelToGridPosition(pixelPosition: { x: number; y: number }): FlexibleWidgetPosition {
+    // 그리드 셀 크기 계산 (rowHeight 및 컬럼 너비 기준)
+    const cellWidth = this.gridConfig.containerWidth ? 
+      this.gridConfig.containerWidth / this.gridConfig.columns : 100;
+    const cellHeight = this.gridConfig.rowHeight || 100;
+    
+    // 픽셀을 그리드 좌표로 변환
+    const gridCol = Math.max(1, Math.ceil(pixelPosition.x / cellWidth));
+    const gridRow = Math.max(1, Math.ceil(pixelPosition.y / cellHeight));
+    
+    return {
+      gridColumnStart: gridCol,
+      gridColumnEnd: gridCol + 1,
+      gridRowStart: gridRow,
+      gridRowEnd: gridRow + 1,
+      width: 1,
+      height: 1,
+    };
+  }
+
+  /**
+   * 드롭 위치 예측 (Phase 3)
+   * 드래그 중인 위젯의 최적 배치 위치 예측
+   */
+  public predictDropPosition(
+    dragPosition: { row: number; col: number },
+    widgetSize: { width: number; height: number },
+    context?: Partial<PlacementContext>
+  ): DropPrediction {
+    this.syncEngines();
+    return this.placementEngine.predictDropPosition(dragPosition, widgetSize, context);
+  }
+
+  /**
+   * 배치 히스토리 추가 (Phase 3)
+   * 사용자 패턴 학습을 위한 히스토리 기록
+   */
+  public addToPlacementHistory(
+    widgetId: string,
+    position: FlexibleWidgetPosition
+  ): void {
+    this.placementEngine.addToPlacementHistory(widgetId, position);
+  }
+
+  /**
+   * 크기 자동 조정 제안 (Phase 3)
+   * 사용 가능한 공간에 맞는 최적 크기 제안
+   */
+  public suggestSizeAdjustment(
+    position: FlexibleWidgetPosition,
+    availableSpace: { maxWidth: number; maxHeight: number }
+  ): { width: number; height: number } | null {
+    return this.placementEngine.suggestSizeAdjustment(position, availableSpace);
+  }
+
+  /**
+   * 레이아웃 안정성 검증 (Phase 3)
+   * 현재 레이아웃의 문제점과 개선 제안
+   */
+  public validateLayoutStability(): {
+    isStable: boolean;
+    issues: string[];
+    suggestions: string[];
+    placementStability: {
+      overallStability: number;
+      problematicWidgets: string[];
+      recommendations: string[];
+    };
+  } {
+    this.syncEngines();
+    
+    // Auto Reflow 엔진의 안정성 검증
+    const reflowValidation = this.reflowEngine.validateLayoutStability();
+    
+    // Smart Placement 엔진의 배치 안정성 분석
+    const placementStability = this.placementEngine.analyzePlacementStability();
+    
+    return {
+      ...reflowValidation,
+      placementStability,
+    };
+  }
+
+  /**
+   * Reflow 설정 업데이트 (Phase 3)
+   */
+  public updateReflowConfig(config: Partial<ReflowConfig>): void {
+    this.reflowEngine.updateConfig(config);
+  }
+
+  /**
+   * 위젯 맵과 엔진들 동기화 (Phase 3)
+   * 내부 상태 일관성 유지
+   */
+  private syncEngines(): void {
+    this.collisionEngine.updateWidgets(this.widgets);
+    this.reflowEngine.updateWidgets(this.widgets);
+    this.placementEngine.updateWidgets(this.widgets);
+  }
+
+  /**
+   * 위젯 추가 (Phase 3 업그레이드)
+   * 기존 메서드에 엔진 동기화 추가
+   */
+  public addWidget(widget: IOSStyleWidget): void {
+    this.widgets.set(widget.id, widget);
+    this.placeWidgetOnMap(widget);
+    this.syncEngines();
+  }
+
+  /**
+   * 위젯 제거 (Phase 3 업그레이드)
+   * 기존 메서드에 엔진 동기화 추가
+   */
+  public removeWidget(widgetId: string): void {
+    this.widgets.delete(widgetId);
+    this.removeWidgetFromMap(widgetId);
+    this.syncEngines();
+  }
+
+  /**
+   * 위젯 업데이트 (Phase 3 업그레이드)
+   * 기존 메서드에 엔진 동기화 추가
+   */
+  public updateWidget(widget: IOSStyleWidget): void {
+    this.removeWidgetFromMap(widget.id);
+    this.widgets.set(widget.id, widget);
+    this.placeWidgetOnMap(widget);
+    this.syncEngines();
+  }
+
+  /**
+   * 위젯 이동 (Phase 3 업그레이드)
+   * 고급 충돌 감지와 스마트 재배치 적용
+   */
+  public async moveWidgetSmart(
+    widgetId: string,
+    newPosition: FlexibleWidgetPosition
+  ): Promise<{
+    success: boolean;
+    finalPosition: FlexibleWidgetPosition;
+    appliedStrategy?: CollisionResolutionStrategy;
+    reflowResult?: ReflowResult;
+  }> {
+    const widget = this.widgets.get(widgetId);
+    if (!widget) {
+      return {
+        success: false,
+        finalPosition: newPosition,
+      };
+    }
+
+    // 고급 충돌 감지
+    const collision = this.detectAdvancedCollision(newPosition, widgetId);
+    let finalPosition = newPosition;
+    let appliedStrategy: CollisionResolutionStrategy | undefined;
+
+    if (collision.hasCollision && collision.canResolve) {
+      // 최적의 해결 전략 선택
+      const bestStrategy = collision.resolutionStrategies[0];
+      appliedStrategy = bestStrategy;
+
+      if (bestStrategy.type === 'reposition' && bestStrategy.suggestedPosition) {
+        finalPosition = bestStrategy.suggestedPosition;
+      }
+    }
+
+    // 위젯 이동
+    this.removeWidgetFromMap(widgetId);
+    widget.position = finalPosition;
+    this.placeWidgetOnMap(widget);
+
+    // 배치 히스토리 기록
+    this.addToPlacementHistory(widgetId, finalPosition);
+
+    // 스마트 재배치 적용
+    const reflowResult = await this.executeSmartReflow();
+
+    return {
+      success: true,
+      finalPosition: widget.position, // reflow 후의 최종 위치
+      appliedStrategy,
+      reflowResult,
+    };
+  }
+
+  /**
+   * Phase 3 시스템 상태 정보 (디버그용)
+   */
+  public getPhase3SystemInfo(): {
+    engineStatus: {
+      collision: boolean;
+      reflow: boolean;
+      placement: boolean;
+    };
+    layoutMetrics: {
+      widgetCount: number;
+      occupiedCells: number;
+      emptySpaceRatio: number;
+      stabilityScore: number;
+    };
+  } {
+    const stability = this.validateLayoutStability();
+    const widgets = Array.from(this.widgets.values());
+    const occupiedCells = widgets.reduce(
+      (sum, w) => sum + (w.position.width * w.position.height),
+      0
+    );
+    
+    const maxRow = widgets.length > 0 
+      ? Math.max(...widgets.map(w => w.position.gridRowEnd))
+      : 0;
+    const totalCells = maxRow * this.gridConfig.columns;
+    const emptySpaceRatio = totalCells > 0 ? (totalCells - occupiedCells) / totalCells : 0;
+
+    return {
+      engineStatus: {
+        collision: !!this.collisionEngine,
+        reflow: !!this.reflowEngine,
+        placement: !!this.placementEngine,
+      },
+      layoutMetrics: {
+        widgetCount: this.widgets.size,
+        occupiedCells,
+        emptySpaceRatio,
+        stabilityScore: stability.placementStability.overallStability,
+      },
+    };
   }
 }

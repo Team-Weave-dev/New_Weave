@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import Button from '@/components/ui/Button';
+// import Button from '../../ui/Button'; // 임시 주석 처리
 import { LayoutTemplate } from '@/types/ios-dashboard';
 import {
   Plus,
@@ -168,46 +168,52 @@ export function EditModeToolbar({
       animate={{ y: 0, opacity: 1 }}
       exit={{ y: -100, opacity: 0 }}
       transition={{ type: 'spring', damping: 20, stiffness: 300 }}
-      className="fixed top-0 left-0 right-0 z-40 bg-background/95 backdrop-blur-md border-b"
+      className="fixed top-16 left-0 right-0 z-30 bg-background/95 backdrop-blur-md border-b"
+      role="toolbar"
+      aria-label="편집 모드 도구 모음"
     >
       <div className="container mx-auto px-4 py-3">
         <div className="flex items-center justify-between">
           {/* 왼쪽: 취소 버튼 */}
-          <Button
+          <button
             onClick={onCancel}
-            variant="ghost"
-            size="sm"
-            className="text-muted-foreground hover:text-foreground"
+            className="text-muted-foreground hover:text-foreground px-3 py-1.5 text-xs h-8 rounded-lg flex items-center focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+            aria-label="편집 모드 취소"
+            role="button"
+            tabIndex={0}
           >
-            <X className="h-4 w-4 mr-1" />
+            <X className="h-4 w-4 mr-1" aria-hidden="true" />
             취소
-          </Button>
+          </button>
 
           {/* 중앙: 편집 모드 표시 */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3" role="status" aria-live="polite">
             <motion.div
               animate={{ rotate: [0, 360] }}
               transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
               className="w-2 h-2 bg-primary rounded-full"
+              aria-hidden="true"
             />
-            <span className="font-medium text-sm">편집 모드</span>
+            <span className="font-medium text-sm" role="heading" aria-level={2}>편집 모드</span>
             <motion.div
               animate={{ rotate: [0, -360] }}
               transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
               className="w-2 h-2 bg-primary rounded-full"
+              aria-hidden="true"
             />
           </div>
 
           {/* 오른쪽: 완료 버튼 */}
-          <Button
+          <button
             onClick={onDone}
-            variant="default"
-            size="sm"
-            className="font-medium"
+            className="bg-blue-600 text-white px-4 py-2 text-sm h-10 rounded-lg font-medium flex items-center focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            aria-label="편집 완료 및 저장"
+            role="button"
+            tabIndex={0}
           >
-            <Check className="h-4 w-4 mr-1" />
+            <Check className="h-4 w-4 mr-1" aria-hidden="true" />
             완료
-          </Button>
+          </button>
         </div>
 
         {/* 하단 액션 버튼들 */}
@@ -215,10 +221,14 @@ export function EditModeToolbar({
           {/* 위젯 추가 드롭다운 */}
           <DropdownMenu open={showWidgetMenu} onOpenChange={setShowWidgetMenu}>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm">
-                <Plus className="h-4 w-4 mr-1" />
+              <button className="bg-transparent text-gray-600 border-2 border-gray-300 px-3 py-1.5 text-xs h-8 rounded-lg flex items-center focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+                aria-label="위젯 추가 메뉴 열기"
+                aria-expanded={showWidgetMenu}
+                aria-haspopup="menu"
+                tabIndex={0}>
+                <Plus className="h-4 w-4 mr-1" aria-hidden="true" />
                 위젯 추가
-              </Button>
+              </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="center">
               <DropdownMenuLabel>위젯 선택</DropdownMenuLabel>
@@ -244,10 +254,14 @@ export function EditModeToolbar({
           {/* 템플릿 선택 드롭다운 */}
           <DropdownMenu open={showTemplateMenu} onOpenChange={setShowTemplateMenu}>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm">
-                <Layout className="h-4 w-4 mr-1" />
+              <button className="bg-transparent text-gray-600 border-2 border-gray-300 px-3 py-1.5 text-xs h-8 rounded-lg flex items-center focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+                aria-label="레이아웃 템플릿 메뉴 열기"
+                aria-expanded={showTemplateMenu}
+                aria-haspopup="menu"
+                tabIndex={0}>
+                <Layout className="h-4 w-4 mr-1" aria-hidden="true" />
                 템플릿
-              </Button>
+              </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="center">
               <DropdownMenuLabel>레이아웃 템플릿</DropdownMenuLabel>
@@ -304,11 +318,14 @@ export function AddWidgetFAB({
         'z-30',
         'hover:shadow-xl',
         'transition-shadow',
-        'lg:hidden' // 모바일에서만 표시
+        'lg:hidden', // 모바일에서만 표시
+        'focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2'
       )}
-      aria-label="위젯 추가"
+      aria-label="새 위젯 추가"
+      role="button"
+      tabIndex={0}
     >
-      <Plus className="h-6 w-6" />
+      <Plus className="h-6 w-6" aria-hidden="true" />
     </motion.button>
   );
 }

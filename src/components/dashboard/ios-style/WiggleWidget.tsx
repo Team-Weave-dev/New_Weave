@@ -1,14 +1,14 @@
 'use client';
 
 import React, { useMemo } from 'react';
-import { useDraggable } from '@dnd-kit/core';
+import { useDraggable, useDroppable } from '@dnd-kit/core';
 import { motion, AnimatePresence } from 'framer-motion';
 import { IOSStyleWidget } from '@/types/ios-dashboard';
 import { wiggleAnimation, deleteButtonAnimation, settingsButtonAnimation } from '@/lib/dashboard/ios-animations/animations';
 import { cn } from '@/lib/utils';
 import { X, Settings } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
-import Button from '@/components/ui/Button';
+// import Button from '../../ui/Button'; // 임시 주석 처리
 
 interface WiggleWidgetProps {
   widget: IOSStyleWidget;
@@ -33,17 +33,40 @@ export function WiggleWidget({
   const {
     attributes,
     listeners,
-    setNodeRef,
+    setNodeRef: setDragRef,
     transform,
     isDragging: isLocalDragging,
   } = useDraggable({
     id: widget.id,
     disabled: !isEditing,
+    data: {
+      widget,
+    },
   });
+  
+  // Droppable 설정 (다른 위젯을 이 위젯 위로 드롭할 수 있음)
+  const {
+    setNodeRef: setDropRef,
+    isOver,
+  } = useDroppable({
+    id: widget.id,
+    disabled: !isEditing,
+    data: {
+      widget,
+    },
+  });
+  
+  // 두 ref를 합치기
+  const setNodeRef = (node: HTMLElement | null) => {
+    setDragRef(node);
+    setDropRef(node);
+  };
 
-  // 드래그 트랜스폼 스타일
+  // 드래그 트랜스폼 스타일 - transform이 있으면 항상 적용 (드래그 중일 때)
   const dragStyle = transform ? {
     transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
+    zIndex: isLocalDragging ? 1000 : 1,
+    position: 'relative' as const,
   } : undefined;
 
   // Wiggle 애니메이션 variants
@@ -91,12 +114,18 @@ export function WiggleWidget({
         'w-full h-full',
         isDragging && 'z-50',
         isLocalDragging && 'opacity-50',
+        isOver && 'ring-2 ring-primary ring-opacity-50',
         className
       )}
       variants={wiggleVariants}
       initial="initial"
       animate={isWiggling && !isDragging ? "wiggle" : "initial"}
       exit="exit"
+      role="article"
+      aria-label={`위젯: ${widget.title}`}
+      aria-describedby={`위젯 타입: ${widget.type}`}
+      aria-grabbed={isDragging}
+      tabIndex={isEditing ? 0 : -1}
       {...(isEditing ? { ...attributes, ...listeners } : {})}
     >
       {/* 위젯 컨텐츠 */}
@@ -106,7 +135,10 @@ export function WiggleWidget({
         'transition-transform duration-200',
         isEditing && 'cursor-move',
         isDragging && 'scale-105'
-      )}>
+      )}
+      role="region"
+      aria-label={`${widget.title} 컨텐츠`}
+      >
         {renderWidgetContent()}
       </div>
 
@@ -122,26 +154,29 @@ export function WiggleWidget({
               animate="visible"
               exit="hidden"
             >
-              <Button
+              <button
                 onClick={(e) => {
                   e.stopPropagation();
                   e.preventDefault();
                   onDelete();
                 }}
-                variant="destructive"
-                size="sm"
                 className={cn(
                   'rounded-full',
                   'w-7 h-7',
                   'p-0',
                   'shadow-lg',
                   'hover:scale-110',
-                  'transition-transform'
+                  'transition-transform',
+                  'bg-red-600 text-white border border-red-600',
+                  'flex items-center justify-center',
+                  'focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2'
                 )}
-                aria-label="위젯 삭제"
+                aria-label={`${widget.title} 위젯 삭제`}
+                role="button"
+                tabIndex={0}
               >
                 <X className="h-4 w-4" />
-              </Button>
+              </button>
             </motion.div>
 
             {/* 설정 버튼 */}
@@ -152,14 +187,12 @@ export function WiggleWidget({
               animate="visible"
               exit="hidden"
             >
-              <Button
+              <button
                 onClick={(e) => {
                   e.stopPropagation();
                   e.preventDefault();
                   onConfig();
                 }}
-                variant="outline"
-                size="sm"
                 className={cn(
                   'rounded-full',
                   'w-7 h-7',
@@ -167,12 +200,16 @@ export function WiggleWidget({
                   'shadow-lg',
                   'hover:scale-110',
                   'transition-transform',
-                  'bg-background'
+                  'bg-white text-gray-600 border border-gray-300',
+                  'flex items-center justify-center',
+                  'focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2'
                 )}
-                aria-label="위젯 설정"
+                aria-label={`${widget.title} 위젯 설정`}
+                role="button"
+                tabIndex={0}
               >
                 <Settings className="h-3 w-3" />
-              </Button>
+              </button>
             </motion.div>
           </>
         )}
@@ -210,9 +247,9 @@ export function WiggleWidget({
 
       {/* 잠금 표시 */}
       {widget.isLocked && isEditing && (
-        <div className="absolute top-2 right-2 z-10">
+        <div className="absolute top-2 right-2 z-10" role="status" aria-live="polite">
           <div className="bg-yellow-500/20 text-yellow-600 px-2 py-1 rounded text-xs font-medium">
-            잠김
+            <span aria-label="이 위젯은 잠겨있습니다">잠김</span>
           </div>
         </div>
       )}

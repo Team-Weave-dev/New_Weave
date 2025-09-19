@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useEffect, useRef, useState, ReactNode } from 'react';
-import { useDroppable } from '@dnd-kit/core';
 import { IOSStyleWidget } from '@/types/ios-dashboard';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
@@ -26,35 +25,35 @@ export function FlexibleGridContainer({
   const containerRef = useRef<HTMLDivElement>(null);
   const [columns, setColumns] = useState(4); // 기본 4컬럼
   const [cellSize, setCellSize] = useState(0);
-  
-  // Droppable 영역 설정
-  const { setNodeRef, isOver } = useDroppable({
-    id: 'grid-container',
-  });
 
-  // 반응형 컬럼 조정
+  // 반응형 컬럼 조정 
+  // 데스크탑: 더 작은 위젯들을 많이 배치 가능
+  // 태블릿/모바일: 적절한 크기로 조정
   useEffect(() => {
     const updateColumns = () => {
       if (!containerRef.current) return;
       
       const width = containerRef.current.offsetWidth;
-      let newColumns = 2; // 모바일 기본값
+      let newColumns = 4; // 모바일 기본값
       
-      if (width >= 1536) {
-        newColumns = 8; // 2xl 화면
-      } else if (width >= 1280) {
-        newColumns = 6; // xl 화면
+      if (width >= 1280) {
+        newColumns = 12; // 데스크탑: 더 유연한 배치 가능
       } else if (width >= 768) {
-        newColumns = 4; // 태블릿
+        newColumns = 8; // 태블릿: 중간 크기
       }
       
       setColumns(newColumns);
       
-      // 셀 크기 계산 (gap 고려)
+      // 셀 크기 계산 (gap 고려) - 정사각형 유지
       const gap = 16; // 1rem
       const totalGaps = (newColumns - 1) * gap;
       const availableWidth = width - totalGaps - 32; // padding 고려
-      setCellSize(Math.floor(availableWidth / newColumns));
+      const calculatedCellSize = Math.floor(availableWidth / newColumns);
+      
+      // 최대/최소 크기 제한
+      const minCellSize = 60; // 최소 60px
+      const maxCellSize = 120; // 최대 120px
+      setCellSize(Math.min(maxCellSize, Math.max(minCellSize, calculatedCellSize)));
     };
     
     updateColumns();
@@ -68,24 +67,21 @@ export function FlexibleGridContainer({
     return () => resizeObserver.disconnect();
   }, []);
 
-  // CSS Grid 스타일 계산
+  // CSS Grid 스타일 계산 - 정사각형 셀 유지
   const gridStyle: React.CSSProperties = {
     display: 'grid',
-    gridTemplateColumns: `repeat(${columns}, 1fr)`,
+    gridTemplateColumns: `repeat(${columns}, ${cellSize}px)`,
     gridAutoRows: `${cellSize}px`,
     gap: '1rem',
     padding: '1rem',
     position: 'relative',
     minHeight: '100vh',
     transition: 'all 0.3s ease',
+    justifyContent: 'center', // 중앙 정렬
   };
 
-  // 드롭 영역 하이라이트
-  const dropZoneStyle = isOver && isEditMode ? {
-    backgroundColor: 'rgba(var(--color-primary), 0.05)',
-    borderRadius: '0.5rem',
-    transition: 'background-color 0.2s ease',
-  } : {};
+  // 드롭 영역 하이라이트 (제거)
+  const dropZoneStyle = {};
 
   // 위젯 위치 계산 (CSS Grid 속성)
   const getWidgetGridStyle = (widget: IOSStyleWidget): React.CSSProperties => {
@@ -139,12 +135,29 @@ export function FlexibleGridContainer({
     }
   };
 
+  // 마우스 Long Press 지원
+  const handleMouseDown = (e: React.MouseEvent, widgetId: string) => {
+    if (!isEditMode && onLongPressStart) {
+      e.preventDefault();
+      onLongPressStart(widgetId);
+    }
+  };
+
+  const handleMouseUp = () => {
+    if (onLongPressEnd) {
+      onLongPressEnd();
+    }
+  };
+
+  const handleMouseLeave = () => {
+    if (onLongPressEnd) {
+      onLongPressEnd();
+    }
+  };
+
   return (
     <div
-      ref={(node) => {
-        containerRef.current = node as HTMLDivElement;
-        setNodeRef(node);
-      }}
+      ref={containerRef}
       className={cn(
         'flexible-grid-container',
         'w-full',
@@ -162,10 +175,11 @@ export function FlexibleGridContainer({
           <div
             className="grid h-full opacity-10"
             style={{
-              gridTemplateColumns: `repeat(${columns}, 1fr)`,
+              gridTemplateColumns: `repeat(${columns}, ${cellSize}px)`,
               gridAutoRows: `${cellSize}px`,
               gap: '1rem',
               padding: '1rem',
+              justifyContent: 'center',
             }}
           >
             {Array.from({ length: columns * Math.ceil(800 / cellSize) }).map((_, index) => (
@@ -185,24 +199,9 @@ export function FlexibleGridContainer({
           if (!widget || !React.isValidElement(child)) return null;
           
           return (
-            <motion.div
+            <div
               key={widget.id}
               style={getWidgetGridStyle(widget)}
-              initial={false}
-              animate={{
-                x: 0,
-                y: 0,
-                scale: 1,
-              }}
-              exit={{
-                scale: 0.8,
-                opacity: 0,
-              }}
-              transition={{
-                type: 'spring',
-                damping: 25,
-                stiffness: 300,
-              }}
               className={cn(
                 'widget-grid-item',
                 'relative',
@@ -210,9 +209,12 @@ export function FlexibleGridContainer({
                 isEditMode && 'z-10'
               )}
               onPointerDown={(e) => handlePointerDown(e, widget.id)}
+              onMouseDown={(e) => handleMouseDown(e, widget.id)}
+              onMouseUp={handleMouseUp}
+              onMouseLeave={handleMouseLeave}
             >
               {React.cloneElement(child as React.ReactElement)}
-            </motion.div>
+            </div>
           );
         })}
       </AnimatePresence>
@@ -227,17 +229,6 @@ export function FlexibleGridContainer({
         </div>
       )}
 
-      {/* 드롭 존 인디케이터 */}
-      {isOver && isEditMode && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="absolute inset-0 pointer-events-none"
-        >
-          <div className="h-full w-full rounded-lg border-2 border-dashed border-primary opacity-30" />
-        </motion.div>
-      )}
 
       {/* 디버그 정보 (개발 모드) */}
       {process.env.NODE_ENV === 'development' && (

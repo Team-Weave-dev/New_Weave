@@ -162,6 +162,8 @@ export interface GridConfig {
   gap: number;
   /** 그리드 패딩 (픽셀) */
   padding: number;
+  /** 컨테이너 너비 (픽셀) - 픽셀 좌표 변환에 사용 */
+  containerWidth?: number;
   /** 반응형 중단점 설정 */
   breakpoints: {
     mobile: number;  // 2 columns
