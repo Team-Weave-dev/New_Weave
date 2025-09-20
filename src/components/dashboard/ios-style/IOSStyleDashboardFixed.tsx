@@ -59,8 +59,41 @@ export function IOSStyleDashboardFixed({
   // 로컬 상태
   const [activeId, setActiveId] = useState<string | null>(null);
   const [isPressing, setIsPressing] = useState(false);
-  const [columns] = useState(4); // 기본 컬럼 수
-  const [cellSize] = useState(120); // 기본 셀 크기
+  const [columns, setColumns] = useState(4); // 반응형 컬럼 수
+  const [cellSize, setCellSize] = useState(120); // 반응형 셀 크기
+  
+  // 반응형 그리드 계산
+  useEffect(() => {
+    const calculateGrid = () => {
+      const width = window.innerWidth;
+      const padding = 32; // 좌우 패딩
+      const gap = 16; // 위젯 간격
+      
+      let newColumns = 4;
+      if (width < 640) {
+        newColumns = 2; // 모바일
+      } else if (width < 768) {
+        newColumns = 3; // 작은 태블릿
+      } else if (width < 1024) {
+        newColumns = 4; // 태블릿
+      } else if (width < 1280) {
+        newColumns = 5; // 작은 데스크탑
+      } else {
+        newColumns = 6; // 큰 데스크탑
+      }
+      
+      // 사용 가능한 너비를 기반으로 셀 크기 계산
+      const availableWidth = width - padding;
+      const newCellSize = Math.floor((availableWidth - (newColumns - 1) * gap) / newColumns);
+      
+      setColumns(newColumns);
+      setCellSize(Math.min(Math.max(newCellSize, 100), 200)); // 100px ~ 200px 사이로 제한
+    };
+    
+    calculateGrid();
+    window.addEventListener('resize', calculateGrid);
+    return () => window.removeEventListener('resize', calculateGrid);
+  }, []);
   
   // 초기 위젯 설정 - useRef를 사용하여 한 번만 실행
   useEffect(() => {
@@ -384,8 +417,8 @@ export function IOSStyleDashboardFixed({
               <div 
                 className="flex flex-wrap gap-4 justify-center"
                 style={{
-                  maxWidth: `${columns * cellSize + (columns - 1) * 16}px`,
-                  margin: '0 auto',
+                  width: '100%',
+                  padding: '0 16px',
                 }}
               >
                 {widgets.map((widget, index) => {
@@ -489,8 +522,8 @@ export function IOSStyleDashboardFixed({
           <div 
             className="flex flex-wrap gap-4 justify-center"
             style={{
-              maxWidth: `${columns * cellSize + (columns - 1) * 16}px`,
-              margin: '0 auto',
+              width: '100%',
+              padding: '0 16px',
             }}
           >
             {widgets.map((widget) => {

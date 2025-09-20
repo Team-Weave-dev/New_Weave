@@ -106,7 +106,13 @@ export function SortableWidget({
             ease: "easeInOut",
             delay: Math.random() * 0.2,
           }
-        } : {}}
+        } : {
+          rotate: 0,
+          transition: {
+            duration: 0.2,
+            ease: "easeOut"
+          }
+        }}
       >
         {/* 위젯 컨텐츠 */}
         <div className={cn(
