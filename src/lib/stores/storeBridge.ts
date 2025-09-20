@@ -10,7 +10,7 @@
 import { useIOSDashboardStore } from './useIOSDashboardStore';
 import { useDashboardStore } from './useDashboardStore';
 import { IOSStyleWidget } from '@/types/ios-dashboard';
-import { Widget, DashboardLayout } from '@/types/dashboard';
+import { Widget, DashboardLayout, WidgetDefinition } from '@/types/dashboard';
 import { iosWidgetRegistry } from '@/lib/dashboard/ios-widget-registry';
 
 export type SyncDirection = 'toIOS' | 'toLegacy' | 'bidirectional';
@@ -144,8 +144,8 @@ export class StoreBridge {
     try {
       // 레이아웃 변환 및 동기화
       if (legacyState.layouts && Array.isArray(legacyState.layouts)) {
-        const iosLayouts = this.convertLayoutsToIOS(legacyState.layouts);
-        iosStore.setLayouts(iosLayouts);
+        const iosWidgets = this.convertLayoutsToIOSWidgets(legacyState.layouts);
+        iosStore.setWidgets(iosWidgets);
       }
       
       // 위젯 변환 및 동기화
@@ -197,6 +197,24 @@ export class StoreBridge {
     } catch (error) {
       console.error('[StoreBridge] Error syncing to Legacy:', error);
     }
+  }
+  
+  /**
+   * 레거시 레이아웃을 iOS 위젯 배열로 변환
+   */
+  private convertLayoutsToIOSWidgets(layouts: Layout[]): IOSStyleWidget[] {
+    // 모든 레이아웃의 위젯을 하나의 배열로 병합
+    const allWidgets: WidgetDefinition[] = [];
+    layouts.forEach(layout => {
+      if (layout.widgets && Array.isArray(layout.widgets)) {
+        allWidgets.push(...layout.widgets);
+      }
+    });
+    
+    // 각 위젯을 iOS 스타일로 변환
+    return allWidgets.map(widget => 
+      iosWidgetRegistry.convertLegacyToIOS(widget)
+    );
   }
   
   /**
@@ -309,9 +327,8 @@ export class StoreBridge {
         
         // 레이아웃 마이그레이션
         const iosLayouts = this.convertLayoutsToIOS(legacyState.layouts);
-        iosStore.setLayouts(iosLayouts);
         
-        // 위젯 마이그레이션
+        // 위젯 마이그레이션 (setLayouts 메서드가 없으므로 위젯만 설정)
         const allWidgets: IOSStyleWidget[] = [];
         iosLayouts.forEach(layout => {
           allWidgets.push(...layout.widgets);

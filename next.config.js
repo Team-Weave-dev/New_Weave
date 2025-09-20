@@ -1,5 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // React StrictMode 활성화 (@hello-pangea/dnd는 StrictMode를 완벽하게 지원)
+  reactStrictMode: true,
+  
   // 이미지 최적화 설정
   images: {
     remotePatterns: [

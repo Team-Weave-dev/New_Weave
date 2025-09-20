@@ -9,7 +9,7 @@ import {
   DraggableProvided,
   DraggableStateSnapshot,
   DroppableProvided
-} from 'react-beautiful-dnd';
+} from '@hello-pangea/dnd';
 import { IOSStyleWidget } from '@/types/ios-dashboard';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';

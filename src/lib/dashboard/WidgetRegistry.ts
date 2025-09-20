@@ -240,14 +240,23 @@ class WidgetRegistryClass {
     return Array.from(this.widgets.keys())
   }
 
+  // 싱글톤 인스턴스 (클래스 내부 정적 프로퍼티)
+  private static instance: WidgetRegistryClass;
+  
   // 싱글톤 인스턴스 getter
   static getInstance(): WidgetRegistryClass {
-    return WidgetRegistry
+    if (!WidgetRegistryClass.instance) {
+      WidgetRegistryClass.instance = new WidgetRegistryClass();
+    }
+    return WidgetRegistryClass.instance;
   }
 }
 
 // 싱글톤 인스턴스 생성 및 내보내기
-export const WidgetRegistry = new WidgetRegistryClass()
+export const WidgetRegistry = WidgetRegistryClass.getInstance()
+
+// 클래스도 export (필요한 경우 사용)
+export { WidgetRegistryClass }
 
 // 위젯 자동 등록을 위한 데코레이터 (선택적)
 export function registerWidget(

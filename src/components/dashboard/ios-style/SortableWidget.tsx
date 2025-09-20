@@ -34,10 +34,27 @@ export function SortableWidget({
     const WidgetComponent = iosWidgetRegistry.getWidget(widget.type);
     
     if (!WidgetComponent) {
+      // 임시 기본 위젯 렌더링
       return (
-        <Card className="w-full h-full p-4">
-          <div className="text-center text-muted-foreground">
-            Unknown widget type: {widget.type}
+        <Card className="w-full h-full p-4 bg-card border shadow-sm">
+          <div className="flex flex-col h-full">
+            <h3 className="font-semibold text-lg mb-2">{widget.title}</h3>
+            <p className="text-sm text-muted-foreground mb-3">타입: {widget.type}</p>
+            <div className="flex-1 bg-muted/20 rounded-lg flex items-center justify-center">
+              <span className="text-muted-foreground">
+                {widget.type === 'stats' && '📊 통계 데이터'}
+                {widget.type === 'chart' && '📈 차트 데이터'}
+                {widget.type === 'quick-action' && '⚡ 빠른 작업'}
+                {widget.type === 'timeline' && '📅 타임라인'}
+                {widget.type === 'indicator' && '🔔 상태 표시기'}
+                {!['stats', 'chart', 'quick-action', 'timeline', 'indicator'].includes(widget.type) && '위젯 콘텐츠'}
+              </span>
+            </div>
+            {widget.size && (
+              <div className="mt-2 text-xs text-muted-foreground">
+                크기: {widget.size.width}x{widget.size.height}
+              </div>
+            )}
           </div>
         </Card>
       );

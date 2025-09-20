@@ -35,11 +35,10 @@ export interface IOSWidgetProps {
 export class IOSWidgetRegistry {
   private static instance: IOSWidgetRegistry;
   private widgetMap = new Map<string, React.ComponentType<any>>();
-  private legacyRegistry = WidgetRegistry.getInstance();
+  private legacyRegistry: any; // 지연 초기화
   
   private constructor() {
-    // 초기화 시 레거시 위젯과 동기화
-    this.syncWithLegacyRegistry();
+    // legacyRegistry는 나중에 초기화
   }
   
   /**
@@ -53,16 +52,26 @@ export class IOSWidgetRegistry {
   }
   
   /**
+   * 레거시 레지스트리 가져오기 (지연 초기화)
+   */
+  private getLegacyRegistry() {
+    if (!this.legacyRegistry) {
+      this.legacyRegistry = WidgetRegistry;
+    }
+    return this.legacyRegistry;
+  }
+  
+  /**
    * 기존 WidgetRegistry와 브릿지
    */
   public syncWithLegacyRegistry(): void {
     console.log('[IOSWidgetRegistry] Syncing with legacy registry...');
     
     // 레거시 레지스트리의 모든 위젯 가져오기
-    const allWidgetTypes = this.legacyRegistry.getAllWidgetTypes();
+    const allWidgetTypes = this.getLegacyRegistry().getAllWidgetTypes();
     
     allWidgetTypes.forEach(type => {
-      const component = this.legacyRegistry.getComponent(type);
+      const component = this.getLegacyRegistry().getComponent(type);
       if (component) {
         // 레거시 위젯을 iOS 스타일로 래핑
         const wrappedComponent = this.wrapLegacyWidget(component, type);
@@ -200,7 +209,7 @@ export class IOSWidgetRegistry {
     
     // 없으면 레거시 레지스트리에서 찾아서 래핑
     if (!component) {
-      const legacyComponent = this.legacyRegistry.getComponent(type);
+      const legacyComponent = this.getLegacyRegistry().getComponent(type);
       if (legacyComponent) {
         component = this.wrapLegacyWidget(legacyComponent, type);
         this.register(type, component);
@@ -215,7 +224,7 @@ export class IOSWidgetRegistry {
    */
   public getAllWidgetTypes(): string[] {
     const iosTypes = Array.from(this.widgetMap.keys());
-    const legacyTypes = this.legacyRegistry.getAllWidgetTypes();
+    const legacyTypes = this.getLegacyRegistry().getAllWidgetTypes();
     
     // 중복 제거하여 합치기
     const allTypes = new Set([...iosTypes, ...legacyTypes]);
@@ -226,7 +235,7 @@ export class IOSWidgetRegistry {
    * 위젯 타입 존재 확인
    */
   public hasWidget(type: string): boolean {
-    return this.widgetMap.has(type) || this.legacyRegistry.hasWidget(type);
+    return this.widgetMap.has(type) || this.getLegacyRegistry().hasWidget(type);
   }
   
   /**

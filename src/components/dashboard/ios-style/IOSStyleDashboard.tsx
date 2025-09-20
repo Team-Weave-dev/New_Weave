@@ -7,7 +7,7 @@ import {
   Draggable,
   DropResult,
   DragStart,
-} from 'react-beautiful-dnd';
+} from '@hello-pangea/dnd';
 import { useIOSAnimations } from '@/lib/dashboard/ios-animations/useIOSAnimations';
 import { AnimationController } from '@/lib/dashboard/ios-animations/AnimationController';
 import { FlexibleGridEngine } from '@/lib/dashboard/flexible-grid/FlexibleGridEngine';
@@ -134,36 +134,44 @@ export function IOSStyleDashboard({
     return () => window.removeEventListener('resize', optimizedResizeHandler);
   }, [batchDOMUpdates, createOptimizedResizeHandler]);
   
-  // Store Bridge 초기화 - 무한 루프 방지를 위해 단방향 동기화
+  // Store Bridge 초기화 - 일시적으로 비활성화 (무한 루프 디버깅)
   useEffect(() => {
-    // iOS 스타일이 활성화되면 레거시 → iOS 단방향 동기화 활성화
-    // 이렇게 하면 무한 루프를 방지하면서 초기 데이터를 가져올 수 있음
-    if (enableFeatureFlag) {
-      console.log('[IOSStyleDashboard] Enabling one-way sync to iOS');
-      storeBridge.enableOneWaySync('toIOS');
-      
-      // 초기 데이터 마이그레이션 (처음 한 번만)
-      const hasInitialized = sessionStorage.getItem('ios-dashboard-initialized');
-      if (!hasInitialized) {
-        storeBridge.migrateData('toIOS').then(() => {
-          console.log('[IOSStyleDashboard] Initial migration completed');
-          sessionStorage.setItem('ios-dashboard-initialized', 'true');
-        });
-      }
-    }
+    // 무한 루프 문제 해결을 위해 일시적으로 Store Bridge 비활성화
+    console.log('[IOSStyleDashboard] Store Bridge temporarily disabled for debugging');
+    
+    // TODO: 무한 루프 문제 해결 후 다시 활성화
+    // if (enableFeatureFlag) {
+    //   console.log('[IOSStyleDashboard] Enabling one-way sync to iOS');
+    //   storeBridge.enableOneWaySync('toIOS');
+    //   
+    //   // 초기 데이터 마이그레이션 (처음 한 번만)
+    //   const hasInitialized = sessionStorage.getItem('ios-dashboard-initialized');
+    //   if (!hasInitialized) {
+    //     storeBridge.migrateData('toIOS').then(() => {
+    //       console.log('[IOSStyleDashboard] Initial migration completed');
+    //       sessionStorage.setItem('ios-dashboard-initialized', 'true');
+    //     }).catch(error => {
+    //       console.error('[IOSStyleDashboard] Migration failed:', error);
+    //     });
+    //   }
+    // }
     
     return () => {
       // 컴포넌트 언마운트 시 동기화 비활성화
-      storeBridge.disableSync();
+      // storeBridge.disableSync();
     };
-  }, [enableFeatureFlag]);
+  }, []); // enableFeatureFlag 의존성 제거하여 한 번만 실행
   
-  // 초기 위젯 설정
+  // 초기 위젯 설정 - 처음 마운트 시에만 실행
+  const [hasInitialized, setHasInitialized] = useState(false);
   
   useEffect(() => {
+    if (hasInitialized) return; // 이미 초기화됨
+    
     if (initialWidgets.length > 0) {
       // initialWidgets이 있으면 그대로 사용 (개별 크기 유지)
       setWidgets(initialWidgets);
+      setHasInitialized(true);
     } else if (widgets.length === 0) {
       // 테스트 위젯 - 다양한 크기로 생성
       const testWidgets: IOSStyleWidget[] = [];
@@ -276,31 +284,35 @@ export function IOSStyleDashboard({
       
       console.log('[Widget Setup] Test widgets created with various sizes:', testWidgets.length);
       setWidgets(testWidgets);
+      setHasInitialized(true);
     }
-  }, [initialWidgets]);
+  }, []); // 의존성 배열 비움 - 처음 마운트 시 한 번만 실행
   
-  // Phase 3.1: Performance Monitor 통합
+  // Phase 3.1: Performance Monitor 통합 - 일시적으로 비활성화 (무한 루프 디버깅)
   useEffect(() => {
-    // 성능 모니터링 시작
-    performanceMonitor.startMonitoring((metrics) => {
-      // 성능 레벨에 따라 자동 최적화
-      if (metrics.performanceLevel === 'low' || metrics.performanceLevel === 'critical') {
-        setPerformanceLevel(metrics.performanceLevel);
-        console.warn('[Performance] Low performance detected:', metrics);
-      }
-      
-      // 위젯 카운트 업데이트
-      performanceMonitor.updateWidgetCount(
-        widgets.length,
-        visibleWidgets.size,
-        virtualizationMetrics.needsVirtualization ? virtualizationMetrics.metrics.totalWidgets : 0
-      );
-    });
+    // 무한 루프 문제 해결을 위해 일시적으로 Performance Monitor 비활성화
+    console.log('[IOSStyleDashboard] Performance Monitor temporarily disabled for debugging');
+    
+    // TODO: 무한 루프 문제 해결 후 다시 활성화
+    // performanceMonitor.startMonitoring((metrics) => {
+    //   // 성능 레벨에 따라 자동 최적화
+    //   if (metrics.performanceLevel === 'low' || metrics.performanceLevel === 'critical') {
+    //     setPerformanceLevel(metrics.performanceLevel);
+    //     console.warn('[Performance] Low performance detected:', metrics);
+    //   }
+    //   
+    //   // 위젯 카운트 업데이트
+    //   performanceMonitor.updateWidgetCount(
+    //     widgets.length,
+    //     visibleWidgets.size,
+    //     virtualizationMetrics.needsVirtualization ? virtualizationMetrics.metrics.totalWidgets : 0
+    //   );
+    // });
     
     return () => {
-      performanceMonitor.stopMonitoring();
+      // performanceMonitor.stopMonitoring();
     };
-  }, [widgets.length, setPerformanceLevel]);
+  }, []); // 의존성 배열 비움 - 처음 마운트 시 한 번만 실행
   
   // Lazy Widget Loader 초기화
   useEffect(() => {
@@ -333,10 +345,11 @@ export function IOSStyleDashboard({
   // Long Press 감지를 위한 타이머
   const longPressTimer = useRef<NodeJS.Timeout | null>(null);
 
-  // GridEngine과 위젯 동기화
+  // GridEngine과 위젯 동기화 - 일시적으로 비활성화 (무한 루프 디버깅)
   useEffect(() => {
-    gridEngine.setWidgets(widgets);
-  }, [widgets, gridEngine]);
+    // 무한 루프 문제 해결을 위해 일시적으로 GridEngine 동기화 비활성화
+    // gridEngine.setWidgets(widgets);
+  }, []); // 의존성 배열 비움
   
   // 편집 모드 진입 (Long Press) - Hook을 조건문 이전에 정의
   const handleLongPressStart = useCallback((widgetId: string) => {
@@ -677,13 +690,20 @@ export function IOSStyleDashboard({
     };
   }, [animationControls]);
 
-  // 가상화 메트릭 계산
-  const virtualizationMetrics = useVirtualizedGrid({
-    widgets,
-    containerHeight: typeof window !== 'undefined' ? window.innerHeight : 800,
-    rowHeight: 100,
-    gap: 16,
-  });
+  // 가상화 메트릭 계산 - 일시적으로 비활성화 (무한 루프 디버깅)
+  // const virtualizationMetrics = useVirtualizedGrid({
+  //   widgets,
+  //   containerHeight: typeof window !== 'undefined' ? window.innerHeight : 800,
+  //   rowHeight: 100,
+  //   gap: 16,
+  // });
+  
+  // 임시 가상화 메트릭 (비활성화)
+  const virtualizationMetrics = {
+    needsVirtualization: false,
+    optimalOverscan: 2,
+    metrics: { totalWidgets: widgets.length }
+  };
 
   // 위젯 렌더링 함수 (가상화용)
   const renderVirtualizedWidget = useCallback((widget: IOSStyleWidget, isVisible: boolean) => {

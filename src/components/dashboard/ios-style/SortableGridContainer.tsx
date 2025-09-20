@@ -97,29 +97,7 @@ export function SortableGridContainer({
           margin: '0 auto',
         }}
       >
-        {React.Children.map(children, (child, index) => {
-          const widget = widgets[index];
-          if (!widget || !React.isValidElement(child)) return null;
-          
-          // 위젯 크기 계산
-          const widgetWidth = (widget.size?.width || 1) * cellSize + ((widget.size?.width || 1) - 1) * 16;
-          const widgetHeight = (widget.size?.height || 1) * cellSize + ((widget.size?.height || 1) - 1) * 16;
-          
-          return (
-            <div
-              key={widget.id}
-              className="widget-wrapper"
-              style={{
-                width: `${widgetWidth}px`,
-                height: `${widgetHeight}px`,
-                flexShrink: 0,
-              }}
-              onPointerDown={(e) => handlePointerDown(e, widget.id)}
-            >
-              {React.cloneElement(child as React.ReactElement)}
-            </div>
-          );
-        })}
+        {children}
       </div>
 
       {/* 편집 모드 그리드 가이드 */}

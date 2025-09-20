@@ -2,7 +2,9 @@
 
 import React, { Suspense, useState, useEffect } from 'react'
 import { DashboardContainer } from './DashboardContainer'
-import { IOSStyleDashboard } from './ios-style/IOSStyleDashboard'
+// import { IOSStyleDashboard } from './ios-style/IOSStyleDashboard' // 임시 비활성화 (무한 루프 디버깅)
+// import { IOSStyleDashboardMinimal } from './ios-style/IOSStyleDashboardMinimal' // 임시 최소 버전
+import { IOSStyleDashboardFixed } from './ios-style/IOSStyleDashboardFixed' // 수정된 버전
 import { Loader2 } from 'lucide-react'
 import { useIOSFeatureFlags, FeatureFlagDebugPanel } from '@/hooks/useFeatureFlag'
 import { IOSFeatureFlags } from '@/lib/features/types'
@@ -60,7 +62,7 @@ export function DashboardContainerWrapper(props: DashboardContainerWrapperProps)
     }
     
     setUseIOSStyle(shouldUseIOS);
-  }, [features.dashboard, loading, overrideFlag]);
+  }, [features.dashboard, loading]); // overrideFlag 의존성 제거 (무한 루프 방지)
 
   // 개발 환경에서 iOS 스타일 토글 함수 (콘솔에서 사용 가능)
   useEffect(() => {
@@ -95,7 +97,7 @@ export function DashboardContainerWrapper(props: DashboardContainerWrapperProps)
       console.log('  - clearIOSOverride(): 오버라이드 제거 (Feature Flag 사용)');
       console.log('  - URL 파라미터: ?ios=true 또는 ?ios=false');
     }
-  }, [useIOSStyle, features.dashboard, loading, overrideFlag]);
+  }, [useIOSStyle, features.dashboard, loading]); // overrideFlag 의존성 제거
 
   // 로딩 중 표시
   if (loading) {
@@ -119,7 +121,7 @@ export function DashboardContainerWrapper(props: DashboardContainerWrapperProps)
             </div>
           }
         >
-          <IOSStyleDashboard />
+          <IOSStyleDashboardFixed />
         </Suspense>
       ) : (
         <Suspense 
