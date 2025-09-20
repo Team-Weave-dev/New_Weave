@@ -71,7 +71,7 @@ class FeatureFlagService {
       createdBy: 'system',
       rollout: {
         strategy: 'percentage',
-        percentage: 10, // 10% 사용자부터 시작
+        percentage: process.env.NODE_ENV === 'development' ? 100 : 50, // 개발: 100%, 프로덕션: 50%
       },
       conditions: {
         environment: 'production',
@@ -511,3 +511,6 @@ export const getIOSFeatures = (
 ): Record<string, boolean> => {
   return featureFlagService.getIOSFeatures(context);
 };
+
+// IOSFeatureFlags enum re-export
+export { IOSFeatureFlags } from './types';

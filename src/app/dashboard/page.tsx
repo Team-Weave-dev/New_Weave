@@ -53,6 +53,11 @@ import { MobileWidgetOptions } from '@/components/dashboard/mobile/MobileWidgetO
 import { WidgetLibrary } from '@/components/dashboard/WidgetLibrary';
 import { KeyboardShortcuts } from '@/components/dashboard/KeyboardShortcuts';
 
+// 개발 환경에서만 디버그 도구 로드
+if (process.env.NODE_ENV === 'development') {
+  import('@/lib/debug/weave-debug');
+}
+
 export default function DashboardPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);

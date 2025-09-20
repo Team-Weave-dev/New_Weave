@@ -32,6 +32,9 @@ import { VirtualizedGrid, useVirtualizedGrid } from './VirtualizedGrid';
 import { useIOSFeatureFlags } from '@/hooks/useIOSFeatureFlags';
 import { useAnimationPerformance, AnimationPerformanceMonitor } from '@/hooks/useAnimationPerformance';
 import { AnimationPerformanceOptimizer } from '@/lib/dashboard/ios-animations/performance-optimizer';
+import { storeBridge, enableIOSSync } from '@/lib/stores/storeBridge';
+import { performanceMonitor } from '@/lib/dashboard/performance/PerformanceMonitor';
+import { lazyWidgetLoader } from '@/lib/dashboard/performance/LazyWidgetLoader';
 
 interface IOSStyleDashboardProps {
   widgets?: IOSStyleWidget[];
@@ -105,6 +108,7 @@ export function IOSStyleDashboard({
   // 로컬 상태만 유지 (스토어에서 관리하지 않는 것들)
   const [activeId, setActiveId] = useState<string | null>(null);
   const [isPressing, setIsPressing] = useState(false);
+  const [visibleWidgets, setVisibleWidgets] = useState<Set<string>>(new Set());
   
   // 반응형 그리드 컬럼 설정 (최적화된 리사이즈 핸들러)
   useEffect(() => {
@@ -130,13 +134,37 @@ export function IOSStyleDashboard({
     return () => window.removeEventListener('resize', optimizedResizeHandler);
   }, [batchDOMUpdates, createOptimizedResizeHandler]);
   
+  // Store Bridge 초기화 - 무한 루프 방지를 위해 단방향 동기화
+  useEffect(() => {
+    // iOS 스타일이 활성화되면 레거시 → iOS 단방향 동기화 활성화
+    // 이렇게 하면 무한 루프를 방지하면서 초기 데이터를 가져올 수 있음
+    if (enableFeatureFlag) {
+      console.log('[IOSStyleDashboard] Enabling one-way sync to iOS');
+      storeBridge.enableOneWaySync('toIOS');
+      
+      // 초기 데이터 마이그레이션 (처음 한 번만)
+      const hasInitialized = sessionStorage.getItem('ios-dashboard-initialized');
+      if (!hasInitialized) {
+        storeBridge.migrateData('toIOS').then(() => {
+          console.log('[IOSStyleDashboard] Initial migration completed');
+          sessionStorage.setItem('ios-dashboard-initialized', 'true');
+        });
+      }
+    }
+    
+    return () => {
+      // 컴포넌트 언마운트 시 동기화 비활성화
+      storeBridge.disableSync();
+    };
+  }, [enableFeatureFlag]);
+  
   // 초기 위젯 설정
   
   useEffect(() => {
     if (initialWidgets.length > 0) {
       // initialWidgets이 있으면 그대로 사용 (개별 크기 유지)
       setWidgets(initialWidgets);
-    } else {
+    } else if (widgets.length === 0) {
       // 테스트 위젯 - 다양한 크기로 생성
       const testWidgets: IOSStyleWidget[] = [];
       
@@ -251,6 +279,47 @@ export function IOSStyleDashboard({
     }
   }, [initialWidgets]);
   
+  // Phase 3.1: Performance Monitor 통합
+  useEffect(() => {
+    // 성능 모니터링 시작
+    performanceMonitor.startMonitoring((metrics) => {
+      // 성능 레벨에 따라 자동 최적화
+      if (metrics.performanceLevel === 'low' || metrics.performanceLevel === 'critical') {
+        setPerformanceLevel(metrics.performanceLevel);
+        console.warn('[Performance] Low performance detected:', metrics);
+      }
+      
+      // 위젯 카운트 업데이트
+      performanceMonitor.updateWidgetCount(
+        widgets.length,
+        visibleWidgets.size,
+        virtualizationMetrics.needsVirtualization ? virtualizationMetrics.metrics.totalWidgets : 0
+      );
+    });
+    
+    return () => {
+      performanceMonitor.stopMonitoring();
+    };
+  }, [widgets.length, setPerformanceLevel]);
+  
+  // Lazy Widget Loader 초기화
+  useEffect(() => {
+    // 위젯 타입별 로더 등록
+    lazyWidgetLoader.registerLoader('stats', async (widget) => {
+      // 통계 위젯 데이터 로드
+      return new Promise(resolve => setTimeout(() => resolve({ loaded: true }), 100));
+    });
+    
+    lazyWidgetLoader.registerLoader('chart', async (widget) => {
+      // 차트 위젯 데이터 로드
+      return new Promise(resolve => setTimeout(() => resolve({ loaded: true }), 200));
+    });
+    
+    return () => {
+      lazyWidgetLoader.cleanup();
+    };
+  }, []);
+  
   // 컨테이너 스크롤 최적화
   useEffect(() => {
     if (containerRef.current) {
@@ -269,18 +338,7 @@ export function IOSStyleDashboard({
     gridEngine.setWidgets(widgets);
   }, [widgets, gridEngine]);
   
-  // Feature Flag 체크
-  console.log('[IOSStyleDashboard] Component rendered with enableFeatureFlag:', enableFeatureFlag);
-  console.log('[IOSStyleDashboard] Initial widgets:', initialWidgets);
-  console.log('[IOSStyleDashboard] Current widgets:', widgets);
-  
-  if (!enableFeatureFlag) {
-    console.log('[IOSStyleDashboard] Feature flag is false, returning null');
-    // 기존 대시보드로 폴백
-    return null;
-  }
-
-  // 편집 모드 진입 (Long Press)
+  // 편집 모드 진입 (Long Press) - Hook을 조건문 이전에 정의
   const handleLongPressStart = useCallback((widgetId: string) => {
     setIsPressing(true);
     longPressTimer.current = setTimeout(() => {
@@ -684,6 +742,7 @@ export function IOSStyleDashboard({
           renderWidget={renderVirtualizedWidget}
           className="p-4"
           onVisibilityChange={(visibleIds) => {
+            setVisibleWidgets(visibleIds);
             console.log('[Virtualization] Visible widgets:', visibleIds.size);
           }}
         />

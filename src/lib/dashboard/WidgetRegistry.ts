@@ -234,6 +234,16 @@ class WidgetRegistryClass {
 
     return stats
   }
+
+  // 모든 위젯 타입 가져오기
+  getAllWidgetTypes(): WidgetType[] {
+    return Array.from(this.widgets.keys())
+  }
+
+  // 싱글톤 인스턴스 getter
+  static getInstance(): WidgetRegistryClass {
+    return WidgetRegistry
+  }
 }
 
 // 싱글톤 인스턴스 생성 및 내보내기

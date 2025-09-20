@@ -296,8 +296,15 @@ export function useVirtualizedGrid({
   // 최적 overscan 계산 (보이는 행의 25%)
   const optimalOverscan = Math.max(2, Math.floor(visibleRows * 0.25));
   
-  // 메모리 임계값 (100개 이상일 때 가상화 필요)
-  const needsVirtualization = widgets.length > 100;
+  // Phase 3.1: 개선된 가상화 임계값 (계획서에 따라 조정)
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+  const VIRTUALIZATION_THRESHOLD = {
+    desktop: 50,  // 데스크탑: 50개 이상 위젯
+    mobile: 20,   // 모바일: 20개 이상 위젯
+  };
+  
+  const threshold = isMobile ? VIRTUALIZATION_THRESHOLD.mobile : VIRTUALIZATION_THRESHOLD.desktop;
+  const needsVirtualization = widgets.length > threshold;
   
   // 성능 메트릭
   const metrics = {
@@ -305,6 +312,7 @@ export function useVirtualizedGrid({
     visibleRows,
     optimalOverscan,
     needsVirtualization,
+    virtualizationThreshold: threshold,
     estimatedMemorySaving: needsVirtualization 
       ? `~${Math.round((1 - visibleRows / Math.ceil(widgets.length / 4)) * 100)}%`
       : '0%',

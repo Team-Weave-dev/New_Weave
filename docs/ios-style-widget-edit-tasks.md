@@ -62,7 +62,7 @@ iOS/iPadOS 홈 화면과 유사한 직관적인 위젯 편집 시스템 구현
 - **작업 내용**:
   - ✅ CSS Grid 기반 레이아웃
   - ✅ 반응형 컬럼 조정 (2/4/6/8)
-  - ✅ @dnd-kit/core 통합
+  - ✅ @react-beautiful-dnd
   - ✅ ResizeObserver로 동적 크기 조정
 
 ### IOSE-006: WiggleWidget 래퍼 컴포넌트
@@ -405,7 +405,7 @@ iOS/iPadOS 홈 화면과 유사한 직관적인 위젯 편집 시스템 구현
 
 **🔗 통합 완료**:
 - IOSStyleDashboard 컴포넌트와 완전 통합
-- 편집 모드에서는 자동 비활성화 (DnD 호환성)
+- 편집 모드에서는 자동 비활성화 (react-beautiful-dnd 호환성)
 - Feature Flag로 점진적 활성화 가능
 - 개발/프로덕션 환경별 설정 지원
 

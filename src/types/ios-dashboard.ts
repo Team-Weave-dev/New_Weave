@@ -63,20 +63,40 @@ export interface IOSStyleWidget {
   id: string;
   /** 위젯 타입 */
   type: string;
+  /** 위젯 제목 */
+  title?: string;
   /** 유연한 위치 정보 */
-  position: FlexibleWidgetPosition;
+  position: FlexibleWidgetPosition & {
+    x?: number;
+    y?: number;
+    gridColumn?: string;
+    gridRow?: string;
+  };
+  /** 위젯 크기 */
+  size?: {
+    width: number;
+    height: number;
+  };
   /** 위젯 상태 */
-  state: WidgetState;
+  state?: WidgetState;
+  /** 위젯 스타일 */
+  style?: Record<string, any>;
   /** 위젯 애니메이션 설정 */
   animation?: WidgetAnimation;
   /** 위젯 메타데이터 */
   metadata?: WidgetMetadata;
   /** 위젯 설정 */
   config?: Record<string, any>;
+  /** 위젯 데이터 */
+  data?: any;
   /** 사용자 정의 설정 */
   customSettings?: Record<string, any>;
-  /** 위젯 잠금 여부 */
+  /** 위젯 잠금 여부 (구버전 호환) */
   locked?: boolean;
+  /** 위젯 잠금 여부 (새버전) */
+  isLocked?: boolean;
+  /** 위젯 표시 여부 */
+  isVisible?: boolean;
 }
 
 /**
@@ -95,6 +115,24 @@ export interface WidgetState {
   errorMessage?: string;
   /** 마지막 업데이트 시간 */
   lastUpdated?: Date;
+}
+
+/**
+ * iOS 대시보드 레이아웃
+ */
+export interface IOSDashboardLayout {
+  /** 레이아웃 ID */
+  id: string;
+  /** 레이아웃 이름 */
+  name: string;
+  /** 포함된 위젯들 */
+  widgets: IOSStyleWidget[];
+  /** 레이아웃 잠금 여부 */
+  isLocked: boolean;
+  /** 생성일 */
+  createdAt: string;
+  /** 수정일 */
+  updatedAt: string;
 }
 
 /**

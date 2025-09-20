@@ -159,7 +159,7 @@ const reorderAnimation = {
 동적 그리드 레이아웃 관리
 - CSS Grid 기반
 - 반응형 컬럼 조정
-- @dnd-kit/core 통합
+- @react-beautiful-dnd
 
 ### 3. WiggleWidget
 iOS 스타일 위젯 래퍼
@@ -258,7 +258,7 @@ function findBestPosition(widget, dropPoint) {
 ## 🛠️ 기술 스택
 
 ### 유지
-- **@dnd-kit**: 드래그앤드롭 (스프링 애니메이션 지원)
+- **@react-beautiful-dnd**: 드래그앤드롭 
 - **framer-motion**: 애니메이션 (wiggle, 전환 효과)
 - **Zustand**: 상태 관리
 - **Tailwind CSS**: 스타일링
