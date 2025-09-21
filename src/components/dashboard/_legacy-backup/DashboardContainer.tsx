@@ -1,5 +1,6 @@
+/* eslint-disable */
 // 이 파일은 레거시 백업용입니다. iOS 대시보드 시스템으로 전환되었습니다.
-// 빌드 에러를 방지하기 위해 import를 주석 처리합니다.
+// 빌드 에러를 방지하기 위해 전체 파일을 비활성화합니다.
 
 'use client'
 
@@ -423,3 +424,4 @@ export function DashboardContainer({
   )
 }
 */
+/* eslint-enable */

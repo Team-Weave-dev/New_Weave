@@ -1,3 +1,6 @@
+/* eslint-disable */
+// 이 파일은 레거시 백업용입니다. iOS 대시보드 시스템으로 전환되었습니다.
+
 'use client'
 
 import React, { ReactNode, useState, useCallback, useRef, useEffect } from 'react'
