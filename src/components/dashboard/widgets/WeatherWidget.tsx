@@ -217,3 +217,5 @@ WeatherWidget.defaultSize = { width: 2, height: 2 }
 WeatherWidget.minSize = { width: 2, height: 2 }
 WeatherWidget.maxSize = { width: 3, height: 3 }
 WeatherWidget.category = 'productivity'
+
+export default WeatherWidget

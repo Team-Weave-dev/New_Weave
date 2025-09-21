@@ -456,3 +456,5 @@ export const InvoiceStatusWidget: React.FC = () => {
     </Card>
   );
 };
+
+export default InvoiceStatusWidget

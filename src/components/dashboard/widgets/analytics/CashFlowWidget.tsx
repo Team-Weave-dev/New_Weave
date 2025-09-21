@@ -412,3 +412,5 @@ export function CashFlowWidget() {
     </Card>
   );
 }
+
+export default CashFlowWidget

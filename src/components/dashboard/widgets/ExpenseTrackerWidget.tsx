@@ -650,3 +650,5 @@ export function ExpenseTrackerWidget({ id, config }: WidgetProps) {
     </Card>
   );
 }
+
+export default ExpenseTrackerWidget

@@ -450,3 +450,5 @@ export function QuickLinksWidget() {
     </Card>
   );
 }
+
+export default QuickLinksWidget

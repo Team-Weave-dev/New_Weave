@@ -399,3 +399,5 @@ export function TimeTrackerWidget({ id, config, isEditMode }: TimeTrackerWidgetP
     </Card>
   )
 }
+
+export default TimeTrackerWidget

@@ -193,3 +193,5 @@ export function RealtimeTestWidget({ id: widgetId, config }: WidgetProps) {
     </Card>
   );
 }
+
+export default RealtimeTestWidget

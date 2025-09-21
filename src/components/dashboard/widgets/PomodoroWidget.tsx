@@ -450,3 +450,5 @@ export function PomodoroWidget({ id, config, isEditMode }: PomodoroWidgetProps) 
     </Card>
   )
 }
+
+export default PomodoroWidget
