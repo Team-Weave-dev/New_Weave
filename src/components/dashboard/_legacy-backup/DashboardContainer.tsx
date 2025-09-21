@@ -1,35 +1,37 @@
+// 이 파일은 레거시 백업용입니다. iOS 대시보드 시스템으로 전환되었습니다.
+// 빌드 에러를 방지하기 위해 import를 주석 처리합니다.
+
 'use client'
 
 import React, { useEffect, useState, Suspense, useMemo, useCallback } from 'react'
-import { useSearchParams } from 'next/navigation'
-import { useDashboardStore } from '@/lib/stores/useDashboardStore'
-import { extractLayoutFromShareLink } from '@/lib/dashboard/layoutSharing'
-import { useToast } from '@/components/ui/Toast'
-import Typography from '@/components/ui/Typography'
-import Button from '@/components/ui/Button'
-import { log } from '@/lib/logger'
-import { GridContainer, GridItem } from './GridContainer'
-import { useResponsiveGrid } from '@/lib/dashboard/responsive-grid'
-import { AdaptiveWidget, MobileDashboardLayout } from './AdaptiveWidget'
-import { FloatingActionButton } from './FloatingActionButton'
-import { MobileDashboardTabs } from './MobileDashboardTabs'
-import { useTouchInteraction } from '@/hooks/useTouchInteraction'
-import { OptimizedWidgetWrapper } from './OptimizedWidgetWrapper'
-import { EditModeToolbar } from './EditModeToolbar'
-// import { DraggableWidget } from './dnd/DraggableWidget' // Removed - using BeautifulDndDashboard
-import { WidgetLibrary } from './WidgetLibrary'
-import { WidgetConfigPanel } from './WidgetConfigPanel'
-import { WidgetSkeleton } from './WidgetSkeleton'
-import { WidgetErrorBoundary } from './WidgetErrorBoundary'
-import { KeyboardShortcutHelp } from './KeyboardShortcutHelp'
-import { LayoutTransition } from './AnimatedWidget'
-import { cn } from '@/lib/utils'
-import { Loader2 } from 'lucide-react'
-import { useDashboardKeyboardNavigation } from '@/hooks/useDashboardKeyboardNavigation'
-import type { WidgetType, WidgetMetadata } from '@/types/dashboard'
-import { initializeWidgetRegistry } from '@/lib/dashboard/initializeWidgets'
-import { WidgetRegistry } from '@/lib/dashboard/WidgetRegistry'
-import { normalizeWidgetType } from '@/lib/dashboard/widgetTypeMapping'
+// import { useSearchParams } from 'next/navigation'
+// import { useDashboardStore } from '@/lib/stores/useDashboardStore'
+// import { extractLayoutFromShareLink } from '@/lib/dashboard/layoutSharing'
+// import { useToast } from '@/components/ui/Toast'
+// import Typography from '@/components/ui/Typography'
+// import Button from '@/components/ui/Button'
+// import { log } from '@/lib/logger'
+// import { GridContainer, GridItem } from './GridContainer'
+// import { useResponsiveGrid } from '@/lib/dashboard/responsive-grid'
+// import { AdaptiveWidget, MobileDashboardLayout } from './AdaptiveWidget'
+// import { FloatingActionButton } from './FloatingActionButton'
+// import { MobileDashboardTabs } from './MobileDashboardTabs'
+// import { useTouchInteraction } from '@/hooks/useTouchInteraction'
+// import { OptimizedWidgetWrapper } from './OptimizedWidgetWrapper'
+// import { EditModeToolbar } from './EditModeToolbar'
+// import { WidgetLibrary } from './WidgetLibrary'
+// import { WidgetConfigPanel } from './WidgetConfigPanel'
+// import { WidgetSkeleton } from './WidgetSkeleton'
+// import { WidgetErrorBoundary } from './WidgetErrorBoundary'
+// import { KeyboardShortcutHelp } from './KeyboardShortcutHelp'
+// import { LayoutTransition } from './AnimatedWidget'
+// import { cn } from '@/lib/utils'
+// import { Loader2 } from 'lucide-react'
+// import { useDashboardKeyboardNavigation } from '@/hooks/useDashboardKeyboardNavigation'
+// import type { WidgetType, WidgetMetadata } from '@/types/dashboard'
+// import { initializeWidgetRegistry } from '@/lib/dashboard/initializeWidgets'
+// import { WidgetRegistry } from '@/lib/dashboard/WidgetRegistry'
+// import { normalizeWidgetType } from '@/lib/dashboard/widgetTypeMapping'
 // Lazy loaded widgets are now handled by WidgetRegistry
 
 interface DashboardContainerProps {
@@ -43,6 +45,15 @@ export function DashboardContainer({
   showToolbar = true,
   initialLayoutId,
 }: DashboardContainerProps) {
+  // 레거시 컴포넌트 - iOS 대시보드로 전환됨
+  return (
+    <div className="flex items-center justify-center h-full">
+      <p>레거시 대시보드 - iOS 대시보드를 사용하세요</p>
+    </div>
+  )
+}
+
+/* 원본 코드는 아래에 보존됨
   const {
     currentLayout,
     layouts,
@@ -411,3 +422,4 @@ export function DashboardContainer({
     </div>
   )
 }
+*/
