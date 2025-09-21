@@ -9,7 +9,7 @@
 
 import { useIOSDashboardStore } from './useIOSDashboardStore';
 import { useDashboardStore } from './useDashboardStore';
-import { IOSStyleWidget } from '@/types/ios-dashboard';
+import { IOSStyleWidget, IOSDashboardLayout } from '@/types/ios-dashboard';
 import { Widget, DashboardLayout, WidgetDefinition } from '@/types/dashboard';
 import { iosWidgetRegistry } from '@/lib/dashboard/ios-widget-registry';
 
@@ -54,7 +54,6 @@ export class StoreBridge {
     
     // 레거시 → iOS 동기화
     const legacyUnsubscriber = useDashboardStore.subscribe(
-      (state) => state,
       (state) => {
         if (this.shouldSync('toIOS')) {
           this.queueSync(() => this.syncToIOS(state));
@@ -64,7 +63,6 @@ export class StoreBridge {
     
     // iOS → 레거시 동기화
     const iosUnsubscriber = useIOSDashboardStore.subscribe(
-      (state) => state,
       (state) => {
         if (this.shouldSync('toLegacy')) {
           this.queueSync(() => this.syncToLegacy(state));
@@ -142,12 +140,6 @@ export class StoreBridge {
     const iosStore = useIOSDashboardStore.getState();
     
     try {
-      // 레이아웃 변환 및 동기화
-      if (legacyState.layouts && Array.isArray(legacyState.layouts)) {
-        const iosWidgets = this.convertLayoutsToIOSWidgets(legacyState.layouts);
-        iosStore.setWidgets(iosWidgets);
-      }
-      
       // 위젯 변환 및 동기화
       if (legacyState.widgets && Array.isArray(legacyState.widgets)) {
         const iosWidgets = legacyState.widgets.map((widget: WidgetDefinition) =>
@@ -156,15 +148,8 @@ export class StoreBridge {
         iosStore.setWidgets(iosWidgets);
       }
       
-      // 활성 레이아웃 동기화
-      if (legacyState.activeLayoutId) {
-        const activeLayout = iosStore.layouts.find(
-          (layout: IOSDashboardLayout) => layout.id === legacyState.activeLayoutId
-        );
-        if (activeLayout) {
-          iosStore.setActiveLayout(activeLayout);
-        }
-      }
+      // 활성 레이아웃 동기화는 iOS 대시보드에서 지원하지 않음
+      // iOS 대시보드는 단일 위젯 배열만 관리
     } catch (error) {
       console.error('[StoreBridge] Error syncing to iOS:', error);
     }
@@ -179,20 +164,18 @@ export class StoreBridge {
     const legacyStore = useDashboardStore.getState();
     
     try {
-      // 레이아웃 변환 및 동기화
-      if (iosState.layouts && Array.isArray(iosState.layouts)) {
-        const legacyLayouts = this.convertLayoutsToLegacy(iosState.layouts);
+      // iOS 위젯을 레거시 위젯으로 변환
+      if (iosState.widgets && Array.isArray(iosState.widgets)) {
+        const legacyWidgets = iosState.widgets.map((widget: IOSStyleWidget) =>
+          iosWidgetRegistry.convertIOSToLegacy(widget)
+        );
         
-        // 기존 레이아웃 클리어 후 추가
-        legacyStore.clearLayouts();
-        legacyLayouts.forEach((layout: Layout) => {
-          legacyStore.addLayout(layout);
-        });
-      }
-      
-      // 활성 레이아웃 동기화
-      if (iosState.activeLayout) {
-        legacyStore.setActiveLayout(iosState.activeLayout.id);
+        // 현재 레이아웃에 위젯 설정
+        if (legacyStore.currentLayout) {
+          legacyStore.updateLayout(legacyStore.currentLayout.id, {
+            widgets: legacyWidgets
+          });
+        }
       }
     } catch (error) {
       console.error('[StoreBridge] Error syncing to Legacy:', error);
@@ -202,7 +185,7 @@ export class StoreBridge {
   /**
    * 레거시 레이아웃을 iOS 위젯 배열로 변환
    */
-  private convertLayoutsToIOSWidgets(layouts: Layout[]): IOSStyleWidget[] {
+  private convertLayoutsToIOSWidgets(layouts: DashboardLayout[]): IOSStyleWidget[] {
     // 모든 레이아웃의 위젯을 하나의 배열로 병합
     const allWidgets: WidgetDefinition[] = [];
     layouts.forEach(layout => {
@@ -220,7 +203,7 @@ export class StoreBridge {
   /**
    * 레거시 레이아웃을 iOS 레이아웃으로 변환
    */
-  private convertLayoutsToIOS(layouts: Layout[]): IOSDashboardLayout[] {
+  private convertLayoutsToIOS(layouts: DashboardLayout[]): IOSDashboardLayout[] {
     return layouts.map(layout => ({
       id: layout.id,
       name: layout.name,
@@ -228,7 +211,7 @@ export class StoreBridge {
         iosWidgetRegistry.convertLegacyToIOS(widget)
       ) || [],
       isLocked: false,
-      createdAt: layout.createdAt || new Date().toISOString(),
+      createdAt: layout.createdAt ? layout.createdAt.toISOString() : new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     }));
   }
@@ -236,7 +219,7 @@ export class StoreBridge {
   /**
    * iOS 레이아웃을 레거시 레이아웃으로 변환
    */
-  private convertLayoutsToLegacy(layouts: IOSDashboardLayout[]): Layout[] {
+  private convertLayoutsToLegacy(layouts: IOSDashboardLayout[]): DashboardLayout[] {
     return layouts.map(layout => ({
       id: layout.id,
       name: layout.name,
@@ -244,8 +227,8 @@ export class StoreBridge {
       widgets: layout.widgets.map((widget: IOSStyleWidget) =>
         iosWidgetRegistry.convertIOSToLegacy(widget)
       ),
-      createdAt: layout.createdAt,
-      updatedAt: layout.updatedAt,
+      createdAt: new Date(layout.createdAt),
+      updatedAt: new Date(layout.updatedAt),
     }));
   }
   
@@ -335,30 +318,22 @@ export class StoreBridge {
         });
         iosStore.setWidgets(allWidgets);
         
-        // 활성 레이아웃 설정
-        if (legacyState.activeLayoutId && iosLayouts.length > 0) {
-          const activeLayout = iosLayouts.find(
-            layout => layout.id === legacyState.activeLayoutId
-          );
-          if (activeLayout) {
-            iosStore.setActiveLayout(activeLayout);
-          }
-        }
+        // 활성 레이아웃 설정 (iOS 대시보드는 단일 레이아웃만 지원)
+        // 현재 레이아웃의 위젯만 설정됨
       } else {
         // iOS → 레거시 마이그레이션
         const iosState = useIOSDashboardStore.getState();
         const legacyStore = useDashboardStore.getState();
         
-        // 레이아웃 마이그레이션
-        const legacyLayouts = this.convertLayoutsToLegacy(iosState.layouts);
-        legacyStore.clearLayouts();
-        legacyLayouts.forEach(layout => {
-          legacyStore.addLayout(layout);
-        });
-        
-        // 활성 레이아웃 설정
-        if (iosState.activeLayout) {
-          legacyStore.setActiveLayout(iosState.activeLayout.id);
+        // iOS 위젯을 레거시 레이아웃으로 변환
+        if (iosState.widgets && legacyStore.currentLayout) {
+          const legacyWidgets = iosState.widgets.map((widget: IOSStyleWidget) =>
+            iosWidgetRegistry.convertIOSToLegacy(widget)
+          );
+          
+          legacyStore.updateLayout(legacyStore.currentLayout.id, {
+            widgets: legacyWidgets
+          });
         }
       }
       

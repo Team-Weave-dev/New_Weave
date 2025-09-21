@@ -5,7 +5,7 @@
 
 import React from 'react'
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react'
-import { DashboardContainer } from '@/components/dashboard/DashboardContainer'
+import { DashboardContainerWrapper as DashboardContainer } from '@/components/dashboard/DashboardContainerWrapper'
 import { useDashboardStore } from '@/lib/stores/useDashboardStore'
 import { WidgetRegistry } from '@/lib/dashboard/WidgetRegistry'
 import { templateService } from '@/lib/dashboard/templateService'

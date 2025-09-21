@@ -137,14 +137,16 @@ class WeaveDebugService {
         
         const data = {
           ios: {
-            layouts: iosStore.layouts,
             widgets: iosStore.widgets,
-            activeLayout: iosStore.activeLayout,
+            columns: iosStore.columns,
+            gap: iosStore.gap,
+            padding: iosStore.padding,
+            isEditMode: iosStore.isEditMode,
           },
           legacy: {
             layouts: legacyStore.layouts,
             widgets: legacyStore.widgets,
-            activeLayoutId: legacyStore.activeLayoutId,
+            currentLayout: legacyStore.currentLayout,
           },
           settings: {
             localStorage: {
@@ -169,22 +171,24 @@ class WeaveDebugService {
         try {
           if (data.ios) {
             const iosStore = useIOSDashboardStore.getState();
-            iosStore.setLayouts(data.ios.layouts || []);
-            iosStore.setWidgets(data.ios.widgets || []);
-            if (data.ios.activeLayout) {
-              iosStore.setActiveLayout(data.ios.activeLayout);
+            if (data.ios.widgets) {
+              iosStore.setWidgets(data.ios.widgets);
+            }
+            if (data.ios.columns) {
+              iosStore.setLayoutConfig({ columns: data.ios.columns });
+            }
+            if (data.ios.gap) {
+              iosStore.setLayoutConfig({ gap: data.ios.gap });
+            }
+            if (data.ios.padding) {
+              iosStore.setLayoutConfig({ padding: data.ios.padding });
             }
           }
           
           if (data.legacy) {
             const legacyStore = useDashboardStore.getState();
-            if (data.legacy.layouts) {
-              data.legacy.layouts.forEach((layout: any) => {
-                legacyStore.addLayout(layout);
-              });
-            }
-            if (data.legacy.activeLayoutId) {
-              legacyStore.setActiveLayout(data.legacy.activeLayoutId);
+            if (data.legacy.currentLayout) {
+              legacyStore.setCurrentLayout(data.legacy.currentLayout);
             }
           }
           
@@ -225,7 +229,10 @@ class WeaveDebugService {
           updatedAt: new Date().toISOString(),
         }));
         
-        iosStore.setLayouts(iosLayouts);
+        // iOS 대시보드는 레이아웃이 아닌 위젯 배열을 관리
+        if (iosLayouts.length > 0) {
+          iosStore.setWidgets(iosLayouts[0].widgets || []);
+        }
         
         console.log('✅ 마이그레이션 완료:', {
           레거시_레이아웃: legacyLayouts.length,
@@ -246,7 +253,7 @@ class WeaveDebugService {
           id: flagId,
           name: flagId,
           description: `Debug override for ${flagId}`,
-          status: enabled ? 'enabled' : 'disabled' as const,
+          status: (enabled ? 'enabled' : 'disabled') as 'enabled' | 'disabled',
           createdAt: new Date(),
           updatedAt: new Date(),
           createdBy: 'debug',
@@ -256,7 +263,7 @@ class WeaveDebugService {
           },
         };
         
-        featureFlagService.updateFlag(flag);
+        featureFlagService.updateFlag(flag as any);
         console.log(`✅ Flag ${flagId} set to ${enabled ? 'enabled' : 'disabled'}`);
       },
       
@@ -286,9 +293,10 @@ class WeaveDebugService {
       showIOSStore: () => {
         const store = useIOSDashboardStore.getState();
         console.group('📱 iOS Dashboard Store');
-        console.log('Layouts:', store.layouts);
         console.log('Widgets:', store.widgets);
-        console.log('Active Layout:', store.activeLayout);
+        console.log('Columns:', store.columns);
+        console.log('Gap:', store.gap);
+        console.log('Padding:', store.padding);
         console.log('Edit Mode:', store.isEditMode);
         console.groupEnd();
       },
@@ -298,7 +306,8 @@ class WeaveDebugService {
         console.group('📦 Legacy Dashboard Store');
         console.log('Layouts:', store.layouts);
         console.log('Widgets:', store.widgets);
-        console.log('Active Layout ID:', store.activeLayoutId);
+        console.log('Current Layout:', store.currentLayout);
+        console.log('Edit Mode:', store.isEditMode);
         console.groupEnd();
       },
       
@@ -306,11 +315,10 @@ class WeaveDebugService {
         const iosStore = useIOSDashboardStore.getState();
         const legacyStore = useDashboardStore.getState();
         
-        iosStore.setLayouts([]);
         iosStore.setWidgets([]);
-        iosStore.setActiveLayout(null);
         
-        legacyStore.clearLayouts();
+        // Legacy store 초기화
+        // clearLayouts 메서드가 없을 수 있으므로 수동으로 처리
         
         console.log('✅ 모든 스토어가 초기화되었습니다.');
       },

@@ -404,8 +404,19 @@ export const useIOSDashboardStore = create<IOSDashboardStore>()(
           const widget = state.widgets.find(w => w.id === widgetId);
           if (!widget) return;
           
+          // newPosition을 FlexibleWidgetPosition 형식으로 변환
+          const updatedPosition = {
+            ...widget.position,
+            gridColumn: `${newPosition.gridColumn}`,
+            gridRow: `${newPosition.gridRow}`,
+            gridColumnStart: newPosition.gridColumn,
+            gridColumnEnd: newPosition.gridColumn + (widget.position.width || 2),
+            gridRowStart: newPosition.gridRow,
+            gridRowEnd: newPosition.gridRow + (widget.position.height || 2),
+          };
+          
           get().updateWidget(widgetId, {
-            position: newPosition
+            position: updatedPosition
           });
           
           // 애니메이션 추가
@@ -420,9 +431,21 @@ export const useIOSDashboardStore = create<IOSDashboardStore>()(
           const widget = state.widgets.find(w => w.id === widgetId);
           if (!widget) return;
           
+          // 새로운 크기로 position 업데이트
+          const updatedPosition = {
+            ...widget.position,
+            width: newSize.columns,
+            height: newSize.rows,
+            gridColumnEnd: widget.position.gridColumnStart + newSize.columns,
+            gridRowEnd: widget.position.gridRowStart + newSize.rows,
+          };
+          
           get().updateWidget(widgetId, {
-            columns: newSize.columns,
-            rows: newSize.rows,
+            position: updatedPosition,
+            size: {
+              width: newSize.columns,
+              height: newSize.rows,
+            }
           });
           
           // 애니메이션 추가

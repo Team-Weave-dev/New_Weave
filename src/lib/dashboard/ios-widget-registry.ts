@@ -157,18 +157,18 @@ export class IOSWidgetRegistry {
         x: widget.position?.x || 0,
         y: widget.position?.y || 0,
         gridColumnStart: widget.position?.x || 1,
-        gridColumnEnd: (widget.position?.x || 1) + (widget.size?.width || 2),
+        gridColumnEnd: (widget.position?.x || 1) + (widget.position?.width || 2),
         gridRowStart: widget.position?.y || 1,
-        gridRowEnd: (widget.position?.y || 1) + (widget.size?.height || 2),
-        width: widget.size?.width || 2,
-        height: widget.size?.height || 2,
+        gridRowEnd: (widget.position?.y || 1) + (widget.position?.height || 2),
+        width: widget.position?.width || 2,
+        height: widget.position?.height || 2,
       },
       size: {
-        width: widget.size?.width || 2,
-        height: widget.size?.height || 2,
+        width: widget.position?.width || 2,
+        height: widget.position?.height || 2,
       },
       config: widget.config || {},
-      data: widget.data,
+      data: widget.config?.data,
       isLocked: false,
       isVisible: true,
     };
@@ -182,20 +182,16 @@ export class IOSWidgetRegistry {
       id: widget.id,
       type: widget.type,
       position: {
-        x: widget.position.x,
-        y: widget.position.y,
-        width: widget.size.width,
-        height: widget.size.height,
-      },
-      size: {
-        width: widget.size.width,
-        height: widget.size.height,
+        x: widget.position.x || 0,
+        y: widget.position.y || 0,
+        width: widget.size?.width || widget.position.width || 2,
+        height: widget.size?.height || widget.position.height || 2,
       },
       config: {
         ...widget.config,
         title: widget.title,
+        data: widget.data,
       },
-      data: widget.data,
     };
   }
   

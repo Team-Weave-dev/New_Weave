@@ -4,6 +4,7 @@
  */
 
 // 레이아웃 마이그레이션 코어
+import { layoutMigration } from './layout-migration';
 export {
   layoutMigration,
   LayoutMigration,
@@ -11,6 +12,7 @@ export {
 } from './layout-migration';
 
 // 마이그레이션 서비스
+import { migrationService } from './migration-service';
 export {
   migrationService,
   MigrationService,

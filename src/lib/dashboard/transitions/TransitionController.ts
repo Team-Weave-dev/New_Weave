@@ -8,7 +8,7 @@
  */
 
 import { IOSStyleWidget } from '@/types/ios-dashboard';
-import { WidgetDefinition } from '@/types/dashboard';
+import { Widget } from '@/types/dashboard';
 
 export interface TransitionConfig {
   duration: number;           // 애니메이션 지속 시간 (초)
@@ -91,7 +91,7 @@ export class TransitionController {
   startTransition(
     fromStyle: 'ios' | 'legacy',
     toStyle: 'ios' | 'legacy',
-    widgets: IOSStyleWidget[] | WidgetDefinition[],
+    widgets: IOSStyleWidget[] | Widget[],
     configKey?: string
   ): Promise<void> {
     return new Promise((resolve) => {
@@ -269,7 +269,7 @@ export class TransitionController {
    * 위젯 위치 가져오기
    */
   private getWidgetPosition(
-    widget: IOSStyleWidget | WidgetDefinition, 
+    widget: IOSStyleWidget | Widget, 
     style: 'ios' | 'legacy'
   ): { x: number; y: number; width: number; height: number } {
     if (style === 'ios') {
@@ -283,12 +283,12 @@ export class TransitionController {
       };
     } else {
       // Legacy 스타일 위치
-      const legacyWidget = widget as WidgetDefinition;
+      const legacyWidget = widget as Widget;
       return {
-        x: legacyWidget.gridProps?.x || 0,
-        y: legacyWidget.gridProps?.y || 0,
-        width: legacyWidget.gridProps?.w || 2,
-        height: legacyWidget.gridProps?.h || 2,
+        x: legacyWidget.position?.x || 0,
+        y: legacyWidget.position?.y || 0,
+        width: legacyWidget.position?.width || 2,
+        height: legacyWidget.position?.height || 2,
       };
     }
   }

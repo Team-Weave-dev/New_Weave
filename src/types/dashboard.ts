@@ -13,6 +13,7 @@ export interface Widget {
   type: string
   position: WidgetPosition
   config?: Record<string, any>
+  data?: any
   locked?: boolean
 }
 
@@ -79,6 +80,9 @@ export interface WidgetMetadata {
   configurable?: boolean
   version?: string
 }
+
+// WidgetDefinition 타입 별칭 (호환성을 위해)
+export type WidgetDefinition = Widget
 
 // 위젯 Props 인터페이스
 export interface WidgetProps {

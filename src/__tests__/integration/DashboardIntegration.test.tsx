@@ -5,7 +5,7 @@
 
 import React from 'react'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
-import { DashboardContainer } from '@/components/dashboard/DashboardContainer'
+import { DashboardContainerWrapper as DashboardContainer } from '@/components/dashboard/DashboardContainerWrapper'
 import { useDashboardStore } from '@/lib/stores/useDashboardStore'
 
 // Mock next/navigation

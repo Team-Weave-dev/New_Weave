@@ -3,12 +3,12 @@ import { WidgetRegistry } from '@/lib/dashboard/WidgetRegistry';
 import { IOSWidgetRegistry } from '@/lib/dashboard/ios-widget-registry';
 import { WidgetSkeleton } from '@/components/dashboard/WidgetSkeleton';
 import type { IOSStyleWidget } from '@/types/ios-dashboard';
-import type { WidgetDefinition } from '@/types/dashboard';
+import type { Widget } from '@/types/dashboard';
 import { useFeatureFlag } from '@/lib/features/useFeatureFlag';
 
 interface WidgetMigrationWrapperProps {
   widgetType: string;
-  widgetData: WidgetDefinition | IOSStyleWidget;
+  widgetData: Widget | IOSStyleWidget;
   isIOS?: boolean;
   forceLegacy?: boolean;
   forceIOS?: boolean;
@@ -113,7 +113,7 @@ export const WidgetMigrationWrapper: React.FC<WidgetMigrationWrapperProps> = ({
       }
 
       // Legacy 스타일 렌더링 (폴백)
-      const LegacyWidget = WidgetRegistry.getComponent(widgetType);
+      const LegacyWidget = WidgetRegistry.getComponent(widgetType as any);
       if (LegacyWidget) {
         return (
           <Suspense fallback={<WidgetSkeleton />}>
@@ -178,7 +178,7 @@ export class BatchMigrator {
       this.migrationStatus.set(nextWidget, 'migrating');
       
       // 위젯 마이그레이션 로직
-      const legacyWidget = WidgetRegistry.getComponent(nextWidget);
+      const legacyWidget = WidgetRegistry.getComponent(nextWidget as any);
       if (legacyWidget) {
         await IOSWidgetRegistry.getInstance().registerFromLegacy(nextWidget, legacyWidget);
       }

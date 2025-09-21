@@ -455,7 +455,11 @@ export class RollbackMonitor {
     isMonitoring: boolean;
     config: RollbackConfig;
     recentMetrics: PerformanceMetrics[];
-    rollbackHistory: typeof this.rollbackHistory;
+    rollbackHistory: Array<{
+      timestamp: number;
+      reason: string;
+      metrics: PerformanceMetrics;
+    }>;
   } {
     return {
       isMonitoring: this.isMonitoring,
