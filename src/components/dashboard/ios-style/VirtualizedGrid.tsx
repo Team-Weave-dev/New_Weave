@@ -54,10 +54,11 @@ export function VirtualizedGrid({
     const result: VirtualizedWidget[] = [];
     
     widgets.forEach((widget) => {
-      const row = Math.floor((widget.position?.gridRow || 1) - 1);
+      // gridRow는 문자열 형태일 수 있으므로 gridRowStart를 사용
+      const row = Math.floor((widget.position?.gridRowStart || 1) - 1);
       const virtualTop = row * (rowHeight + gap);
-      const virtualHeight = (widget.position?.rows || 2) * rowHeight + 
-                          ((widget.position?.rows || 2) - 1) * gap;
+      const height = widget.position?.height || widget.size?.height || 2;
+      const virtualHeight = height * rowHeight + (height - 1) * gap;
       
       // 뷰포트 내에 있는지 확인 (overscan 포함)
       const overscanPixels = overscan * rowHeight;
@@ -81,7 +82,11 @@ export function VirtualizedGrid({
     if (widgets.length === 0) return 0;
     
     const maxRow = Math.max(
-      ...widgets.map(w => (w.position?.gridRow || 1) + (w.position?.rows || 2) - 1)
+      ...widgets.map(w => {
+        const startRow = w.position?.gridRowStart || 1;
+        const height = w.position?.height || w.size?.height || 2;
+        return startRow + height - 1;
+      })
     );
     
     return maxRow * (rowHeight + gap) - gap;
@@ -227,11 +232,11 @@ export function VirtualizedGrid({
               style={{
                 position: 'absolute',
                 top: widget.virtualTop,
-                left: `calc(${((widget.position?.gridColumn || 1) - 1) / columns * 100}% + ${
-                  ((widget.position?.gridColumn || 1) - 1) * gap / columns
+                left: `calc(${((widget.position?.gridColumnStart || 1) - 1) / columns * 100}% + ${
+                  ((widget.position?.gridColumnStart || 1) - 1) * gap / columns
                 }px)`,
-                width: `calc(${(widget.position?.columns || 2) / columns * 100}% - ${
-                  gap * (1 - (widget.position?.columns || 2) / columns)
+                width: `calc(${(widget.position?.width || widget.size?.width || 2) / columns * 100}% - ${
+                  gap * (1 - (widget.position?.width || widget.size?.width || 2) / columns)
                 }px)`,
                 height: widget.virtualHeight,
                 willChange: 'transform',

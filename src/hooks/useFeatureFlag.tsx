@@ -10,9 +10,11 @@ import {
   getIOSFeatures,
 } from '@/lib/features/ios-style-flag';
 import {
+  IOSFeatureFlags,
+} from '@/lib/features/types';
+import type {
   FeatureFlagContext,
   FeatureFlagEvaluation,
-  IOSFeatureFlags,
 } from '@/lib/features/types';
 
 /**

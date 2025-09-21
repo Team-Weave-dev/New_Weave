@@ -133,11 +133,13 @@ export function useAnimationPerformance(options: AnimationPerformanceOptions = {
     if (state.performanceLevel === 'medium') {
       // 중간 성능: 단순화된 애니메이션
       const original = AnimationPresets[preset];
+      const transition = original.transition as any;
       return {
         ...original,
         transition: {
-          ...original.transition,
-          duration: (original.transition?.duration || 0.3) * 0.7
+          ...transition,
+          // spring 타입은 duration이 없을 수 있음
+          ...(transition?.duration ? { duration: transition.duration * 0.7 } : {})
         }
       };
     }

@@ -49,8 +49,8 @@ type ViewMode = 'list' | 'kanban'
 
 // 간소화된 TaskTrackerWidget - 드래그 앤 드롭 제거
 const TaskTrackerWidget = forwardRef<HTMLDivElement, WidgetProps>((props, ref) => {
-  const { layout, isDragging, widgetId } = props
-  const color = widgetColors[props.color ?? 'zinc'] ?? widgetColors.zinc
+  // 기본 색상 사용 (WidgetProps에 color 속성이 없음)
+  const color = widgetColors.primary
   const [tasks, setTasks] = useState<Task[]>([])
   const [viewMode, setViewMode] = useState<ViewMode>('list')
   const [loading, setLoading] = useState(true)
@@ -257,9 +257,8 @@ const TaskTrackerWidget = forwardRef<HTMLDivElement, WidgetProps>((props, ref) =
         ref={ref} 
         className={cn(
           "h-full transition-all duration-200",
-          isDragging && "opacity-50 scale-[0.98]",
-          color.card,
-          color.border
+          color.bgLight,
+          color.borderLight
         )}
       >
         <div className="flex items-center justify-center h-full">
@@ -276,9 +275,8 @@ const TaskTrackerWidget = forwardRef<HTMLDivElement, WidgetProps>((props, ref) =
       ref={ref} 
       className={cn(
         "h-full flex flex-col overflow-hidden transition-all duration-200",
-        isDragging && "opacity-50 scale-[0.98]",
-        color.card,
-        color.border
+        color.bgLight,
+        color.borderLight
       )}
     >
       {/* 헤더 */}

@@ -411,8 +411,8 @@ export function useShortcutHelp() {
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // ? 키로 도움말 토글
-      if (e.key === '?' && (e.shiftKey || e.key === '/')) {
+      // ? 키로 도움말 토글 (Shift+/ 또는 ?)
+      if (e.key === '?' || (e.key === '/' && e.shiftKey)) {
         e.preventDefault();
         setShowHelp(prev => !prev);
       }

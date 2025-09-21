@@ -19,8 +19,7 @@ import {
   selectWiggling,
   selectEditState,
   selectHistoryState,
-  selectPerformanceState,
-  shallow
+  selectPerformanceState
 } from '@/lib/stores/useIOSDashboardStore';
 import { SortableGridContainer } from './SortableGridContainer';
 import { SortableWidget } from './SortableWidget';
@@ -55,9 +54,9 @@ export function IOSStyleDashboard({
   const widgets = useIOSDashboardStore(selectWidgets);
   const isEditMode = useIOSDashboardStore(selectEditMode);
   const isWiggling = useIOSDashboardStore(selectWiggling);
-  const editState = useIOSDashboardStore(selectEditState, shallow);
-  const { canUndo, canRedo } = useIOSDashboardStore(selectHistoryState, shallow);
-  const { performanceLevel, isVirtualizationEnabled } = useIOSDashboardStore(selectPerformanceState, shallow);
+  const editState = useIOSDashboardStore(selectEditState);
+  const { canUndo, canRedo } = useIOSDashboardStore(selectHistoryState);
+  const { performanceLevel, isVirtualizationEnabled } = useIOSDashboardStore(selectPerformanceState);
   
   // 스토어 액션들
   const setWidgets = useIOSDashboardStore(state => state.setWidgets);
@@ -99,9 +98,10 @@ export function IOSStyleDashboard({
     padding: 16,
     containerWidth: typeof window !== 'undefined' ? window.innerWidth : 1280,
     breakpoints: {
-      sm: { columns: 4, maxWidth: 640 },  // 모바일
-      md: { columns: 8, maxWidth: 768 },  // 태블릿
-      lg: { columns: 12, maxWidth: 1280 }, // 데스크탑
+      mobile: 640,  // 모바일
+      tablet: 768,  // 태블릿
+      desktop: 1280, // 데스크탑
+      wide: 1920, // 와이드
     },
   }));
   
@@ -547,12 +547,8 @@ export function IOSStyleDashboard({
     gridEngine.setWidgets(filtered);
     const reflowResult = await gridEngine.executeSmartReflow();
     
-    if (reflowResult.success && reflowResult.widgets) {
-      setWidgets(reflowResult.widgets);
-    } else {
-      // 스마트 재배치 실패 시 그냥 필터링된 위젯 사용
-      setWidgets(filtered);
-    }
+    // reflowResult는 정보만 제공, 실제 위젯은 filtered를 사용
+    setWidgets(filtered);
     
     showToast({
       title: '위젯 삭제',
@@ -588,8 +584,14 @@ export function IOSStyleDashboard({
     
     const widgetSize = defaultSizes[widgetType] || defaultSizes.default;
     
+    const placementContext = {
+      widgetType: widgetType,
+      preferredSize: widgetSize,
+      importance: 'medium' as const,
+    };
+    
     const placementSuggestions = gridEngine.generateSmartPlacementSuggestions(
-      widgetSize,
+      placementContext,
       5 // 최대 5개의 추천 위치
     );
     
@@ -615,6 +617,7 @@ export function IOSStyleDashboard({
         metadata: {
           createdAt: new Date(),
           updatedAt: new Date(),
+          version: '1.0.0',
         },
       };
       
@@ -623,12 +626,8 @@ export function IOSStyleDashboard({
       gridEngine.setWidgets(updatedWidgets);
       const reflowResult = await gridEngine.executeSmartReflow();
       
-      if (reflowResult.success && reflowResult.widgets) {
-        console.log('[Phase 3] 위젯 추가 후 스마트 재배치 성공');
-        setWidgets(reflowResult.widgets);
-      } else {
-        setWidgets(updatedWidgets);
-      }
+      console.log('[Phase 3] 위젯 추가 후 스마트 재배치 성공');
+      setWidgets(updatedWidgets);
       
       // 위젯 추가 애니메이션 - 나타날 때 scale up + fade in
       animationController.current.scale(`widget-${newWidget.id}`, 1.0);
@@ -650,9 +649,19 @@ export function IOSStyleDashboard({
 
   // 레이아웃 템플릿 적용
   const handleApplyTemplate = useCallback((template: LayoutTemplate) => {
-    const newLayout = template.widgets.map((w, index) => ({
-      ...w,
+    const newLayout = template.layout.map((item, index) => ({
       id: `widget-template-${index}-${Date.now()}`,
+      type: item.widgetType,
+      title: `${item.widgetType} 위젯`,
+      position: item.position,
+      size: {
+        width: item.position.width,
+        height: item.position.height,
+      },
+      data: {},
+      style: {},
+      isLocked: false,
+      config: item.defaultSettings,
     }));
     
     setWidgets(newLayout);

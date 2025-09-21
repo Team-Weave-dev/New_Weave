@@ -6,15 +6,15 @@ export { StatsWidget } from './StatsWidget';
 export { ChartWidget } from './ChartWidget';
 export { QuickActionWidget } from './QuickActionWidget';
 
-// CalendarWidget은 기존 컴포넌트 재사용
-export { default as CalendarWidget } from '@/components/dashboard/widgets/CalendarWidget';
+// CalendarWidget은 나중에 구현 예정
+// export { default as CalendarWidget } from '@/components/dashboard/widgets/CalendarWidget';
 
 // 위젯 레지스트리 등록을 위한 맵
 export const iosWidgets = {
   'stats': () => import('./StatsWidget').then(m => m.StatsWidget),
   'chart': () => import('./ChartWidget').then(m => m.ChartWidget),
   'quick-action': () => import('./QuickActionWidget').then(m => m.QuickActionWidget),
-  'calendar': () => import('@/components/dashboard/widgets/CalendarWidget'),
+  // 'calendar': () => import('@/components/dashboard/widgets/CalendarWidget'),
 };
 
 // 위젯 메타데이터
@@ -40,11 +40,11 @@ export const iosWidgetMetadata = {
     minSize: { width: 2, height: 1 },
     maxSize: { width: 4, height: 2 },
   },
-  'calendar': {
-    name: '캘린더',
-    description: '일정 관리',
-    defaultSize: { width: 2, height: 2 },
-    minSize: { width: 2, height: 2 },
-    maxSize: { width: 4, height: 4 },
-  },
+  // 'calendar': {
+  //   name: '캘린더',
+  //   description: '일정 관리',
+  //   defaultSize: { width: 2, height: 2 },
+  //   minSize: { width: 2, height: 2 },
+  //   maxSize: { width: 4, height: 4 },
+  // },
 };

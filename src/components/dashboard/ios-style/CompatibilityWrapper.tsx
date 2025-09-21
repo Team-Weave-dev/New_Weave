@@ -2,12 +2,12 @@
 
 import React, { useMemo, ReactElement, CSSProperties } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { WidgetDefinition, WidgetPosition } from '@/types/dashboard'
+import { WidgetPosition, Widget } from '@/types/dashboard'
 import { IOSStyleWidget, FlexibleWidgetPosition } from '@/types/ios-dashboard'
 import { cn } from '@/lib/utils'
 
 interface CompatibilityWrapperProps {
-  widget: WidgetDefinition
+  widget: Widget
   position?: WidgetPosition | FlexibleWidgetPosition
   isEditing?: boolean
   isDragging?: boolean
@@ -39,72 +39,48 @@ export function CompatibilityWrapper({
     if (!position) return null
 
     // FlexibleWidgetPosition인 경우 (iOS 시스템)
-    if ('columns' in position && 'rows' in position) {
+    if ('gridColumnStart' in position) {
+      const flexPosition = position as FlexibleWidgetPosition
       return {
-        gridColumn: `${position.gridColumn} / span ${position.columns}`,
-        gridRow: `${position.gridRow} / span ${position.rows}`,
-        zIndex: position.zIndex || 'auto'
+        gridColumn: `${flexPosition.gridColumnStart} / ${flexPosition.gridColumnEnd}`,
+        gridRow: `${flexPosition.gridRowStart} / ${flexPosition.gridRowEnd}`,
+        zIndex: 'auto'
       }
     }
 
     // WidgetPosition인 경우 (기존 시스템)
-    if ('gridSize' in position) {
-      // GridSize 기반 컬럼 계산
-      const columnsMap: Record<string, number> = {
-        '2x2': 2,
-        '3x3': 3,
-        '4x4': 4,
-        '5x5': 5
-      }
-      
-      const columns = columnsMap[position.gridSize] || 2
-      const rows = columns // 기본적으로 정사각형
+    if ('x' in position && 'y' in position && 'width' in position && 'height' in position) {
+      const widgetPosition = position as WidgetPosition
 
       return {
-        gridColumn: `${position.x} / span ${columns}`,
-        gridRow: `${position.y} / span ${rows}`,
-        zIndex: position.order || 'auto'
+        gridColumn: `${widgetPosition.x} / span ${widgetPosition.width}`,
+        gridRow: `${widgetPosition.y} / span ${widgetPosition.height}`,
+        zIndex: 'auto'
       }
     }
 
     return null
   }, [position])
 
-  // iOS 스타일 위젯으로 변환
-  const iosWidget = useMemo((): IOSStyleWidget => {
-    const baseWidget = {
-      ...widget,
-      columns: 2, // 기본값
-      rows: 2,    // 기본값
-      isEditable: true,
-      isDeletable: true,
-      minColumns: 1,
-      maxColumns: 8,
-      minRows: 1,
-      maxRows: 8
-    }
-
-    // Position에서 크기 정보 추출
+  // 위젯 크기 정보 추출 (내부용)
+  const widgetSize = useMemo(() => {
+    let columns = 2
+    let rows = 2
+    
     if (position) {
-      if ('columns' in position && 'rows' in position) {
-        baseWidget.columns = position.columns
-        baseWidget.rows = position.rows
-      } else if ('gridSize' in position) {
-        const sizeMap: Record<string, { columns: number; rows: number }> = {
-          '2x2': { columns: 2, rows: 2 },
-          '3x3': { columns: 3, rows: 3 },
-          '4x4': { columns: 4, rows: 4 },
-          '5x5': { columns: 5, rows: 5 }
-        }
-        
-        const size = sizeMap[position.gridSize] || { columns: 2, rows: 2 }
-        baseWidget.columns = size.columns
-        baseWidget.rows = size.rows
+      if ('gridColumnStart' in position) {
+        const flexPosition = position as FlexibleWidgetPosition
+        columns = flexPosition.width
+        rows = flexPosition.height
+      } else if ('width' in position && 'height' in position) {
+        const widgetPosition = position as WidgetPosition
+        columns = widgetPosition.width
+        rows = widgetPosition.height
       }
     }
-
-    return baseWidget
-  }, [widget, position])
+    
+    return { columns, rows }
+  }, [position])
 
   // 이벤트 핸들러 Props 변환
   const enhancedChildren = useMemo(() => {
@@ -120,28 +96,30 @@ export function CompatibilityWrapper({
     // iOS 스타일 관련 props 추가
     if (isEditing) {
       additionalProps['data-editable'] = true
-      additionalProps['data-deletable'] = iosWidget.isDeletable
-      additionalProps['aria-label'] = `${widget.title} widget, ${iosWidget.columns}x${iosWidget.rows} size`
+      additionalProps['data-deletable'] = true
+      additionalProps['aria-label'] = `${widget.type} widget, ${widgetSize.columns}x${widgetSize.rows} size`
       additionalProps['role'] = 'application'
     }
 
     // 기존 children에 props 추가
+    const childProps = (children.props || {}) as Record<string, any>
+    
     return React.cloneElement(children, {
-      ...children.props,
+      ...childProps,
       ...additionalProps,
       className: cn(
-        children.props.className,
+        childProps.className,
         'compatibility-wrapped-widget',
         isEditing && 'editing-mode',
         isDragging && 'dragging-mode'
       ),
       style: {
-        ...children.props.style,
+        ...(childProps.style || {}),
         width: '100%',
         height: '100%'
       }
     })
-  }, [children, widget, isEditing, isDragging, iosWidget])
+  }, [children, widget, isEditing, isDragging, widgetSize])
 
   // 래퍼 스타일 계산
   const wrapperStyle = useMemo(() => {
@@ -180,7 +158,7 @@ export function CompatibilityWrapper({
       opacity: 1, 
       scale: 1,
       transition: {
-        type: 'spring',
+        type: 'spring' as const,
         stiffness: 300,
         damping: 25
       }
@@ -231,7 +209,7 @@ export function CompatibilityWrapper({
         {/* 위젯 크기 표시 (편집 모드) */}
         {isEditing && (
           <div className="absolute bottom-0 right-0 z-50 bg-black/50 text-white text-xs px-2 py-1 rounded-tl">
-            {iosWidget.columns}×{iosWidget.rows}
+            {widgetSize.columns}×{widgetSize.rows}
           </div>
         )}
 
@@ -275,47 +253,25 @@ export function CompatibilityWrapper({
  * 호환성 모드 상태와 유틸리티 함수 제공
  */
 export function useCompatibilityMode() {
-  // GridSize를 Columns/Rows로 변환
-  const convertGridSizeToColumns = (gridSize: string): { columns: number; rows: number } => {
-    const sizeMap: Record<string, { columns: number; rows: number }> = {
-      '2x2': { columns: 2, rows: 2 },
-      '3x3': { columns: 3, rows: 3 },
-      '4x4': { columns: 4, rows: 4 },
-      '5x5': { columns: 5, rows: 5 }
-    }
-    
-    return sizeMap[gridSize] || { columns: 2, rows: 2 }
-  }
-
-  // Columns/Rows를 GridSize로 변환
-  const convertColumnsToGridSize = (columns: number, rows: number): string => {
-    // 가장 가까운 정사각형 크기로 변환
-    const size = Math.max(columns, rows)
-    
-    if (size <= 2) return '2x2'
-    if (size <= 3) return '3x3'
-    if (size <= 4) return '4x4'
-    return '5x5'
-  }
-
   // Position 변환 유틸리티
   const convertPosition = (
     oldPosition: WidgetPosition | FlexibleWidgetPosition
   ): FlexibleWidgetPosition => {
-    if ('columns' in oldPosition && 'rows' in oldPosition) {
+    if ('gridColumnStart' in oldPosition) {
       // 이미 FlexibleWidgetPosition
       return oldPosition as FlexibleWidgetPosition
     }
 
     // WidgetPosition -> FlexibleWidgetPosition 변환
-    const { columns, rows } = convertGridSizeToColumns(oldPosition.gridSize)
+    const widgetPos = oldPosition as WidgetPosition
     
     return {
-      gridColumn: oldPosition.x,
-      gridRow: oldPosition.y,
-      columns,
-      rows,
-      zIndex: oldPosition.order
+      gridColumnStart: widgetPos.x,
+      gridColumnEnd: widgetPos.x + widgetPos.width,
+      gridRowStart: widgetPos.y,
+      gridRowEnd: widgetPos.y + widgetPos.height,
+      width: widgetPos.width,
+      height: widgetPos.height
     }
   }
 
@@ -324,16 +280,14 @@ export function useCompatibilityMode() {
     position: FlexibleWidgetPosition
   ): WidgetPosition => {
     return {
-      x: position.gridColumn,
-      y: position.gridRow,
-      gridSize: convertColumnsToGridSize(position.columns, position.rows),
-      order: position.zIndex || 0
+      x: position.gridColumnStart,
+      y: position.gridRowStart,
+      width: position.width,
+      height: position.height
     }
   }
 
   return {
-    convertGridSizeToColumns,
-    convertColumnsToGridSize,
     convertPosition,
     convertToLegacyPosition
   }

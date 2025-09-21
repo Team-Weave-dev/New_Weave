@@ -39,7 +39,25 @@ const LAYOUT_TEMPLATES: LayoutTemplate[] = [
     id: 'dashboard-default',
     name: '대시보드 기본',
     description: '균형 잡힌 기본 레이아웃',
-    widgets: [
+    layout: []
+  },
+  {
+    id: 'analytics-focus',
+    name: '분석 중심',
+    description: '차트와 그래프 중심 레이아웃',
+    layout: []
+  },
+  {
+    id: 'compact',
+    name: '컴팩트',
+    description: '많은 위젯을 한 화면에',
+    layout: []
+  }
+];
+
+// 임시 widgets 데이터 (실제로는 다른 곳에서 관리)
+const TEMPLATE_WIDGETS: any = {
+  'dashboard-default': [
       {
         id: 'w1',
         type: 'stats',
@@ -69,24 +87,15 @@ const LAYOUT_TEMPLATES: LayoutTemplate[] = [
         data: {},
         style: {},
         isLocked: false,
-      },
+      }
     ],
-    gridConfig: { columns: 4, gap: 16 },
-  },
-  {
-    id: 'analytics-focus',
-    name: '분석 중심',
-    description: '차트와 그래프 중심 레이아웃',
-    widgets: [
+  'analytics-focus': [
       {
         id: 'w1',
         type: 'chart',
         title: '메인 차트',
         position: { gridColumn: '1 / span 4', gridRow: '1 / span 3' },
         size: { width: 4, height: 3 },
-        data: {},
-        style: {},
-        isLocked: false,
       },
       {
         id: 'w2',
@@ -94,37 +103,15 @@ const LAYOUT_TEMPLATES: LayoutTemplate[] = [
         title: 'KPI',
         position: { gridColumn: '1 / span 1', gridRow: '4 / span 1' },
         size: { width: 1, height: 1 },
-        data: {},
-        style: {},
-        isLocked: false,
-      },
-      {
-        id: 'w3',
-        type: 'stats',
-        title: 'KPI',
-        position: { gridColumn: '2 / span 1', gridRow: '4 / span 1' },
-        size: { width: 1, height: 1 },
-        data: {},
-        style: {},
-        isLocked: false,
-      },
+      }
     ],
-    gridConfig: { columns: 4, gap: 16 },
-  },
-  {
-    id: 'minimal',
-    name: '미니멀',
-    description: '핵심 정보만 표시',
-    widgets: [
+  'compact': [
       {
         id: 'w1',
         type: 'stats',
         title: '주요 지표',
         position: { gridColumn: '1 / span 2', gridRow: '1 / span 2' },
         size: { width: 2, height: 2 },
-        data: {},
-        style: {},
-        isLocked: false,
       },
       {
         id: 'w2',
@@ -132,14 +119,9 @@ const LAYOUT_TEMPLATES: LayoutTemplate[] = [
         title: '알림',
         position: { gridColumn: '3 / span 2', gridRow: '1 / span 2' },
         size: { width: 2, height: 2 },
-        data: {},
-        style: {},
-        isLocked: false,
-      },
-    ],
-    gridConfig: { columns: 4, gap: 16 },
-  },
-];
+      }
+    ]
+};
 
 // 위젯 타입 목록
 const WIDGET_TYPES = [

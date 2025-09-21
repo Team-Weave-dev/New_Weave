@@ -100,8 +100,8 @@ export function FlexibleGridContainer({
     
     // 레거시 row/col 포지션 처리
     if ('row' in position && 'col' in position) {
-      const col = position.col + 1; // CSS Grid는 1부터 시작
-      const row = position.row + 1;
+      const col = (position as any).col + 1; // CSS Grid는 1부터 시작
+      const row = (position as any).row + 1;
       const colSpan = size?.width || 2;
       const rowSpan = size?.height || 2;
       

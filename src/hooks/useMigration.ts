@@ -76,7 +76,7 @@ export function useMigration(): UseMigrationReturn {
         showToast({
           title: '마이그레이션 불가',
           description: canMigrateResult.reason || '마이그레이션을 실행할 수 없습니다',
-          variant: 'error',
+          type: 'error',
         });
         return null;
       }
@@ -86,7 +86,7 @@ export function useMigration(): UseMigrationReturn {
         showToast({
           title: '마이그레이션 권장사항',
           description: canMigrateResult.recommendations.join('\n'),
-          variant: 'warning',
+          type: 'warning',
         });
       }
       
@@ -108,7 +108,7 @@ export function useMigration(): UseMigrationReturn {
           showToast({
             title: '마이그레이션 완료',
             description: `${result.metadata.migratedWidgetCount}개 위젯이 성공적으로 변환되었습니다`,
-            variant: 'success',
+            type: 'success',
           });
           
           // 히스토리 업데이트
@@ -119,7 +119,7 @@ export function useMigration(): UseMigrationReturn {
           showToast({
             title: '마이그레이션 실패',
             description: error.message,
-            variant: 'error',
+            type: 'error',
           });
         },
       });
@@ -153,13 +153,13 @@ export function useMigration(): UseMigrationReturn {
         showToast({
           title: '롤백 완료',
           description: '레이아웃이 이전 상태로 복원되었습니다',
-          variant: 'success',
+          type: 'success',
         });
       } else {
         showToast({
           title: '롤백 실패',
           description: '복원 중 오류가 발생했습니다',
-          variant: 'error',
+          type: 'error',
         });
       }
       
@@ -198,7 +198,7 @@ export function useMigration(): UseMigrationReturn {
         showToast({
           title: '미리보기 경고',
           description: result.warnings.join('\n'),
-          variant: 'warning',
+          type: 'warning',
         });
       }
       

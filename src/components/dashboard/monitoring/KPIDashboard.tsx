@@ -17,7 +17,7 @@ import { Card } from '@/components/ui/Card';
 import { 
   Activity,
   Zap,
-  Memory,
+  HardDrive,
   Cpu,
   TrendingUp,
   TrendingDown,
@@ -205,7 +205,7 @@ export function KPIDashboard({
               </span>
             </div>
             <div className="flex items-center gap-2">
-              <Memory className="w-3 h-3" />
+              <HardDrive className="w-3 h-3" />
               <span className={getMetricColor(metrics.memoryPercentage, 'memory')}>
                 {metrics.memoryPercentage.toFixed(0)}%
               </span>
@@ -262,7 +262,7 @@ export function KPIDashboard({
                 color={getMetricColor(metrics.fps, 'fps')}
               />
               <MetricCard
-                icon={<Memory className="w-4 h-4" />}
+                icon={<HardDrive className="w-4 h-4" />}
                 label="Memory"
                 value={metrics.memoryUsage.toFixed(0)}
                 unit="MB"

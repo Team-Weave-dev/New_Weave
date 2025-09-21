@@ -24,9 +24,7 @@ export const TodoListWidget = lazy(() =>
 )
 
 export const TaskTrackerWidget = lazy(() => 
-  import('./TaskTrackerWidget').then(module => ({
-    default: module.TaskTrackerWidget
-  }))
+  import('./TaskTrackerWidget')
 )
 
 export const KPIWidget = lazy(() => 
