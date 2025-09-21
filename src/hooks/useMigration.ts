@@ -94,7 +94,7 @@ export function useMigration(): UseMigrationReturn {
       showToast({
         title: '마이그레이션 시작',
         description: '레이아웃을 iOS 스타일로 변환하고 있습니다...',
-        variant: 'info',
+        type: 'info',
       });
       
       // 마이그레이션 실행
