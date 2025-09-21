@@ -130,7 +130,7 @@ export function useMigration(): UseMigrationReturn {
       showToast({
         title: '마이그레이션 오류',
         description: error instanceof Error ? error.message : '알 수 없는 오류가 발생했습니다',
-        variant: 'error',
+        type: 'error',
       });
       return null;
     }
@@ -144,7 +144,7 @@ export function useMigration(): UseMigrationReturn {
       showToast({
         title: '롤백 시작',
         description: '이전 상태로 복원하고 있습니다...',
-        variant: 'info',
+        type: 'info',
       });
       
       const success = await migrationService.rollback(migrationId);
@@ -170,7 +170,7 @@ export function useMigration(): UseMigrationReturn {
       showToast({
         title: '롤백 오류',
         description: error instanceof Error ? error.message : '알 수 없는 오류가 발생했습니다',
-        variant: 'error',
+        type: 'error',
       });
       return false;
     }
@@ -208,7 +208,7 @@ export function useMigration(): UseMigrationReturn {
       showToast({
         title: '미리보기 실패',
         description: error instanceof Error ? error.message : '미리보기를 생성할 수 없습니다',
-        variant: 'error',
+        type: 'error',
       });
       return null;
     }
@@ -222,7 +222,7 @@ export function useMigration(): UseMigrationReturn {
     showToast({
       title: '마이그레이션 취소',
       description: '마이그레이션이 취소되었습니다',
-      variant: 'info',
+      type: 'info',
     });
   }, [showToast]);
   
@@ -242,7 +242,7 @@ export function useMigration(): UseMigrationReturn {
     showToast({
       title: '히스토리 초기화',
       description: '마이그레이션 히스토리가 초기화되었습니다',
-      variant: 'info',
+      type: 'info',
     });
   }, [showToast]);
   

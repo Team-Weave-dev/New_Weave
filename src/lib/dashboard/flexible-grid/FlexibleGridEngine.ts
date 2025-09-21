@@ -127,30 +127,7 @@ export class FlexibleGridEngine {
     }
   }
 
-  /**
-   * 위젯 추가
-   */
-  public addWidget(widget: IOSStyleWidget): void {
-    this.widgets.set(widget.id, widget);
-    this.placeWidgetOnMap(widget);
-  }
-
-  /**
-   * 위젯 제거
-   */
-  public removeWidget(widgetId: string): void {
-    this.widgets.delete(widgetId);
-    this.removeWidgetFromMap(widgetId);
-  }
-
-  /**
-   * 위젯 업데이트
-   */
-  public updateWidget(widget: IOSStyleWidget): void {
-    this.removeWidgetFromMap(widget.id);
-    this.widgets.set(widget.id, widget);
-    this.placeWidgetOnMap(widget);
-  }
+  // 위젯 추가/제거/업데이트 메서드는 아래 Phase 3 업그레이드 버전 사용
 
   /**
    * 위젯 목록 전체 설정 (동기화용)
