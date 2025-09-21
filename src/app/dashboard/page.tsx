@@ -50,7 +50,7 @@ import { MobileEditToolbar } from '@/components/dashboard/mobile/MobileEditToolb
 import { FloatingActionButton } from '@/components/dashboard/mobile/FloatingActionButton';
 import { MobileBottomSheet } from '@/components/dashboard/mobile/MobileBottomSheet';
 import { MobileWidgetOptions } from '@/components/dashboard/mobile/MobileWidgetOptions';
-import { WidgetLibrary } from '@/components/dashboard/WidgetLibrary';
+// import { WidgetLibrary } from '@/components/dashboard/WidgetLibrary'; // 레거시 백업 폴더로 이동됨
 import { KeyboardShortcuts } from '@/components/dashboard/KeyboardShortcuts';
 
 // 개발 환경에서만 디버그 도구 로드
@@ -516,19 +516,10 @@ export default function DashboardPage() {
               height="auto"
             >
               <div className="p-4">
-                <WidgetLibrary
-                  isOpen={true}
-                  onClose={() => setShowMobileAddWidget(false)}
-                  onAddWidget={(widgetData: any) => {
-                    const widget = {
-                      type: widgetData.type || 'custom',
-                      position: widgetData.position || { x: 0, y: 0, width: 1, height: 1 },
-                      config: widgetData.config || {}
-                    };
-                    addWidget(widget);
-                    setShowMobileAddWidget(false);
-                  }}
-                />
+                {/* WidgetLibrary 컴포넌트가 레거시 백업으로 이동됨 - iOS 대시보드 사용 */}
+                <div className="text-center py-8">
+                  <p className="text-gray-500">위젯 라이브러리가 iOS 대시보드 시스템으로 전환되었습니다</p>
+                </div>
               </div>
             </MobileBottomSheet>
             
