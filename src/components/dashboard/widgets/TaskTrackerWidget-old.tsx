@@ -34,6 +34,20 @@ import {
   useDragAndDropAnnouncements 
 } from '@/lib/accessibility/hooks/useScreenReader'
 import { ariaLabels } from '@/lib/accessibility/screen-reader'
+import {
+  DndContext,
+  DragOverlay,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from '@hello-pangea/dnd'
+import {
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from '@hello-pangea/dnd'
 
 interface Task {
   id: string
