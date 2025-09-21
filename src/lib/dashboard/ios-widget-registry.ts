@@ -156,6 +156,12 @@ export class IOSWidgetRegistry {
       position: {
         x: widget.position?.x || 0,
         y: widget.position?.y || 0,
+        gridColumnStart: widget.position?.x || 1,
+        gridColumnEnd: (widget.position?.x || 1) + (widget.size?.width || 2),
+        gridRowStart: widget.position?.y || 1,
+        gridRowEnd: (widget.position?.y || 1) + (widget.size?.height || 2),
+        width: widget.size?.width || 2,
+        height: widget.size?.height || 2,
       },
       size: {
         width: widget.size?.width || 2,
