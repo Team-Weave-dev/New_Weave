@@ -276,7 +276,7 @@ export function registerDefaultWidgets() {
   // 프로젝트 관리 위젯들
   WidgetRegistry.register(
     'project-summary',
-    lazy(() => import('@/components/dashboard/widgets/ProjectSummaryWidget').then(m => ({ default: m.ProjectSummaryWidget }))),
+    lazy(() => import('@/components/dashboard/widgets/ProjectSummaryWidget')),
     {
       name: '프로젝트 요약',
       description: '진행 중인 프로젝트 현황을 한눈에 확인',
@@ -293,7 +293,7 @@ export function registerDefaultWidgets() {
   
   WidgetRegistry.register(
     'task-tracker',
-    lazy(() => import('@/components/dashboard/widgets/TaskTrackerWidget').then(m => ({ default: m.TaskTrackerWidget }))),
+    lazy(() => import('@/components/dashboard/widgets/TaskTrackerWidget')),
     {
       name: '작업 추적기',
       description: '할 일을 추가하고 진행 상황을 관리하세요',
@@ -328,7 +328,7 @@ export function registerDefaultWidgets() {
   // 분석 위젯들
   WidgetRegistry.register(
     'kpi-metrics',
-    lazy(() => import('@/components/dashboard/widgets/KPIWidget').then(m => ({ default: m.KPIWidget }))),
+    lazy(() => import('@/components/dashboard/widgets/KPIWidget')),
     {
       name: 'KPI',
       description: '핵심 성과 지표를 한눈에 확인',
@@ -345,7 +345,7 @@ export function registerDefaultWidgets() {
   
   WidgetRegistry.register(
     'revenue-chart',
-    lazy(() => import('@/components/dashboard/widgets/RevenueChartWidget').then(m => ({ default: m.RevenueChartWidget }))),
+    lazy(() => import('@/components/dashboard/widgets/RevenueChartWidget')),
     {
       name: '수익 차트',
       description: '월별 수익 추이를 차트로 확인',
@@ -398,7 +398,7 @@ export function registerDefaultWidgets() {
   // 생산성 위젯들
   WidgetRegistry.register(
     'time-tracker',
-    lazy(() => import('@/components/dashboard/widgets/TimeTrackerWidget').then(m => ({ default: m.TimeTrackerWidget }))),
+    lazy(() => import('@/components/dashboard/widgets/TimeTrackerWidget')),
     {
       name: '시간 추적기',
       description: '프로젝트별 작업 시간을 추적하고 관리하세요',
@@ -415,7 +415,7 @@ export function registerDefaultWidgets() {
   
   WidgetRegistry.register(
     'pomodoro',
-    lazy(() => import('@/components/dashboard/widgets/PomodoroWidget').then(m => ({ default: m.PomodoroWidget }))),
+    lazy(() => import('@/components/dashboard/widgets/PomodoroWidget')),
     {
       name: '뽀모도로 타이머',
       description: '25분 집중 타이머로 생산성을 높이세요',
@@ -432,7 +432,7 @@ export function registerDefaultWidgets() {
   
   WidgetRegistry.register(
     'quick-notes',
-    lazy(() => import('@/components/dashboard/widgets/QuickNotesWidget').then(m => ({ default: m.QuickNotesWidget }))),
+    lazy(() => import('@/components/dashboard/widgets/QuickNotesWidget')),
     {
       name: '빠른 메모',
       description: '아이디어와 메모를 빠르게 기록하세요',
@@ -449,7 +449,7 @@ export function registerDefaultWidgets() {
   
   WidgetRegistry.register(
     'weather',
-    lazy(() => import('@/components/dashboard/widgets/WeatherWidget').then(m => ({ default: m.WeatherWidget }))),
+    lazy(() => import('@/components/dashboard/widgets/WeatherWidget')),
     {
       name: '날씨',
       description: '현재 날씨와 예보를 확인하세요',
@@ -467,7 +467,7 @@ export function registerDefaultWidgets() {
   // 재무 위젯들  
   WidgetRegistry.register(
     'expense-tracker',
-    lazy(() => import('@/components/dashboard/widgets/ExpenseTrackerWidget').then(m => ({ default: m.ExpenseTrackerWidget }))),
+    lazy(() => import('@/components/dashboard/widgets/ExpenseTrackerWidget')),
     {
       name: '지출 추적기',
       description: '카테고리별 지출을 추적하고 예산을 관리하세요',
@@ -484,7 +484,7 @@ export function registerDefaultWidgets() {
   
   WidgetRegistry.register(
     'cash-flow',
-    lazy(() => import('@/components/dashboard/widgets/analytics/CashFlowWidget').then(m => ({ default: m.CashFlowWidget }))),
+    lazy(() => import('@/components/dashboard/widgets/analytics/CashFlowWidget')),
     {
       name: '현금 흐름',
       description: '수입과 지출의 흐름을 시각화하여 확인하세요',
@@ -518,7 +518,7 @@ export function registerDefaultWidgets() {
   
   WidgetRegistry.register(
     'invoice-status',
-    lazy(() => import('@/components/dashboard/widgets/InvoiceStatusWidget').then(m => ({ default: m.InvoiceStatusWidget }))),
+    lazy(() => import('@/components/dashboard/widgets/InvoiceStatusWidget')),
     {
       name: '청구서 상태',
       description: '청구서 및 미수금 상태를 관리하세요',
@@ -570,7 +570,7 @@ export function registerDefaultWidgets() {
   
   WidgetRegistry.register(
     'quick-links',
-    lazy(() => import('@/components/dashboard/widgets/QuickLinksWidget').then(m => ({ default: m.QuickLinksWidget }))),
+    lazy(() => import('@/components/dashboard/widgets/QuickLinksWidget')),
     {
       name: '바로가기',
       description: '자주 사용하는 링크를 빠르게 접근하세요',
@@ -605,7 +605,7 @@ export function registerDefaultWidgets() {
   // 실시간 테스트 위젯
   WidgetRegistry.register(
     'realtime-test',
-    lazy(() => import('@/components/dashboard/widgets/RealtimeTestWidget').then(m => ({ default: m.RealtimeTestWidget }))),
+    lazy(() => import('@/components/dashboard/widgets/RealtimeTestWidget')),
     {
       name: '실시간 테스트',
       description: '실시간 업데이트 기능 테스트',
