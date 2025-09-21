@@ -138,3 +138,5 @@ export function RecentActivityWidget({ className }: RecentActivityWidgetProps) {
     </div>
   )
 }
+
+export default RecentActivityWidget

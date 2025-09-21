@@ -273,7 +273,7 @@ export function initializeWidgetRegistry() {
   // 프로젝트 관련 위젯
   WidgetRegistry.register(
     'project-summary',
-    lazy(() => import('@/components/dashboard/widgets/ProjectSummaryWidget').then(m => ({ default: m.ProjectSummaryWidget }))),
+    lazy(() => import('@/components/dashboard/widgets/ProjectSummaryWidget')),
     widgetMetadata['project-summary'],
     'project',
     'high'
@@ -281,7 +281,7 @@ export function initializeWidgetRegistry() {
 
   WidgetRegistry.register(
     'task-tracker',
-    lazy(() => import('@/components/dashboard/widgets/TaskTrackerWidget').then(m => ({ default: m.TaskTrackerWidget }))),
+    lazy(() => import('@/components/dashboard/widgets/TaskTrackerWidget')),
     widgetMetadata['task-tracker'],
     'productivity',
     'high'
@@ -290,7 +290,7 @@ export function initializeWidgetRegistry() {
   // 세무 관련 위젯
   WidgetRegistry.register(
     'tax-deadline',
-    lazy(() => import('@/components/dashboard/widgets/TaxDeadlineWidget').then(m => ({ default: m.TaxDeadlineWidget }))),
+    lazy(() => import('@/components/dashboard/widgets/TaxDeadlineWidget')),
     widgetMetadata['tax-deadline'],
     'tax',
     'high'
@@ -298,7 +298,7 @@ export function initializeWidgetRegistry() {
 
   WidgetRegistry.register(
     'tax-calculator',
-    lazy(() => import('@/components/dashboard/widgets/TaxCalculatorWidget').then(m => ({ default: m.TaxCalculatorWidget }))),
+    lazy(() => import('@/components/dashboard/widgets/TaxCalculatorWidget')),
     widgetMetadata['tax-calculator'],
     'tax',
     'medium'
@@ -307,7 +307,7 @@ export function initializeWidgetRegistry() {
   // 분석 관련 위젯
   WidgetRegistry.register(
     'revenue-chart',
-    lazy(() => import('@/components/dashboard/widgets/RevenueChartWidget').then(m => ({ default: m.RevenueChartWidget }))),
+    lazy(() => import('@/components/dashboard/widgets/RevenueChartWidget')),
     widgetMetadata['revenue-chart'],
     'analytics',
     'high'
@@ -315,7 +315,7 @@ export function initializeWidgetRegistry() {
 
   WidgetRegistry.register(
     'kpi-metrics',
-    lazy(() => import('@/components/dashboard/widgets/KPIWidget').then(m => ({ default: m.KPIWidget }))),
+    lazy(() => import('@/components/dashboard/widgets/KPIWidget')),
     widgetMetadata['kpi-metrics'],
     'analytics',
     'high'
@@ -340,7 +340,7 @@ export function initializeWidgetRegistry() {
 
   WidgetRegistry.register(
     'recent-activity',
-    lazy(() => import('@/components/dashboard/widgets/RecentActivityWidget').then(m => ({ default: m.RecentActivityWidget }))),
+    lazy(() => import('@/components/dashboard/widgets/RecentActivityWidget')),
     widgetMetadata['recent-activity'],
     'productivity',
     'low'
@@ -367,7 +367,7 @@ export function initializeWidgetRegistry() {
   // 시간 추적기 위젯
   WidgetRegistry.register(
     'time-tracker',
-    lazy(() => import('@/components/dashboard/widgets/TimeTrackerWidget').then(m => ({ default: m.TimeTrackerWidget }))),
+    lazy(() => import('@/components/dashboard/widgets/TimeTrackerWidget')),
     widgetMetadata['time-tracker'],
     'productivity',
     'high'
@@ -376,7 +376,7 @@ export function initializeWidgetRegistry() {
   // 뽀모도로 타이머 위젯
   WidgetRegistry.register(
     'pomodoro',
-    lazy(() => import('@/components/dashboard/widgets/PomodoroWidget').then(m => ({ default: m.PomodoroWidget }))),
+    lazy(() => import('@/components/dashboard/widgets/PomodoroWidget')),
     widgetMetadata['pomodoro'],
     'productivity',
     'high'
@@ -385,7 +385,7 @@ export function initializeWidgetRegistry() {
   // 빠른 메모 위젯
   WidgetRegistry.register(
     'quick-notes',
-    lazy(() => import('@/components/dashboard/widgets/QuickNotesWidget').then(m => ({ default: m.QuickNotesWidget }))),
+    lazy(() => import('@/components/dashboard/widgets/QuickNotesWidget')),
     widgetMetadata['quick-notes'],
     'productivity',
     'medium'
@@ -394,7 +394,7 @@ export function initializeWidgetRegistry() {
   // 날씨 위젯
   WidgetRegistry.register(
     'weather',
-    lazy(() => import('@/components/dashboard/widgets/WeatherWidget').then(m => ({ default: m.WeatherWidget }))),
+    lazy(() => import('@/components/dashboard/widgets/WeatherWidget')),
     widgetMetadata['weather'],
     'productivity',
     'low'
@@ -403,7 +403,7 @@ export function initializeWidgetRegistry() {
   // 지출 추적기 위젯
   WidgetRegistry.register(
     'expense-tracker',
-    lazy(() => import('@/components/dashboard/widgets/ExpenseTrackerWidget').then(m => ({ default: m.ExpenseTrackerWidget }))),
+    lazy(() => import('@/components/dashboard/widgets/ExpenseTrackerWidget')),
     widgetMetadata['expense-tracker'],
     'analytics',
     'high'
@@ -412,7 +412,7 @@ export function initializeWidgetRegistry() {
   // 현금 흐름 위젯
   WidgetRegistry.register(
     'cash-flow',
-    lazy(() => import('@/components/dashboard/widgets/analytics/CashFlowWidget').then(m => ({ default: m.CashFlowWidget }))),
+    lazy(() => import('@/components/dashboard/widgets/analytics/CashFlowWidget')),
     widgetMetadata['cash-flow'],
     'analytics',
     'high'
@@ -430,7 +430,7 @@ export function initializeWidgetRegistry() {
   // 청구서 현황 위젯
   WidgetRegistry.register(
     'invoice-status',
-    lazy(() => import('@/components/dashboard/widgets/InvoiceStatusWidget').then(m => ({ default: m.InvoiceStatusWidget }))),
+    lazy(() => import('@/components/dashboard/widgets/InvoiceStatusWidget')),
     widgetMetadata['invoice-status'],
     'analytics',
     'high'
@@ -439,7 +439,7 @@ export function initializeWidgetRegistry() {
   // 커스텀 위젯
   WidgetRegistry.register(
     'custom',
-    lazy(() => import('@/components/dashboard/widgets/CustomWidget').then(m => ({ default: m.CustomWidget }))),
+    lazy(() => import('@/components/dashboard/widgets/CustomWidget')),
     widgetMetadata['custom'],
     'custom',
     'low'
@@ -448,7 +448,7 @@ export function initializeWidgetRegistry() {
   // 실시간 테스트 위젯
   WidgetRegistry.register(
     'realtime-test',
-    lazy(() => import('@/components/dashboard/widgets/RealtimeTestWidget').then(m => ({ default: m.RealtimeTestWidget }))),
+    lazy(() => import('@/components/dashboard/widgets/RealtimeTestWidget')),
     widgetMetadata['realtime-test'],
     'custom',
     'low'
@@ -475,7 +475,7 @@ export function initializeWidgetRegistry() {
   // 바로가기 위젯
   WidgetRegistry.register(
     'quick-links',
-    lazy(() => import('@/components/dashboard/widgets/QuickLinksWidget').then(m => ({ default: m.QuickLinksWidget }))),
+    lazy(() => import('@/components/dashboard/widgets/QuickLinksWidget')),
     widgetMetadata['quick-links'],
     'productivity',
     'medium'

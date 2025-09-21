@@ -70,3 +70,5 @@ export function CustomWidget({
     </Card>
   )
 }
+
+export default CustomWidget
