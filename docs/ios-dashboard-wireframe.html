@@ -1,0 +1,2845 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>대시보드 위젯 와이어프레임</title>
+    <style>
+        /* 디자인 시스템 변수 */
+        :root {
+            /* Primary Colors */
+            --ios-blue: #007AFF;
+            --ios-green: #34C759;
+            --ios-orange: #FF9500;
+            --ios-red: #FF3B30;
+            --ios-teal: #5AC8FA;
+            --ios-purple: #AF52DE;
+            --ios-yellow: #FFCC00;
+            --ios-pink: #FF2D55;
+            
+            /* Background Colors */
+            --ios-bg-primary: #FFFFFF;
+            --ios-bg-secondary: #F2F2F7;
+            --ios-bg-tertiary: #FFFFFF;
+            --ios-bg-elevated: #FFFFFF;
+            
+            /* Text Colors */
+            --ios-text-primary: #000000;
+            --ios-text-secondary: #8E8E93;
+            --ios-text-tertiary: #C7C7CC;
+            
+            /* System Grays */
+            --ios-gray-1: #8E8E93;
+            --ios-gray-2: #AEAEB2;
+            --ios-gray-3: #C7C7CC;
+            --ios-gray-4: #D1D1D6;
+            --ios-gray-5: #E5E5EA;
+            --ios-gray-6: #F2F2F7;
+            
+            /* Shadows */
+            --ios-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.12);
+            --ios-shadow-md: 0 4px 6px rgba(0, 0, 0, 0.12);
+            --ios-shadow-lg: 0 10px 20px rgba(0, 0, 0, 0.12);
+            
+            /* Border Radius */
+            --ios-radius-sm: 8px;
+            --ios-radius-md: 12px;
+            --ios-radius-lg: 16px;
+            --ios-radius-xl: 20px;
+        }
+        
+        /* Dark Mode */
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --ios-bg-primary: #000000;
+                --ios-bg-secondary: #1C1C1E;
+                --ios-bg-tertiary: #2C2C2E;
+                --ios-bg-elevated: #3A3A3C;
+                --ios-text-primary: #FFFFFF;
+                --ios-text-secondary: #8E8E93;
+                --ios-text-tertiary: #48484A;
+            }
+        }
+        
+        /* Global Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: var(--ios-bg-secondary);
+            color: var(--ios-text-primary);
+            line-height: 1.5;
+            padding: 20px;
+        }
+        
+        /* Header */
+        .header {
+            text-align: center;
+            padding: 40px 20px;
+            background: linear-gradient(135deg, var(--ios-blue), var(--ios-teal));
+            color: white;
+            border-radius: var(--ios-radius-xl);
+            margin-bottom: 40px;
+            box-shadow: var(--ios-shadow-lg);
+        }
+        
+        .header h1 {
+            font-size: 34px;
+            font-weight: 700;
+            letter-spacing: 0.374px;
+            margin-bottom: 8px;
+        }
+        
+        .header .subtitle {
+            opacity: 0.9;
+            font-size: 17px;
+        }
+        
+        .header .widget-count {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            border-radius: var(--ios-radius-lg);
+            display: inline-block;
+            font-weight: 600;
+        }
+        
+        /* Navigation Tabs */
+        .nav-tabs {
+            display: flex;
+            gap: 10px;
+            padding: 16px;
+            background: var(--ios-bg-primary);
+            border-radius: var(--ios-radius-lg);
+            margin-bottom: 30px;
+            overflow-x: auto;
+            box-shadow: var(--ios-shadow-sm);
+        }
+        
+        .nav-tab {
+            padding: 10px 20px;
+            background: var(--ios-bg-secondary);
+            border-radius: var(--ios-radius-md);
+            cursor: pointer;
+            transition: all 0.3s;
+            white-space: nowrap;
+            font-size: 15px;
+            font-weight: 500;
+            color: var(--ios-text-secondary);
+        }
+        
+        .nav-tab.active {
+            background: var(--ios-blue);
+            color: white;
+        }
+        
+        .nav-tab:hover:not(.active) {
+            background: var(--ios-gray-5);
+        }
+        
+        /* Category Section */
+        .category-section {
+            margin-bottom: 40px;
+        }
+        
+        .category-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: var(--ios-bg-primary);
+            border-radius: var(--ios-radius-md);
+            box-shadow: var(--ios-shadow-sm);
+        }
+        
+        .category-icon {
+            font-size: 24px;
+        }
+        
+        .category-title {
+            font-size: 22px;
+            font-weight: 700;
+            letter-spacing: -0.26px;
+        }
+        
+        .category-count {
+            margin-left: auto;
+            padding: 4px 12px;
+            background: var(--ios-blue);
+            color: white;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        
+        /* Widget Grid Container */
+        .widget-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        /* Widget Card Base */
+        .widget-card {
+            background: var(--ios-bg-primary);
+            border-radius: var(--ios-radius-lg);
+            padding: 20px;
+            box-shadow: var(--ios-shadow-sm);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            min-height: 200px;
+        }
+        
+        .widget-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--ios-shadow-lg);
+        }
+        
+        /* Widget Header */
+        .widget-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        
+        .widget-title {
+            font-size: 17px;
+            font-weight: 600;
+            letter-spacing: -0.41px;
+        }
+        
+        .widget-type {
+            font-size: 11px;
+            padding: 2px 8px;
+            background: var(--ios-gray-6);
+            color: var(--ios-text-secondary);
+            border-radius: 6px;
+            font-family: 'SF Mono', monospace;
+        }
+        
+        .widget-actions {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .widget-action {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: var(--ios-gray-6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .widget-action:hover {
+            background: var(--ios-gray-5);
+            transform: scale(1.1);
+        }
+        
+        /* Widget Content Variations */
+        .widget-content {
+            margin-top: 12px;
+        }
+        
+        /* Chart Styles */
+        .chart-container {
+            height: 150px;
+            background: linear-gradient(135deg, var(--ios-blue), var(--ios-teal));
+            border-radius: var(--ios-radius-md);
+            display: flex;
+            align-items: flex-end;
+            padding: 10px;
+            gap: 5px;
+        }
+        
+        .chart-bar {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 4px 4px 0 0;
+            transition: all 0.3s;
+        }
+        
+        .chart-bar:hover {
+            background: rgba(255, 255, 255, 0.9);
+        }
+        
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+        
+        .stat-item {
+            padding: 12px;
+            background: var(--ios-bg-secondary);
+            border-radius: var(--ios-radius-sm);
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--ios-blue);
+        }
+        
+        .stat-label {
+            font-size: 13px;
+            color: var(--ios-text-secondary);
+            margin-top: 4px;
+        }
+        
+        /* List Items */
+        .list-container {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .list-item {
+            padding: 10px;
+            background: var(--ios-bg-secondary);
+            border-radius: var(--ios-radius-sm);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .list-item:hover {
+            background: var(--ios-gray-5);
+            transform: translateX(4px);
+        }
+        
+        .list-checkbox {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--ios-gray-4);
+            border-radius: 50%;
+            transition: all 0.2s;
+        }
+        
+        .list-checkbox.checked {
+            background: var(--ios-green);
+            border-color: var(--ios-green);
+        }
+        
+        .list-text {
+            flex: 1;
+            font-size: 15px;
+        }
+        
+        .list-badge {
+            padding: 2px 8px;
+            background: var(--ios-blue);
+            color: white;
+            border-radius: 10px;
+            font-size: 12px;
+        }
+        
+        /* Calendar Grid */
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+        }
+        
+        .calendar-day {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            border-radius: var(--ios-radius-sm);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .calendar-day:hover {
+            background: var(--ios-gray-6);
+        }
+        
+        .calendar-day.today {
+            background: var(--ios-blue);
+            color: white;
+        }
+        
+        .calendar-day.event {
+            position: relative;
+        }
+        
+        .calendar-day.event::after {
+            content: '';
+            position: absolute;
+            bottom: 2px;
+            width: 4px;
+            height: 4px;
+            background: var(--ios-red);
+            border-radius: 50%;
+        }
+        
+        /* Activity Timeline */
+        .activity-timeline {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        
+        .activity-item {
+            display: flex;
+            gap: 12px;
+            position: relative;
+        }
+        
+        .activity-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--ios-blue);
+            margin-top: 4px;
+            flex-shrink: 0;
+        }
+        
+        .activity-item:not(:last-child) .activity-dot::after {
+            content: '';
+            position: absolute;
+            left: 5px;
+            top: 20px;
+            width: 2px;
+            height: calc(100% + 8px);
+            background: var(--ios-gray-5);
+        }
+        
+        .activity-content {
+            flex: 1;
+        }
+        
+        .activity-title {
+            font-size: 15px;
+            margin-bottom: 2px;
+        }
+        
+        .activity-time {
+            font-size: 13px;
+            color: var(--ios-text-secondary);
+        }
+        
+        /* Timer Display */
+        .timer-display {
+            text-align: center;
+            padding: 30px;
+        }
+        
+        .timer-value {
+            font-size: 48px;
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+            background: linear-gradient(135deg, var(--ios-blue), var(--ios-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .timer-controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        
+        .timer-button {
+            padding: 10px 20px;
+            background: var(--ios-blue);
+            color: white;
+            border: none;
+            border-radius: var(--ios-radius-md);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .timer-button:hover {
+            background: #0051D5;
+            transform: scale(1.05);
+        }
+        
+        /* Quick Actions Grid */
+        .quick-actions-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+        
+        .quick-action {
+            aspect-ratio: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            background: var(--ios-bg-secondary);
+            border-radius: var(--ios-radius-md);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .quick-action:hover {
+            background: var(--ios-blue);
+            color: white;
+            transform: scale(1.05);
+        }
+        
+        .quick-action-icon {
+            font-size: 28px;
+        }
+        
+        .quick-action-label {
+            font-size: 12px;
+            text-align: center;
+        }
+        
+        /* Weather Display */
+        .weather-display {
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .weather-temp {
+            font-size: 48px;
+            font-weight: 700;
+            margin: 10px 0;
+        }
+        
+        .weather-desc {
+            font-size: 17px;
+            color: var(--ios-text-secondary);
+        }
+        
+        .weather-icon {
+            font-size: 64px;
+            margin: 10px 0;
+        }
+        
+        /* News Feed */
+        .news-feed {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .news-item {
+            padding: 12px;
+            background: var(--ios-bg-secondary);
+            border-radius: var(--ios-radius-md);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .news-item:hover {
+            background: var(--ios-gray-5);
+        }
+        
+        .news-title {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .news-source {
+            font-size: 12px;
+            color: var(--ios-text-secondary);
+        }
+        
+        /* Team Collaboration */
+        .team-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+            gap: 10px;
+        }
+        
+        .team-member {
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .team-member:hover {
+            transform: scale(1.1);
+        }
+        
+        .team-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--ios-blue), var(--ios-teal));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            margin: 0 auto 5px;
+        }
+        
+        .team-name {
+            font-size: 11px;
+            color: var(--ios-text-secondary);
+        }
+        
+        .team-status {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--ios-green);
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            border: 2px solid var(--ios-bg-primary);
+        }
+        
+        /* Edit Mode */
+        .edit-mode .widget-card {
+            animation: wiggle 1s ease-in-out infinite;
+        }
+        
+        @keyframes wiggle {
+            0%, 100% { transform: rotate(-1deg); }
+            50% { transform: rotate(1deg); }
+        }
+        
+        .edit-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            width: 24px;
+            height: 24px;
+            background: var(--ios-red);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        
+        /* Control Panel */
+        .control-panel {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+            z-index: 1000;
+        }
+        
+        .control-button {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: var(--ios-blue);
+            color: white;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: var(--ios-shadow-lg);
+            transition: all 0.3s;
+        }
+        
+        .control-button:hover {
+            transform: scale(1.1);
+            background: #0051D5;
+        }
+        
+        .control-button:active {
+            transform: scale(0.95);
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .widget-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .quick-actions-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .nav-tabs {
+                flex-wrap: nowrap;
+                overflow-x: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <h1>대시보드 위젯 시스템</h1>
+        <div class="subtitle">WEAVE Dashboard V2.0 - 전체 위젯 와이어프레임</div>
+        <div class="widget-count">총 24개 위젯</div>
+    </div>
+    
+    <!-- Navigation Tabs -->
+    <div class="nav-tabs">
+        <div class="nav-tab active" onclick="showCategory('all')">전체 (24)</div>
+        <div class="nav-tab" onclick="showCategory('project')">프로젝트 관리 (2)</div>
+        <div class="nav-tab" onclick="showCategory('tax')">세무 관련 (2)</div>
+        <div class="nav-tab" onclick="showCategory('analytics')">분석 및 지표 (6)</div>
+        <div class="nav-tab" onclick="showCategory('productivity')">생산성 (10)</div>
+        <div class="nav-tab" onclick="showCategory('custom')">커스텀/기타 (2)</div>
+    </div>
+    
+    <!-- 프로젝트 관리 위젯 (2개) -->
+    <div class="category-section" data-category="project">
+        <div class="category-header">
+            <span class="category-icon">📂</span>
+            <h2 class="category-title">프로젝트 관리</h2>
+            <span class="category-count">2</span>
+        </div>
+        
+        <div class="widget-grid">
+            <!-- 1. Project Summary Widget (Enhanced iOS Style) -->
+            <div class="widget-card project-summary-enhanced" style="grid-column: span 2;">
+                <div class="widget-header">
+                    <h3 class="widget-title">📊 프로젝트 요약</h3>
+                    <span class="widget-type">project-summary</span>
+                    <div class="widget-actions">
+                        <div class="widget-action">⟲</div>
+                        <div class="widget-action">⚙</div>
+                    </div>
+                </div>
+                <div class="widget-content" style="display: grid; gap: 20px;">
+                    
+                    <style>
+                        @keyframes pulse {
+                            0%, 100% { box-shadow: 0 0 0 0 rgba(255, 59, 48, 0.4); }
+                            50% { box-shadow: 0 0 0 15px rgba(255, 59, 48, 0); }
+                        }
+                        
+                        @keyframes bell-shake {
+                            0%, 100% { transform: rotate(0deg); }
+                            10%, 30% { transform: rotate(-10deg); }
+                            20%, 40% { transform: rotate(10deg); }
+                        }
+                    </style>
+
+                    <!-- Project Stats Cards with Glassmorphism -->
+                    <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px;">
+                        <div style="padding: 16px; background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(20px); border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.3); text-align: center;">
+                            <div style="font-size: 28px; margin-bottom: 8px;">📂</div>
+                            <div style="font-size: 24px; font-weight: 700; color: var(--ios-blue);">12</div>
+                            <div style="font-size: 12px; color: var(--ios-text-secondary);">총 프로젝트</div>
+                        </div>
+                        <div style="padding: 16px; background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(20px); border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.3); text-align: center;">
+                            <div style="font-size: 28px; margin-bottom: 8px;">🚀</div>
+                            <div style="font-size: 24px; font-weight: 700; color: var(--ios-green);">8</div>
+                            <div style="font-size: 12px; color: var(--ios-text-secondary);">진행중</div>
+                        </div>
+                        <div style="padding: 16px; background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(20px); border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.3); text-align: center;">
+                            <div style="font-size: 28px; margin-bottom: 8px;">✅</div>
+                            <div style="font-size: 24px; font-weight: 700; color: var(--ios-purple);">4</div>
+                            <div style="font-size: 12px; color: var(--ios-text-secondary);">완료</div>
+                        </div>
+                        <div style="padding: 16px; background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(20px); border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.3); text-align: center;">
+                            <div style="font-size: 28px; margin-bottom: 8px;">⏰</div>
+                            <div style="font-size: 24px; font-weight: 700; color: var(--ios-red);">3</div>
+                            <div style="font-size: 12px; color: var(--ios-text-secondary);">마감 임박</div>
+                        </div>
+                        <div style="padding: 16px; background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(20px); border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.3); text-align: center;">
+                            <div style="font-size: 28px; margin-bottom: 8px;">💰</div>
+                            <div style="font-size: 24px; font-weight: 700; color: var(--ios-orange);">1,250만원</div>
+                            <div style="font-size: 12px; color: var(--ios-text-secondary);">총 수익</div>
+                        </div>
+                    </div>
+
+                    <!-- 프로젝트 리뷰 섹션 -->
+                    <div style="padding: 16px; background: var(--ios-bg-secondary); border-radius: 12px;">
+                        <div style="display: flex; align-items: center; margin-bottom: 16px;">
+                            <h4 style="font-size: 16px; font-weight: 600;">주요 프로젝트 현황</h4>
+                            <button style="margin-left: auto; padding: 6px 12px; background: transparent; border: 1px solid var(--ios-blue); color: var(--ios-blue); border-radius: 8px; font-size: 12px; cursor: pointer;">전체 보기</button>
+                        </div>
+                        
+                        <!-- 프로젝트 리뷰 카드들 -->
+                        <div style="display: flex; flex-direction: column; gap: 10px;">
+                            <!-- 프로젝트 1: 긴급 -->
+                            <div style="padding: 12px; background: var(--ios-bg-primary); border-radius: 10px; border-left: 3px solid var(--ios-red); position: relative;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                    <div style="flex: 1;">
+                                        <div style="display: flex; align-items: center; gap: 6px;">
+                                            <h5 style="font-size: 14px; font-weight: 600; color: var(--ios-text-primary);">A사 웹사이트 리뉴얼</h5>
+                                            <span style="padding: 2px 6px; background: rgba(255, 59, 48, 0.15); color: var(--ios-red); border-radius: 4px; font-size: 10px; font-weight: 600;">긴급</span>
+                                        </div>
+                                        <div style="font-size: 12px; color: var(--ios-text-secondary); margin-top: 2px;">A테크 • PM: 김철수</div>
+                                    </div>
+                                    <div style="display: flex; align-items: center; gap: 12px;">
+                                        <div style="text-align: center;">
+                                            <div style="font-size: 10px; color: var(--ios-text-secondary);">마감</div>
+                                            <div style="font-size: 13px; font-weight: 600; color: var(--ios-red);">D-day</div>
+                                        </div>
+                                        <div style="text-align: center;">
+                                            <div style="font-size: 20px; font-weight: 700; color: var(--ios-blue);">75%</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- 진행 상태 바 -->
+                                <div style="height: 4px; background: var(--ios-gray-5); border-radius: 2px; margin-bottom: 8px;">
+                                    <div style="width: 75%; height: 100%; background: linear-gradient(90deg, var(--ios-blue), var(--ios-teal)); border-radius: 2px;"></div>
+                                </div>
+                                
+                                <!-- 간략한 상태 -->
+                                <div style="font-size: 12px; color: var(--ios-text-secondary);">
+                                    QA 테스트 진행 중 • 클라이언트 피드백 2건 대기
+                                </div>
+                            </div>
+                            
+                            <!-- 프로젝트 2: 정상 진행 -->
+                            <div style="padding: 12px; background: var(--ios-bg-primary); border-radius: 10px; border-left: 3px solid var(--ios-green);">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                    <div style="flex: 1;">
+                                        <div style="display: flex; align-items: center; gap: 6px;">
+                                            <h5 style="font-size: 14px; font-weight: 600; color: var(--ios-text-primary);">B사 모바일 앱 개발</h5>
+                                            <span style="padding: 2px 6px; background: rgba(52, 199, 89, 0.15); color: var(--ios-green); border-radius: 4px; font-size: 10px; font-weight: 600;">정상</span>
+                                        </div>
+                                        <div style="font-size: 12px; color: var(--ios-text-secondary); margin-top: 2px;">B커머스 • PM: 이영희</div>
+                                    </div>
+                                    <div style="display: flex; align-items: center; gap: 12px;">
+                                        <div style="text-align: center;">
+                                            <div style="font-size: 10px; color: var(--ios-text-secondary);">마감</div>
+                                            <div style="font-size: 13px; font-weight: 600;">D-30</div>
+                                        </div>
+                                        <div style="text-align: center;">
+                                            <div style="font-size: 20px; font-weight: 700; color: var(--ios-blue);">45%</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- 진행 상태 바 -->
+                                <div style="height: 4px; background: var(--ios-gray-5); border-radius: 2px; margin-bottom: 8px;">
+                                    <div style="width: 45%; height: 100%; background: linear-gradient(90deg, var(--ios-green), var(--ios-teal)); border-radius: 2px;"></div>
+                                </div>
+                                
+                                <!-- 간략한 상태 -->
+                                <div style="font-size: 12px; color: var(--ios-text-secondary);">
+                                    UI/UX 디자인 완료 • 백엔드 API 개발 50% 진행
+                                </div>
+                            </div>
+                            
+                            <!-- 프로젝트 3: 주의 필요 -->
+                            <div style="padding: 12px; background: var(--ios-bg-primary); border-radius: 10px; border-left: 3px solid var(--ios-orange);">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                    <div style="flex: 1;">
+                                        <div style="display: flex; align-items: center; gap: 6px;">
+                                            <h5 style="font-size: 14px; font-weight: 600; color: var(--ios-text-primary);">C사 ERP 시스템 구축</h5>
+                                            <span style="padding: 2px 6px; background: rgba(255, 149, 0, 0.15); color: var(--ios-orange); border-radius: 4px; font-size: 10px; font-weight: 600;">주의</span>
+                                        </div>
+                                        <div style="font-size: 12px; color: var(--ios-text-secondary); margin-top: 2px;">C물류 • PM: 박진수</div>
+                                    </div>
+                                    <div style="display: flex; align-items: center; gap: 12px;">
+                                        <div style="text-align: center;">
+                                            <div style="font-size: 10px; color: var(--ios-text-secondary);">마감</div>
+                                            <div style="font-size: 13px; font-weight: 600; color: var(--ios-orange);">D-5</div>
+                                        </div>
+                                        <div style="text-align: center;">
+                                            <div style="font-size: 20px; font-weight: 700; color: var(--ios-blue);">60%</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- 진행 상태 바 -->
+                                <div style="height: 4px; background: var(--ios-gray-5); border-radius: 2px; margin-bottom: 8px;">
+                                    <div style="width: 60%; height: 100%; background: linear-gradient(90deg, var(--ios-orange), var(--ios-yellow)); border-radius: 2px;"></div>
+                                </div>
+                                
+                                <!-- 간략한 상태 -->
+                                <div style="font-size: 12px; color: var(--ios-text-secondary);">
+                                    데이터 마이그레이션 이슈 • 일정 재조정 필요
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div style="display: flex; gap: 10px;">
+                        <button style="flex: 1; padding: 12px; background: linear-gradient(135deg, var(--ios-blue), var(--ios-teal)); color: white; border: none; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                            <span>📝</span> 새 프로젝트 생성
+                        </button>
+                        <button style="flex: 1; padding: 12px; background: var(--ios-bg-secondary); color: var(--ios-text-primary); border: 1px solid var(--ios-gray-4); border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                            <span>📊</span> 상세 보고서
+                        </button>
+                        <button style="padding: 12px 16px; background: var(--ios-bg-secondary); color: var(--ios-text-primary); border: 1px solid var(--ios-gray-4); border-radius: 12px; font-size: 14px; cursor: pointer;">
+                            <span>⚙️</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 2. Smart Task Tracker Widget (Enhanced) -->
+            <div class="widget-card" style="grid-column: span 2; grid-row: span 2;">
+                <div class="widget-header">
+                    <h3 class="widget-title">🚀 스마트 작업 추적기</h3>
+                    <span class="widget-type">task-tracker</span>
+                    <div class="widget-actions">
+                        <div class="widget-action" title="뷰 모드">📊</div>
+                        <div class="widget-action" title="AI 인사이트">🤖</div>
+                        <div class="widget-action">⚙</div>
+                    </div>
+                </div>
+                <div class="widget-content">
+                    <!-- AI 인사이트 패널 -->
+                    <div style="padding: 12px; background: linear-gradient(135deg, rgba(255, 59, 48, 0.1), rgba(255, 149, 0, 0.1)); border-radius: 12px; margin-bottom: 16px;">
+                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                            <span style="font-size: 20px;">🤖</span>
+                            <h4 style="font-size: 14px; font-weight: 600;">AI 인사이트</h4>
+                            <span style="margin-left: auto; padding: 2px 8px; background: var(--ios-red); color: white; border-radius: 10px; font-size: 10px; font-weight: 600;">3 긴급</span>
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 6px;">
+                            <div style="display: flex; align-items: center; gap: 6px; font-size: 12px;">
+                                <span style="color: var(--ios-red);">🔥</span>
+                                <span>3개 작업이 내일 마감입니다</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 6px; font-size: 12px;">
+                                <span style="color: var(--ios-orange);">⚠️</span>
+                                <span>Backend API가 Frontend를 블로킹 중</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 6px; font-size: 12px;">
+                                <span style="color: var(--ios-blue);">💡</span>
+                                <span>DB 설계를 먼저 완료하면 3개 작업 언블록</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 뷰 모드 선택 탭 -->
+                    <div style="display: flex; gap: 8px; padding: 8px; background: var(--ios-bg-secondary); border-radius: 10px; margin-bottom: 12px;">
+                        <button style="flex: 1; padding: 6px; background: var(--ios-blue); color: white; border: none; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer;">스마트</button>
+                        <button style="flex: 1; padding: 6px; background: transparent; color: var(--ios-text-secondary); border: none; border-radius: 8px; font-size: 12px; cursor: pointer;">칸반</button>
+                        <button style="flex: 1; padding: 6px; background: transparent; color: var(--ios-text-secondary); border: none; border-radius: 8px; font-size: 12px; cursor: pointer;">스프린트</button>
+                        <button style="flex: 1; padding: 6px; background: transparent; color: var(--ios-text-secondary); border: none; border-radius: 8px; font-size: 12px; cursor: pointer;">팀</button>
+                    </div>
+
+                    <!-- 프로젝트 진행 상태 -->
+                    <div style="padding: 10px; background: var(--ios-bg-secondary); border-radius: 10px; margin-bottom: 12px;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+                            <span style="font-size: 13px; font-weight: 600;">웹사이트 리뉴얼</span>
+                            <span style="font-size: 12px; color: var(--ios-text-secondary);">75%</span>
+                        </div>
+                        <div style="height: 6px; background: var(--ios-gray-5); border-radius: 3px; overflow: hidden;">
+                            <div style="width: 75%; height: 100%; background: linear-gradient(90deg, var(--ios-blue), var(--ios-teal)); border-radius: 3px;"></div>
+                        </div>
+                        <div style="display: flex; gap: 12px; margin-top: 8px;">
+                            <div style="display: flex; align-items: center; gap: 4px;">
+                                <div style="width: 8px; height: 8px; background: var(--ios-gray-4); border-radius: 2px;"></div>
+                                <span style="font-size: 11px; color: var(--ios-text-secondary);">백로그 5</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 4px;">
+                                <div style="width: 8px; height: 8px; background: var(--ios-blue); border-radius: 2px;"></div>
+                                <span style="font-size: 11px; color: var(--ios-text-secondary);">진행중 3</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 4px;">
+                                <div style="width: 8px; height: 8px; background: var(--ios-orange); border-radius: 2px;"></div>
+                                <span style="font-size: 11px; color: var(--ios-text-secondary);">검토 2</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 4px;">
+                                <div style="width: 8px; height: 8px; background: var(--ios-green); border-radius: 2px;"></div>
+                                <span style="font-size: 11px; color: var(--ios-text-secondary);">완료 8</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 스마트 작업 리스트 -->
+                    <div class="list-container">
+                        <!-- 우선순위 높음 + AI 추천 -->
+                        <div class="list-item" style="border-left: 3px solid var(--ios-red); padding-left: 9px;">
+                            <div class="list-checkbox" style="border-color: var(--ios-red);"></div>
+                            <div style="flex: 1;">
+                                <div style="display: flex; align-items: center; gap: 6px;">
+                                    <span class="list-text">DB 스키마 설계</span>
+                                    <span style="font-size: 10px; padding: 1px 4px; background: var(--ios-red); color: white; border-radius: 4px;">긴급</span>
+                                    <span style="font-size: 10px; padding: 1px 4px; background: var(--ios-blue); color: white; border-radius: 4px;">🤖 추천</span>
+                                </div>
+                                <div style="display: flex; gap: 8px; margin-top: 4px;">
+                                    <span style="font-size: 10px; color: var(--ios-text-secondary);">마감: 내일</span>
+                                    <span style="font-size: 10px; color: var(--ios-orange);">⚠️ 3개 작업 블로킹</span>
+                                </div>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 4px;">
+                                <img src="data:image/svg+xml,%3Csvg width='20' height='20' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='10' cy='10' r='10' fill='%23007AFF'/%3E%3C/svg%3E" style="width: 20px; height: 20px; border-radius: 50%;" alt="avatar">
+                            </div>
+                        </div>
+
+                        <!-- 진행중 작업 -->
+                        <div class="list-item" style="border-left: 3px solid var(--ios-blue); padding-left: 9px;">
+                            <div class="list-checkbox" style="border-color: var(--ios-blue);"></div>
+                            <div style="flex: 1;">
+                                <div style="display: flex; align-items: center; gap: 6px;">
+                                    <span class="list-text">API 엔드포인트 개발</span>
+                                    <span style="font-size: 10px; padding: 1px 4px; background: var(--ios-blue); color: white; border-radius: 4px;">진행중</span>
+                                </div>
+                                <div style="display: flex; gap: 8px; margin-top: 4px;">
+                                    <span style="font-size: 10px; color: var(--ios-text-secondary);">진행률: 60%</span>
+                                    <span style="font-size: 10px; color: var(--ios-text-secondary);">예상: 2시간</span>
+                                </div>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 4px;">
+                                <img src="data:image/svg+xml,%3Csvg width='20' height='20' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='10' cy='10' r='10' fill='%2334C759'/%3E%3C/svg%3E" style="width: 20px; height: 20px; border-radius: 50%;" alt="avatar">
+                            </div>
+                        </div>
+
+                        <!-- 블록된 작업 -->
+                        <div class="list-item" style="border-left: 3px solid var(--ios-gray-4); padding-left: 9px; opacity: 0.7;">
+                            <div class="list-checkbox" style="border-color: var(--ios-gray-4);"></div>
+                            <div style="flex: 1;">
+                                <div style="display: flex; align-items: center; gap: 6px;">
+                                    <span class="list-text" style="text-decoration: line-through;">Frontend 통합</span>
+                                    <span style="font-size: 10px; padding: 1px 4px; background: var(--ios-gray-4); color: white; border-radius: 4px;">블록됨</span>
+                                </div>
+                                <div style="display: flex; gap: 8px; margin-top: 4px;">
+                                    <span style="font-size: 10px; color: var(--ios-red);">🔒 DB 설계 대기중</span>
+                                </div>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 4px;">
+                                <img src="data:image/svg+xml,%3Csvg width='20' height='20' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='10' cy='10' r='10' fill='%23FF9500'/%3E%3C/svg%3E" style="width: 20px; height: 20px; border-radius: 50%;" alt="avatar">
+                            </div>
+                        </div>
+
+                        <!-- 완료된 작업 -->
+                        <div class="list-item" style="opacity: 0.5;">
+                            <div class="list-checkbox checked"></div>
+                            <div style="flex: 1;">
+                                <span class="list-text" style="text-decoration: line-through;">프로젝트 초기 설정</span>
+                                <div style="font-size: 10px; color: var(--ios-text-secondary); margin-top: 4px;">오늘 완료</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 팀 작업 부하 표시 -->
+                    <div style="margin-top: 16px; padding: 10px; background: var(--ios-bg-secondary); border-radius: 10px;">
+                        <h5 style="font-size: 12px; font-weight: 600; margin-bottom: 8px;">팀 작업 부하</h5>
+                        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;">
+                            <div style="text-align: center;">
+                                <img src="data:image/svg+xml,%3Csvg width='30' height='30' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='15' cy='15' r='15' fill='%23007AFF'/%3E%3C/svg%3E" style="width: 30px; height: 30px; border-radius: 50%; margin-bottom: 4px;" alt="avatar">
+                                <div style="font-size: 10px;">김철수</div>
+                                <div style="width: 100%; height: 4px; background: var(--ios-gray-5); border-radius: 2px; margin-top: 2px;">
+                                    <div style="width: 70%; height: 100%; background: var(--ios-orange); border-radius: 2px;"></div>
+                                </div>
+                            </div>
+                            <div style="text-align: center;">
+                                <img src="data:image/svg+xml,%3Csvg width='30' height='30' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='15' cy='15' r='15' fill='%2334C759'/%3E%3C/svg%3E" style="width: 30px; height: 30px; border-radius: 50%; margin-bottom: 4px;" alt="avatar">
+                                <div style="font-size: 10px;">이영희</div>
+                                <div style="width: 100%; height: 4px; background: var(--ios-gray-5); border-radius: 2px; margin-top: 2px;">
+                                    <div style="width: 40%; height: 100%; background: var(--ios-green); border-radius: 2px;"></div>
+                                </div>
+                            </div>
+                            <div style="text-align: center;">
+                                <img src="data:image/svg+xml,%3Csvg width='30' height='30' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='15' cy='15' r='15' fill='%23FF9500'/%3E%3C/svg%3E" style="width: 30px; height: 30px; border-radius: 50%; margin-bottom: 4px;" alt="avatar">
+                                <div style="font-size: 10px;">박진수</div>
+                                <div style="width: 100%; height: 4px; background: var(--ios-gray-5); border-radius: 2px; margin-top: 2px;">
+                                    <div style="width: 90%; height: 100%; background: var(--ios-red); border-radius: 2px;"></div>
+                                </div>
+                            </div>
+                            <div style="text-align: center;">
+                                <img src="data:image/svg+xml,%3Csvg width='30' height='30' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='15' cy='15' r='15' fill='%23AF52DE'/%3E%3C/svg%3E" style="width: 30px; height: 30px; border-radius: 50%; margin-bottom: 4px;" alt="avatar">
+                                <div style="font-size: 10px;">최현정</div>
+                                <div style="width: 100%; height: 4px; background: var(--ios-gray-5); border-radius: 2px; margin-top: 2px;">
+                                    <div style="width: 20%; height: 100%; background: var(--ios-green); border-radius: 2px;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 빠른 액션 버튼 -->
+                    <div style="display: flex; gap: 8px; margin-top: 12px;">
+                        <button style="flex: 1; padding: 10px; background: var(--ios-blue); color: white; border: none; border-radius: 10px; font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                            <span>+</span> 새 작업
+                        </button>
+                        <button style="flex: 1; padding: 10px; background: var(--ios-bg-secondary); color: var(--ios-text-primary); border: none; border-radius: 10px; font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                            <span>🔄</span> 동기화
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 세무 관련 위젯 (2개) -->
+    <div class="category-section" data-category="tax">
+        <div class="category-header">
+            <span class="category-icon">💰</span>
+            <h2 class="category-title">세무 관련</h2>
+            <span class="category-count">2</span>
+        </div>
+        
+        <div class="widget-grid">
+            <!-- 3. Tax Deadline Widget (Informational) -->
+            <div class="widget-card">
+                <div class="widget-header">
+                    <h3 class="widget-title">📅 세무 캘린더</h3>
+                    <span class="widget-type">tax-deadline</span>
+                    <div class="widget-actions">
+                        <div class="widget-action" title="월 선택">📆</div>
+                        <div class="widget-action" title="정보">ℹ️</div>
+                    </div>
+                </div>
+                <div class="widget-content" style="padding: 12px;">
+                    <!-- 현재 월 표시 -->
+                    <div style="display: flex; justify-content: center; align-items: center; margin-bottom: 12px; padding: 8px; background: var(--ios-bg-secondary); border-radius: 10px;">
+                        <span style="font-size: 14px; font-weight: 500; color: var(--ios-text-primary);">2025년 1월 세무 일정</span>
+                    </div>
+                    
+                    <!-- 정기 세무 일정 리스트 -->
+                    <div class="activity-timeline">
+                        <!-- 매월 10일: 원천세 -->
+                        <div class="activity-item" style="background: rgba(255, 149, 0, 0.05); border-radius: 10px; padding: 10px; margin-bottom: 8px;">
+                            <div style="display: flex; align-items: start; gap: 10px;">
+                                <div class="activity-dot" style="background: var(--ios-orange); width: 10px; height: 10px; margin-top: 4px;"></div>
+                                <div style="flex: 1;">
+                                    <div style="display: flex; justify-content: space-between; align-items: start;">
+                                        <div style="flex: 1;">
+                                            <div style="display: flex; align-items: center; gap: 6px;">
+                                                <div class="activity-title" style="font-weight: 500;">원천세 납부</div>
+                                                <span style="padding: 2px 6px; background: var(--ios-purple); color: white; border-radius: 4px; font-size: 10px;">원천세</span>
+                                                <span style="padding: 2px 6px; background: var(--ios-gray-4); color: var(--ios-text-primary); border-radius: 4px; font-size: 10px;">매월</span>
+                                            </div>
+                                            <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px;">
+                                                <div class="activity-time" style="color: var(--ios-orange); font-weight: 500;">D-7 (1/10)</div>
+                                                <div style="font-size: 11px; color: var(--ios-text-secondary);">전월분</div>
+                                            </div>
+                                        </div>
+                                        <div style="display: flex; align-items: center;">
+                                            <span style="padding: 2px 6px; background: var(--ios-orange); color: white; border-radius: 4px; font-size: 10px; font-weight: 600;">중요</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 1월 25일: 부가세 예정신고 -->
+                        <div class="activity-item" style="background: rgba(255, 59, 48, 0.05); border-radius: 10px; padding: 10px; margin-bottom: 8px;">
+                            <div style="display: flex; align-items: start; gap: 10px;">
+                                <div class="activity-dot" style="background: var(--ios-red); width: 10px; height: 10px; margin-top: 4px;"></div>
+                                <div style="flex: 1;">
+                                    <div style="display: flex; justify-content: space-between; align-items: start;">
+                                        <div style="flex: 1;">
+                                            <div style="display: flex; align-items: center; gap: 6px;">
+                                                <div class="activity-title" style="font-weight: 600;">부가가치세 예정신고</div>
+                                                <span style="padding: 2px 6px; background: var(--ios-blue); color: white; border-radius: 4px; font-size: 10px;">VAT</span>
+                                                <span style="padding: 2px 6px; background: var(--ios-gray-4); color: var(--ios-text-primary); border-radius: 4px; font-size: 10px;">분기</span>
+                                            </div>
+                                            <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px;">
+                                                <div class="activity-time" style="color: var(--ios-red); font-weight: 500;">D-22 (1/25)</div>
+                                                <div style="font-size: 11px; color: var(--ios-text-secondary);">2024년 하반기분</div>
+                                            </div>
+                                        </div>
+                                        <div style="display: flex; align-items: center;">
+                                            <span style="padding: 2px 6px; background: var(--ios-red); color: white; border-radius: 4px; font-size: 10px; font-weight: 600;">긴급</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 다음 달 예고: 2월 10일 원천세 -->
+                        <div class="activity-item" style="background: var(--ios-bg-secondary); border-radius: 10px; padding: 10px; margin-bottom: 8px; opacity: 0.7;">
+                            <div style="display: flex; align-items: start; gap: 10px;">
+                                <div class="activity-dot" style="background: var(--ios-gray-3); width: 10px; height: 10px; margin-top: 4px;"></div>
+                                <div style="flex: 1;">
+                                    <div style="display: flex; justify-content: space-between; align-items: start;">
+                                        <div style="flex: 1;">
+                                            <div style="display: flex; align-items: center; gap: 6px;">
+                                                <div class="activity-title">원천세 납부 (2월)</div>
+                                                <span style="padding: 2px 6px; background: var(--ios-gray-3); color: white; border-radius: 4px; font-size: 10px;">원천세</span>
+                                                <span style="padding: 2px 6px; background: var(--ios-gray-4); color: var(--ios-text-primary); border-radius: 4px; font-size: 10px;">매월</span>
+                                            </div>
+                                            <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px;">
+                                                <div class="activity-time">D-38 (2/10)</div>
+                                                <div style="font-size: 11px; color: var(--ios-text-secondary);">1월분</div>
+                                            </div>
+                                        </div>
+                                        <div style="display: flex; align-items: center;">
+                                            <span style="padding: 2px 6px; background: var(--ios-gray-3); color: white; border-radius: 4px; font-size: 10px;">예정</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 연간 주요 일정: 5월 종합소득세 -->
+                        <div class="activity-item" style="background: var(--ios-bg-secondary); border-radius: 10px; padding: 10px; margin-bottom: 8px; opacity: 0.7;">
+                            <div style="display: flex; align-items: start; gap: 10px;">
+                                <div class="activity-dot" style="background: var(--ios-green); width: 10px; height: 10px; margin-top: 4px;"></div>
+                                <div style="flex: 1;">
+                                    <div style="display: flex; justify-content: space-between; align-items: start;">
+                                        <div style="flex: 1;">
+                                            <div style="display: flex; align-items: center; gap: 6px;">
+                                                <div class="activity-title">종합소득세 신고</div>
+                                                <span style="padding: 2px 6px; background: var(--ios-teal); color: white; border-radius: 4px; font-size: 10px;">소득세</span>
+                                                <span style="padding: 2px 6px; background: var(--ios-gray-4); color: var(--ios-text-primary); border-radius: 4px; font-size: 10px;">연간</span>
+                                            </div>
+                                            <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px;">
+                                                <div class="activity-time">D-128 (5/31)</div>
+                                                <div style="font-size: 11px; color: var(--ios-text-secondary);">2024년 귀속</div>
+                                            </div>
+                                        </div>
+                                        <div style="display: flex; align-items: center;">
+                                            <span style="padding: 2px 6px; background: var(--ios-green); color: white; border-radius: 4px; font-size: 10px;">보통</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 연간 세무 일정 요약 -->
+                    <div style="margin-top: 12px; padding: 10px; background: var(--ios-bg-secondary); border-radius: 10px;">
+                        <div style="font-size: 12px; font-weight: 500; color: var(--ios-text-primary); margin-bottom: 8px;">📌 주요 연간 세무 일정</div>
+                        <div style="display: grid; gap: 4px;">
+                            <div style="display: flex; justify-content: space-between; font-size: 11px;">
+                                <span style="color: var(--ios-text-secondary);">매월 10일</span>
+                                <span>원천세 납부</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; font-size: 11px;">
+                                <span style="color: var(--ios-text-secondary);">1, 4, 7, 10월 25일</span>
+                                <span>부가세 신고</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; font-size: 11px;">
+                                <span style="color: var(--ios-text-secondary);">3월 31일</span>
+                                <span>법인세 신고</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; font-size: 11px;">
+                                <span style="color: var(--ios-text-secondary);">5월 31일</span>
+                                <span>종합소득세 신고</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 4. Tax Calculator Widget (Enhanced) -->
+            <div class="widget-card">
+                <div class="widget-header">
+                    <h3 class="widget-title">🧮 세금 계산기</h3>
+                    <span class="widget-type">tax-calculator</span>
+                    <div class="widget-actions">
+                        <div class="widget-action" title="히스토리">📋</div>
+                        <div class="widget-action" title="설정">⚙</div>
+                    </div>
+                </div>
+                <div class="widget-content" style="padding: 16px;">
+                    <!-- iOS 스타일 세그먼트 컨트롤 -->
+                    <div style="display: flex; background: var(--ios-gray-5); border-radius: 8px; padding: 2px; margin-bottom: 16px;">
+                        <button style="flex: 1; padding: 8px 12px; background: var(--ios-bg-primary); border: none; border-radius: 6px; font-size: 13px; font-weight: 500; color: var(--ios-blue); cursor: pointer;">부가세 10%</button>
+                        <button style="flex: 1; padding: 8px 12px; background: transparent; border: none; border-radius: 6px; font-size: 13px; font-weight: 500; color: var(--ios-text-primary); cursor: pointer;">원천세 3.3%</button>
+                        <button style="flex: 1; padding: 8px 12px; background: transparent; border: none; border-radius: 6px; font-size: 13px; font-weight: 500; color: var(--ios-text-primary); cursor: pointer;">원천세 8.8%</button>
+                    </div>
+                    
+                    <!-- 계산 모드 토글 -->
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: var(--ios-bg-secondary); border-radius: 10px; margin-bottom: 16px;">
+                        <span style="font-size: 14px; color: var(--ios-text-primary);">공급가액 기준 계산</span>
+                        <div style="position: relative; width: 51px; height: 31px; background: var(--ios-green); border-radius: 15.5px;">
+                            <div style="position: absolute; top: 2px; right: 2px; width: 27px; height: 27px; background: white; border-radius: 13.5px; box-shadow: 0 3px 8px rgba(0,0,0,0.15);"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- 금액 입력 영역 (Calculator 스타일) -->
+                    <div style="background: var(--ios-bg-secondary); border-radius: 12px; padding: 16px; margin-bottom: 16px;">
+                        <div style="text-align: right;">
+                            <div style="font-size: 14px; color: var(--ios-text-secondary); margin-bottom: 4px;">공급가액</div>
+                            <div style="display: flex; align-items: center; justify-content: flex-end; font-size: 32px; font-weight: 600; color: var(--ios-text-primary);">
+                                <span style="font-size: 20px; margin-right: 4px;">₩</span>
+                                <span>1,000,000</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 빠른 금액 버튼 -->
+                    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 16px;">
+                        <button style="padding: 10px; background: var(--ios-bg-secondary); border: 1px solid var(--ios-gray-4); border-radius: 8px; font-size: 12px; color: var(--ios-blue); cursor: pointer;">+10만</button>
+                        <button style="padding: 10px; background: var(--ios-bg-secondary); border: 1px solid var(--ios-gray-4); border-radius: 8px; font-size: 12px; color: var(--ios-blue); cursor: pointer;">+100만</button>
+                        <button style="padding: 10px; background: var(--ios-bg-secondary); border: 1px solid var(--ios-gray-4); border-radius: 8px; font-size: 12px; color: var(--ios-blue); cursor: pointer;">+1000만</button>
+                        <button style="padding: 10px; background: var(--ios-bg-secondary); border: 1px solid var(--ios-gray-4); border-radius: 8px; font-size: 12px; color: var(--ios-red); cursor: pointer;">C</button>
+                    </div>
+                    
+                    <!-- 계산 결과 카드들 -->
+                    <div style="display: grid; gap: 12px; margin-bottom: 16px;">
+                        <!-- 공급가액 카드 -->
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: var(--ios-bg-secondary); border-radius: 10px;">
+                            <div>
+                                <div style="font-size: 12px; color: var(--ios-text-secondary);">공급가액</div>
+                                <div style="font-size: 18px; font-weight: 600; color: var(--ios-text-primary);">₩ 1,000,000</div>
+                            </div>
+                            <button style="padding: 8px; background: transparent; border: none; color: var(--ios-blue); cursor: pointer;">📋</button>
+                        </div>
+                        
+                        <!-- 세금액 카드 -->
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: rgba(255, 149, 0, 0.1); border-radius: 10px; border: 1px solid rgba(255, 149, 0, 0.2);">
+                            <div>
+                                <div style="font-size: 12px; color: var(--ios-text-secondary);">부가세 (10%)</div>
+                                <div style="font-size: 18px; font-weight: 600; color: var(--ios-orange);">₩ 100,000</div>
+                            </div>
+                            <button style="padding: 8px; background: transparent; border: none; color: var(--ios-blue); cursor: pointer;">📋</button>
+                        </div>
+                        
+                        <!-- 총액/실수령액 카드 (강조) -->
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 16px; background: linear-gradient(135deg, rgba(0, 122, 255, 0.05), rgba(90, 200, 250, 0.05)); border-radius: 10px; border: 1px solid rgba(0, 122, 255, 0.2);">
+                            <div>
+                                <div style="font-size: 12px; color: var(--ios-text-secondary);">총액 (VAT 포함)</div>
+                                <div style="font-size: 24px; font-weight: 700; color: var(--ios-blue);">₩ 1,100,000</div>
+                            </div>
+                            <button style="padding: 8px; background: transparent; border: none; color: var(--ios-blue); cursor: pointer;">📋</button>
+                        </div>
+                    </div>
+                    
+                    <!-- 액션 버튼들 -->
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;">
+                        <button style="padding: 10px; background: var(--ios-bg-secondary); border: 1px solid var(--ios-gray-4); border-radius: 10px; font-size: 14px; color: var(--ios-text-primary); display: flex; align-items: center; justify-content: center; gap: 4px; cursor: pointer;">
+                            💾 <span>저장</span>
+                        </button>
+                        <button style="padding: 10px; background: var(--ios-bg-secondary); border: 1px solid var(--ios-gray-4); border-radius: 10px; font-size: 14px; color: var(--ios-text-primary); display: flex; align-items: center; justify-content: center; gap: 4px; cursor: pointer;">
+                            📤 <span>공유</span>
+                        </button>
+                        <button style="padding: 10px; background: var(--ios-blue); border: none; border-radius: 10px; font-size: 14px; color: white; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 4px; cursor: pointer;">
+                            🧮 <span>계산</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 분석 및 지표 위젯 (6개) -->
+    <div class="category-section" data-category="analytics">
+        <div class="category-header">
+            <span class="category-icon">📊</span>
+            <h2 class="category-title">분석 및 지표</h2>
+            <span class="category-count">6</span>
+        </div>
+        
+        <div class="widget-grid">
+            <!-- 5. Revenue Chart Widget -->
+            <div class="widget-card">
+                <div class="widget-header">
+                    <h3 class="widget-title">📈 매출 차트</h3>
+                    <span class="widget-type">revenue-chart</span>
+                    <div class="widget-actions">
+                        <div class="widget-action">📊</div>
+                        <div class="widget-action">⚙</div>
+                    </div>
+                </div>
+                <div class="widget-content">
+                    <div class="chart-container">
+                        <div class="chart-bar" style="height: 60%"></div>
+                        <div class="chart-bar" style="height: 75%"></div>
+                        <div class="chart-bar" style="height: 45%"></div>
+                        <div class="chart-bar" style="height: 90%"></div>
+                        <div class="chart-bar" style="height: 80%"></div>
+                        <div class="chart-bar" style="height: 95%"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 6. Expense Tracker Widget -->
+            <div class="widget-card">
+                <div class="widget-header">
+                    <h3 class="widget-title">💳 지출 추적기</h3>
+                    <span class="widget-type">expense-tracker</span>
+                    <div class="widget-actions">
+                        <div class="widget-action">+</div>
+                        <div class="widget-action">⚙</div>
+                    </div>
+                </div>
+                <div class="widget-content">
+                    <div class="list-container">
+                        <div class="list-item">
+                            <span class="list-text">마케팅</span>
+                            <span style="margin-left: auto; color: var(--ios-red);">-₩2,500,000</span>
+                        </div>
+                        <div class="list-item">
+                            <span class="list-text">인건비</span>
+                            <span style="margin-left: auto; color: var(--ios-red);">-₩8,000,000</span>
+                        </div>
+                        <div class="list-item">
+                            <span class="list-text">임대료</span>
+                            <span style="margin-left: auto; color: var(--ios-red);">-₩3,000,000</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 7. Profit & Loss Widget -->
+            <div class="widget-card">
+                <div class="widget-header">
+                    <h3 class="widget-title">📊 손익 계산서</h3>
+                    <span class="widget-type">profit-loss</span>
+                    <div class="widget-actions">
+                        <div class="widget-action">📄</div>
+                        <div class="widget-action">⚙</div>
+                    </div>
+                </div>
+                <div class="widget-content">
+                    <div class="stats-grid">
+                        <div class="stat-item" style="background: rgba(52, 199, 89, 0.1);">
+                            <div class="stat-value" style="color: var(--ios-green);">+45M</div>
+                            <div class="stat-label">수익</div>
+                        </div>
+                        <div class="stat-item" style="background: rgba(255, 59, 48, 0.1);">
+                            <div class="stat-value" style="color: var(--ios-red);">-32M</div>
+                            <div class="stat-label">비용</div>
+                        </div>
+                    </div>
+                    <div style="text-align: center; margin-top: 15px; padding: 10px; background: var(--ios-bg-secondary); border-radius: 8px;">
+                        <div style="font-size: 12px; color: var(--ios-text-secondary);">순이익</div>
+                        <div style="font-size: 24px; font-weight: 700; color: var(--ios-green);">+₩13,000,000</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 8. Cash Flow Widget -->
+            <div class="widget-card">
+                <div class="widget-header">
+                    <h3 class="widget-title">💵 현금 흐름</h3>
+                    <span class="widget-type">cash-flow</span>
+                    <div class="widget-actions">
+                        <div class="widget-action">📈</div>
+                        <div class="widget-action">⚙</div>
+                    </div>
+                </div>
+                <div class="widget-content">
+                    <div style="position: relative; height: 100px; background: var(--ios-bg-secondary); border-radius: 8px; overflow: hidden;">
+                        <div style="position: absolute; top: 50%; left: 0; right: 0; height: 2px; background: var(--ios-gray-4);"></div>
+                        <svg style="width: 100%; height: 100%;">
+                            <polyline points="10,80 50,40 90,60 130,30 170,50 210,20" 
+                                     stroke="var(--ios-blue)" 
+                                     stroke-width="2" 
+                                     fill="none"/>
+                        </svg>
+                    </div>
+                    <div style="display: flex; justify-content: space-around; margin-top: 10px; font-size: 12px;">
+                        <div>
+                            <span style="color: var(--ios-text-secondary);">유입</span>
+                            <span style="color: var(--ios-green); margin-left: 5px;">+58M</span>
+                        </div>
+                        <div>
+                            <span style="color: var(--ios-text-secondary);">유출</span>
+                            <span style="color: var(--ios-red); margin-left: 5px;">-41M</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 9. Budget Monitor Widget -->
+            <div class="widget-card">
+                <div class="widget-header">
+                    <h3 class="widget-title">💰 예산 모니터</h3>
+                    <span class="widget-type">budget-monitor</span>
+                    <div class="widget-actions">
+                        <div class="widget-action">⚠️</div>
+                        <div class="widget-action">⚙</div>
+                    </div>
+                </div>
+                <div class="widget-content">
+                    <div style="space-y: 10px;">
+                        <div>
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                                <span style="font-size: 14px;">마케팅</span>
+                                <span style="font-size: 12px; color: var(--ios-text-secondary);">75%</span>
+                            </div>
+                            <div style="height: 8px; background: var(--ios-gray-5); border-radius: 4px;">
+                                <div style="width: 75%; height: 100%; background: var(--ios-orange); border-radius: 4px;"></div>
+                            </div>
+                        </div>
+                        <div style="margin-top: 10px;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                                <span style="font-size: 14px;">개발</span>
+                                <span style="font-size: 12px; color: var(--ios-text-secondary);">45%</span>
+                            </div>
+                            <div style="height: 8px; background: var(--ios-gray-5); border-radius: 4px;">
+                                <div style="width: 45%; height: 100%; background: var(--ios-green); border-radius: 4px;"></div>
+                            </div>
+                        </div>
+                        <div style="margin-top: 10px;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                                <span style="font-size: 14px;">운영</span>
+                                <span style="font-size: 12px; color: var(--ios-text-secondary);">95%</span>
+                            </div>
+                            <div style="height: 8px; background: var(--ios-gray-5); border-radius: 4px;">
+                                <div style="width: 95%; height: 100%; background: var(--ios-red); border-radius: 4px;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 10. KPI Metrics Widget -->
+            <div class="widget-card">
+                <div class="widget-header">
+                    <h3 class="widget-title">📈 KPI 지표</h3>
+                    <span class="widget-type">kpi-metrics</span>
+                    <div class="widget-actions">
+                        <div class="widget-action">🎯</div>
+                        <div class="widget-action">⚙</div>
+                    </div>
+                </div>
+                <div class="widget-content">
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-value" style="font-size: 20px;">87%</div>
+                            <div class="stat-label">목표 달성률</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" style="font-size: 20px;">4.8</div>
+                            <div class="stat-label">고객 만족도</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" style="font-size: 20px;">235</div>
+                            <div class="stat-label">신규 고객</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" style="font-size: 20px;">12%</div>
+                            <div class="stat-label">이탈률</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 생산성 위젯 (11개) -->
+    <div class="category-section" data-category="productivity">
+        <div class="category-header">
+            <span class="category-icon">🚀</span>
+            <h2 class="category-title">생산성</h2>
+            <span class="category-count">10</span>
+        </div>
+        
+        <div class="widget-grid">
+            <!-- 11. Todo List Widget - Todoist Style -->
+            <div class="widget-card" style="grid-column: span 2; grid-row: span 2;" data-no-drag="true">
+                <div class="widget-header">
+                    <h3 class="widget-title">📝 할 일 목록</h3>
+                    <span class="widget-type">todo-list</span>
+                    <div class="widget-actions">
+                        <div class="widget-action" title="보기 전환">📋</div>
+                        <div class="widget-action" title="작업 추가">+</div>
+                        <div class="widget-action">⚙</div>
+                    </div>
+                </div>
+                <div class="widget-content">
+                    <style>
+                        .todo-section {
+                            margin-bottom: 12px;
+                        }
+                        .section-header {
+                            display: flex;
+                            align-items: center;
+                            padding: 8px 12px;
+                            cursor: pointer;
+                            border-radius: 8px;
+                            transition: background 0.2s;
+                        }
+                        .section-header:hover {
+                            background: rgba(0,0,0,0.02);
+                        }
+                        .section-arrow {
+                            width: 16px;
+                            height: 16px;
+                            margin-right: 8px;
+                            transition: transform 0.2s;
+                        }
+                        .section-arrow.collapsed {
+                            transform: rotate(-90deg);
+                        }
+                        .section-title {
+                            flex: 1;
+                            font-weight: 600;
+                            font-size: 14px;
+                            color: var(--ios-text);
+                        }
+                        .section-count {
+                            font-size: 12px;
+                            color: var(--ios-text-secondary);
+                            padding: 2px 6px;
+                            background: var(--ios-bg-secondary);
+                            border-radius: 10px;
+                        }
+                        .todo-item {
+                            display: flex;
+                            align-items: flex-start;
+                            padding: 10px 12px;
+                            cursor: grab;
+                            border-radius: 8px;
+                            margin-bottom: 2px;
+                            transition: all 0.2s;
+                            position: relative;
+                        }
+                        .todo-item:hover {
+                            background: rgba(0, 122, 255, 0.05);
+                        }
+                        .todo-item.dragging {
+                            opacity: 0.3;
+                            cursor: grabbing;
+                        }
+                        .todo-item.indent-1 {
+                            margin-left: 24px;
+                        }
+                        .todo-item.indent-2 {
+                            margin-left: 48px;
+                        }
+                        .todo-checkbox {
+                            width: 18px;
+                            height: 18px;
+                            border-radius: 50%;
+                            border: 2px solid;
+                            margin-right: 10px;
+                            flex-shrink: 0;
+                            margin-top: 2px;
+                        }
+                        .priority-1 .todo-checkbox {
+                            border-color: var(--ios-red);
+                        }
+                        .priority-2 .todo-checkbox {
+                            border-color: var(--ios-orange);
+                        }
+                        .priority-3 .todo-checkbox {
+                            border-color: var(--ios-blue);
+                        }
+                        .priority-4 .todo-checkbox {
+                            border-color: var(--ios-border);
+                        }
+                        .todo-checkbox.checked {
+                            background: var(--ios-green);
+                            border-color: var(--ios-green);
+                            position: relative;
+                        }
+                        .todo-checkbox.checked::after {
+                            content: '✓';
+                            color: white;
+                            font-size: 12px;
+                            position: absolute;
+                            top: -2px;
+                            left: 2px;
+                        }
+                        .todo-content {
+                            flex: 1;
+                        }
+                        .todo-title {
+                            font-size: 14px;
+                            line-height: 1.4;
+                            color: var(--ios-text);
+                        }
+                        .todo-title.completed {
+                            text-decoration: line-through;
+                            color: var(--ios-text-secondary);
+                        }
+                        .todo-meta {
+                            display: flex;
+                            gap: 8px;
+                            margin-top: 4px;
+                        }
+                        .todo-tag {
+                            font-size: 11px;
+                            color: var(--ios-text-secondary);
+                            padding: 2px 6px;
+                            background: var(--ios-bg-secondary);
+                            border-radius: 4px;
+                        }
+                        .todo-due {
+                            font-size: 11px;
+                            color: var(--ios-orange);
+                        }
+                        .todo-due.overdue {
+                            color: var(--ios-red);
+                        }
+                        .add-section-line {
+                            height: 36px;
+                            margin: 12px 0;
+                            position: relative;
+                            cursor: pointer;
+                            opacity: 0;
+                            transition: opacity 0.2s;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                        }
+                        .add-section-line:hover {
+                            opacity: 1;
+                        }
+                        .add-section-line::before {
+                            content: '+ 섹션 추가';
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            width: calc(100% - 24px);
+                            height: 32px;
+                            font-size: 13px;
+                            font-weight: 500;
+                            color: var(--ios-text-secondary);
+                            background: var(--ios-bg-secondary);
+                            border: 1px dashed var(--ios-border);
+                            border-radius: 8px;
+                            transition: all 0.2s;
+                        }
+                        .add-section-line:hover::before {
+                            background: var(--ios-bg-primary);
+                            border-color: var(--ios-blue);
+                            color: var(--ios-blue);
+                            border-style: solid;
+                        }
+                        .subtask-indicator {
+                            font-size: 11px;
+                            color: var(--ios-text-secondary);
+                            margin-left: auto;
+                            padding-left: 8px;
+                        }
+                    </style>
+                    
+                    <!-- 섹션 1: 오늘 -->
+                    <div class="todo-section">
+                        <div class="section-header">
+                            <span class="section-arrow">▼</span>
+                            <span class="section-title">오늘</span>
+                            <span class="section-count">4</span>
+                        </div>
+                        <div class="section-content">
+                            <div class="todo-item priority-1">
+                                <div class="todo-checkbox"></div>
+                                <div class="todo-content">
+                                    <div class="todo-title">주간 회의 준비</div>
+                                    <div class="todo-meta">
+                                        <span class="todo-tag">🏢 업무</span>
+                                        <span class="todo-due">오후 3시</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="todo-item priority-2 indent-1" title="왼쪽으로 드래그하여 상위 레벨로, Tab/Shift+Tab으로 들여쓰기 조절">
+                                <div class="todo-checkbox"></div>
+                                <div class="todo-content">
+                                    <div class="todo-title">발표 자료 검토</div>
+                                    <div class="todo-meta">
+                                        <span style="font-size: 10px; color: var(--ios-gray-3);">← 드래그 or Shift+Tab</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="todo-item priority-2 indent-1">
+                                <div class="todo-checkbox checked"></div>
+                                <div class="todo-content">
+                                    <div class="todo-title completed">참석자 명단 확인</div>
+                                </div>
+                            </div>
+                            <div class="todo-item priority-3">
+                                <div class="todo-checkbox"></div>
+                                <div class="todo-content">
+                                    <div class="todo-title">보고서 작성</div>
+                                    <div class="todo-meta">
+                                        <span class="todo-tag">📊 분석</span>
+                                        <span class="subtask-indicator">2개 하위 작업</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 섹션 추가 라인 -->
+                    <div class="add-section-line"></div>
+                    
+                    <!-- 섹션 2: 업무 -->
+                    <div class="todo-section">
+                        <div class="section-header">
+                            <span class="section-arrow">▼</span>
+                            <span class="section-title">업무</span>
+                            <span class="section-count">3</span>
+                        </div>
+                        <div class="section-content">
+                            <div class="todo-item priority-2">
+                                <div class="todo-checkbox"></div>
+                                <div class="todo-content">
+                                    <div class="todo-title">코드 리뷰</div>
+                                    <div class="todo-meta">
+                                        <span class="todo-tag">💻 개발</span>
+                                        <span class="todo-due">내일</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="todo-item priority-3">
+                                <div class="todo-checkbox"></div>
+                                <div class="todo-content">
+                                    <div class="todo-title">데이터베이스 백업</div>
+                                    <div class="todo-meta">
+                                        <span class="todo-tag">🔧 유지보수</span>
+                                        <span class="todo-due">금요일</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="todo-item priority-4">
+                                <div class="todo-checkbox"></div>
+                                <div class="todo-content">
+                                    <div class="todo-title">이메일 정리</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 섹션 추가 라인 -->
+                    <div class="add-section-line"></div>
+                    
+                    <!-- 섹션 3: 개인 -->
+                    <div class="todo-section">
+                        <div class="section-header">
+                            <span class="section-arrow collapsed">▼</span>
+                            <span class="section-title">개인</span>
+                            <span class="section-count">2</span>
+                        </div>
+                    </div>
+                    
+                    <!-- 빠른 추가 영역 -->
+                    <div style="padding: 12px; border-top: 1px solid var(--ios-border);">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span style="font-size: 16px; color: var(--ios-blue);">+</span>
+                            <input type="text" placeholder="작업 추가... (오늘 3pm 회의 p1)" style="
+                                flex: 1;
+                                border: none;
+                                background: none;
+                                font-size: 14px;
+                                color: var(--ios-text);
+                                outline: none;
+                            ">
+                        </div>
+                        <!-- 계층 조작 안내 -->
+                        <div style="display: flex; gap: 12px; margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--ios-gray-5); font-size: 10px; color: var(--ios-text-secondary);">
+                            <span>💡 팁:</span>
+                            <span>Tab = 들여쓰기</span>
+                            <span>Shift+Tab = 내어쓰기</span>
+                            <span>← 드래그 = 상위로</span>
+                            <span>→ 드래그 = 하위로</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 12. Calendar Widget (Google Calendar Style) -->
+            <div class="widget-card google-calendar-widget" style="grid-column: span 2;">
+                <div class="widget-header">
+                    <h3 class="widget-title">📆 캘린더</h3>
+                    <span class="widget-type">calendar</span>
+                    <div class="widget-actions">
+                        <div class="widget-action" title="Month View">📅</div>
+                        <div class="widget-action" title="Week View">📆</div>
+                        <div class="widget-action" title="Today">⏺</div>
+                        <div class="widget-action" title="Settings">⚙</div>
+                    </div>
+                </div>
+                <div class="widget-content" style="padding: 0;">
+                    <!-- Google Calendar Style Header -->
+                    <div class="gcal-header" style="
+                        display: flex;
+                        align-items: center;
+                        justify-content: space-between;
+                        padding: 12px 16px;
+                        border-bottom: 1px solid var(--ios-border);
+                        background: linear-gradient(to bottom, #fff, #fafafa);
+                    ">
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <button style="
+                                background: white;
+                                border: 1px solid #dadce0;
+                                border-radius: 8px;
+                                padding: 6px 12px;
+                                color: #3c4043;
+                                font-size: 14px;
+                                font-weight: 500;
+                                cursor: pointer;
+                                display: flex;
+                                align-items: center;
+                                gap: 4px;
+                            ">오늘</button>
+                            <div style="display: flex; gap: 4px;">
+                                <button style="
+                                    width: 28px;
+                                    height: 28px;
+                                    border: 1px solid #dadce0;
+                                    background: white;
+                                    border-radius: 6px;
+                                    display: flex;
+                                    align-items: center;
+                                    justify-content: center;
+                                    cursor: pointer;
+                                    color: #5f6368;
+                                ">‹</button>
+                                <button style="
+                                    width: 28px;
+                                    height: 28px;
+                                    border: 1px solid #dadce0;
+                                    background: white;
+                                    border-radius: 6px;
+                                    display: flex;
+                                    align-items: center;
+                                    justify-content: center;
+                                    cursor: pointer;
+                                    color: #5f6368;
+                                ">›</button>
+                            </div>
+                            <h4 style="
+                                margin: 0;
+                                font-size: 20px;
+                                font-weight: 400;
+                                color: #3c4043;
+                                letter-spacing: -0.3px;
+                            ">2025년 9월</h4>
+                        </div>
+                        
+                        <!-- View Switcher -->
+                        <div style="
+                            display: flex;
+                            gap: 4px;
+                            background: #f1f3f4;
+                            padding: 2px;
+                            border-radius: 8px;
+                        ">
+                            <button style="
+                                background: white;
+                                border: none;
+                                border-radius: 6px;
+                                padding: 4px 12px;
+                                color: #5f6368;
+                                font-size: 13px;
+                                cursor: pointer;
+                            ">일</button>
+                            <button style="
+                                background: white;
+                                border: none;
+                                border-radius: 6px;
+                                padding: 4px 12px;
+                                color: #5f6368;
+                                font-size: 13px;
+                                cursor: pointer;
+                            ">주</button>
+                            <button style="
+                                background: #1a73e8;
+                                color: white;
+                                border: none;
+                                border-radius: 6px;
+                                padding: 4px 12px;
+                                font-size: 13px;
+                                cursor: pointer;
+                            ">월</button>
+                            <button style="
+                                background: white;
+                                border: none;
+                                border-radius: 6px;
+                                padding: 4px 12px;
+                                color: #5f6368;
+                                font-size: 13px;
+                                cursor: pointer;
+                            ">목록</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Calendar Grid -->
+                    <div style="padding: 12px;">
+                        <!-- Week Days Header -->
+                        <div class="gcal-weekdays" style="
+                            display: grid;
+                            grid-template-columns: repeat(7, 1fr);
+                            margin-bottom: 8px;
+                            border-bottom: 1px solid #e8eaed;
+                            padding-bottom: 8px;
+                        ">
+                            <div style="font-size: 11px; font-weight: 500; color: #70757a; text-align: center;">일</div>
+                            <div style="font-size: 11px; font-weight: 500; color: #70757a; text-align: center;">월</div>
+                            <div style="font-size: 11px; font-weight: 500; color: #70757a; text-align: center;">화</div>
+                            <div style="font-size: 11px; font-weight: 500; color: #70757a; text-align: center;">수</div>
+                            <div style="font-size: 11px; font-weight: 500; color: #70757a; text-align: center;">목</div>
+                            <div style="font-size: 11px; font-weight: 500; color: #70757a; text-align: center;">금</div>
+                            <div style="font-size: 11px; font-weight: 500; color: #70757a; text-align: center;">토</div>
+                        </div>
+                        
+                        <!-- Calendar Days -->
+                        <div class="gcal-days" style="
+                            display: grid;
+                            grid-template-columns: repeat(7, 1fr);
+                            gap: 1px;
+                            background: #e8eaed;
+                            border: 1px solid #e8eaed;
+                        ">
+                            <!-- Week 1 -->
+                            <div class="gcal-day" style="background: white; min-height: 50px; padding: 4px; cursor: pointer;">
+                                <div style="font-size: 13px; color: #d93025;">1</div>
+                                <div class="gcal-event" style="
+                                    background: #fbd75b;
+                                    color: #1d1d1d;
+                                    font-size: 10px;
+                                    padding: 1px 4px;
+                                    margin-top: 2px;
+                                    border-radius: 3px;
+                                    white-space: nowrap;
+                                    overflow: hidden;
+                                    text-overflow: ellipsis;
+                                ">팀미팅</div>
+                            </div>
+                            <div class="gcal-day" style="background: white; min-height: 50px; padding: 4px; cursor: pointer;">
+                                <div style="font-size: 13px; color: #3c4043;">2</div>
+                            </div>
+                            <div class="gcal-day" style="background: white; min-height: 50px; padding: 4px; cursor: pointer;">
+                                <div style="font-size: 13px; color: #3c4043;">3</div>
+                                <div class="gcal-event" style="
+                                    background: #7ae7bf;
+                                    color: #1d1d1d;
+                                    font-size: 10px;
+                                    padding: 1px 4px;
+                                    margin-top: 2px;
+                                    border-radius: 3px;
+                                ">클라이언트</div>
+                            </div>
+                            <div class="gcal-day" style="background: white; min-height: 50px; padding: 4px; cursor: pointer;">
+                                <div style="font-size: 13px; color: #3c4043;">4</div>
+                            </div>
+                            <div class="gcal-day" style="background: white; min-height: 50px; padding: 4px; cursor: pointer;">
+                                <div style="font-size: 13px; color: #3c4043;">5</div>
+                            </div>
+                            <div class="gcal-day" style="background: white; min-height: 50px; padding: 4px; cursor: pointer;">
+                                <div style="font-size: 13px; color: #3c4043;">6</div>
+                            </div>
+                            <div class="gcal-day" style="background: white; min-height: 50px; padding: 4px; cursor: pointer;">
+                                <div style="font-size: 13px; color: #d93025;">7</div>
+                            </div>
+                            
+                            <!-- Week 2 -->
+                            <div class="gcal-day" style="background: white; min-height: 50px; padding: 4px; cursor: pointer;">
+                                <div style="font-size: 13px; color: #d93025;">8</div>
+                            </div>
+                            <div class="gcal-day" style="background: white; min-height: 50px; padding: 4px; cursor: pointer;">
+                                <div style="font-size: 13px; color: #3c4043;">9</div>
+                                <div class="gcal-event" style="
+                                    background: #a4bdfc;
+                                    color: #1d1d1d;
+                                    font-size: 10px;
+                                    padding: 1px 4px;
+                                    margin-top: 2px;
+                                    border-radius: 3px;
+                                ">워크샵</div>
+                            </div>
+                            <div class="gcal-day" style="background: white; min-height: 50px; padding: 4px; cursor: pointer;">
+                                <div style="font-size: 13px; color: #3c4043;">10</div>
+                            </div>
+                            <div class="gcal-day" style="background: white; min-height: 50px; padding: 4px; cursor: pointer;">
+                                <div style="font-size: 13px; color: #3c4043;">11</div>
+                                <div class="gcal-event" style="
+                                    background: #ff887c;
+                                    color: #1d1d1d;
+                                    font-size: 10px;
+                                    padding: 1px 4px;
+                                    margin-top: 2px;
+                                    border-radius: 3px;
+                                ">프로젝트</div>
+                            </div>
+                            <div class="gcal-day" style="background: white; min-height: 50px; padding: 4px; cursor: pointer;">
+                                <div style="font-size: 13px; color: #3c4043;">12</div>
+                            </div>
+                            <div class="gcal-day" style="background: white; min-height: 50px; padding: 4px; cursor: pointer;">
+                                <div style="font-size: 13px; color: #3c4043;">13</div>
+                            </div>
+                            <div class="gcal-day" style="background: white; min-height: 50px; padding: 4px; cursor: pointer;">
+                                <div style="font-size: 13px; color: #d93025;">14</div>
+                            </div>
+                            
+                            <!-- Week 3 -->
+                            <div class="gcal-day" style="background: white; min-height: 50px; padding: 4px; cursor: pointer;">
+                                <div style="font-size: 13px; color: #d93025;">15</div>
+                            </div>
+                            <div class="gcal-day" style="background: white; min-height: 50px; padding: 4px; cursor: pointer;">
+                                <div style="font-size: 13px; color: #3c4043;">16</div>
+                            </div>
+                            <div class="gcal-day" style="background: white; min-height: 50px; padding: 4px; cursor: pointer;">
+                                <div style="font-size: 13px; color: #3c4043;">17</div>
+                            </div>
+                            <div class="gcal-day" style="background: white; min-height: 50px; padding: 4px; cursor: pointer;">
+                                <div style="font-size: 13px; color: #3c4043;">18</div>
+                            </div>
+                            <div class="gcal-day" style="background: white; min-height: 50px; padding: 4px; cursor: pointer;">
+                                <div style="font-size: 13px; color: #3c4043;">19</div>
+                            </div>
+                            <div class="gcal-day" style="background: white; min-height: 50px; padding: 4px; cursor: pointer;">
+                                <div style="font-size: 13px; color: #3c4043;">20</div>
+                            </div>
+                            <div class="gcal-day" style="background: white; min-height: 50px; padding: 4px; cursor: pointer;">
+                                <div style="font-size: 13px; color: #d93025;">21</div>
+                            </div>
+                            
+                            <!-- Week 4 -->
+                            <div class="gcal-day" style="
+                                background: #e8f0fe;
+                                min-height: 50px;
+                                padding: 4px;
+                                cursor: pointer;
+                                position: relative;
+                            ">
+                                <div style="
+                                    font-size: 13px;
+                                    color: white;
+                                    background: #1a73e8;
+                                    width: 22px;
+                                    height: 22px;
+                                    border-radius: 50%;
+                                    display: flex;
+                                    align-items: center;
+                                    justify-content: center;
+                                ">22</div>
+                                <div class="gcal-event" style="
+                                    background: #46d6db;
+                                    color: #1d1d1d;
+                                    font-size: 10px;
+                                    padding: 1px 4px;
+                                    margin-top: 2px;
+                                    border-radius: 3px;
+                                ">점심약속</div>
+                            </div>
+                            <div class="gcal-day" style="background: white; min-height: 50px; padding: 4px; cursor: pointer;">
+                                <div style="font-size: 13px; color: #3c4043;">23</div>
+                            </div>
+                            <div class="gcal-day" style="background: white; min-height: 50px; padding: 4px; cursor: pointer;">
+                                <div style="font-size: 13px; color: #3c4043;">24</div>
+                                <div class="gcal-event" style="
+                                    background: #dbadff;
+                                    color: #1d1d1d;
+                                    font-size: 10px;
+                                    padding: 1px 4px;
+                                    margin-top: 2px;
+                                    border-radius: 3px;
+                                ">리뷰</div>
+                            </div>
+                            <div class="gcal-day" style="background: white; min-height: 50px; padding: 4px; cursor: pointer;">
+                                <div style="font-size: 13px; color: #3c4043;">25</div>
+                            </div>
+                            <div class="gcal-day" style="background: white; min-height: 50px; padding: 4px; cursor: pointer;">
+                                <div style="font-size: 13px; color: #3c4043;">26</div>
+                            </div>
+                            <div class="gcal-day" style="background: white; min-height: 50px; padding: 4px; cursor: pointer;">
+                                <div style="font-size: 13px; color: #3c4043;">27</div>
+                            </div>
+                            <div class="gcal-day" style="background: white; min-height: 50px; padding: 4px; cursor: pointer;">
+                                <div style="font-size: 13px; color: #d93025;">28</div>
+                            </div>
+                            
+                            <!-- Week 5 -->
+                            <div class="gcal-day" style="background: white; min-height: 50px; padding: 4px; cursor: pointer;">
+                                <div style="font-size: 13px; color: #d93025;">29</div>
+                            </div>
+                            <div class="gcal-day" style="background: white; min-height: 50px; padding: 4px; cursor: pointer;">
+                                <div style="font-size: 13px; color: #3c4043;">30</div>
+                            </div>
+                            <div class="gcal-day" style="background: #f8f9fa; min-height: 50px; padding: 4px; cursor: pointer;">
+                                <div style="font-size: 13px; color: #dadce0;">1</div>
+                            </div>
+                            <div class="gcal-day" style="background: #f8f9fa; min-height: 50px; padding: 4px; cursor: pointer;">
+                                <div style="font-size: 13px; color: #dadce0;">2</div>
+                            </div>
+                            <div class="gcal-day" style="background: #f8f9fa; min-height: 50px; padding: 4px; cursor: pointer;">
+                                <div style="font-size: 13px; color: #dadce0;">3</div>
+                            </div>
+                            <div class="gcal-day" style="background: #f8f9fa; min-height: 50px; padding: 4px; cursor: pointer;">
+                                <div style="font-size: 13px; color: #dadce0;">4</div>
+                            </div>
+                            <div class="gcal-day" style="background: #f8f9fa; min-height: 50px; padding: 4px; cursor: pointer;">
+                                <div style="font-size: 13px; color: #dadce0;">5</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Quick Create Event Button -->
+                    <div style="
+                        position: absolute;
+                        bottom: 16px;
+                        right: 16px;
+                    ">
+                        <button style="
+                            width: 48px;
+                            height: 48px;
+                            border-radius: 50%;
+                            background: #1a73e8;
+                            color: white;
+                            border: none;
+                            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+                            font-size: 20px;
+                            cursor: pointer;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                        ">+</button>
+                    </div>
+                    
+                    <!-- Mini Calendar List -->
+                    <div style="
+                        padding: 12px 16px;
+                        border-top: 1px solid var(--ios-border);
+                        background: #f8f9fa;
+                    ">
+                        <div style="font-size: 11px; color: #5f6368; margin-bottom: 8px; font-weight: 500;">내 캘린더</div>
+                        <div style="display: flex; flex-direction: column; gap: 6px;">
+                            <label style="display: flex; align-items: center; gap: 8px; font-size: 13px;">
+                                <input type="checkbox" checked style="accent-color: #1a73e8;">
+                                <span style="
+                                    width: 12px;
+                                    height: 12px;
+                                    background: #fbd75b;
+                                    border-radius: 3px;
+                                "></span>
+                                <span style="color: #3c4043;">개인</span>
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 8px; font-size: 13px;">
+                                <input type="checkbox" checked style="accent-color: #1a73e8;">
+                                <span style="
+                                    width: 12px;
+                                    height: 12px;
+                                    background: #7ae7bf;
+                                    border-radius: 3px;
+                                "></span>
+                                <span style="color: #3c4043;">업무</span>
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 8px; font-size: 13px;">
+                                <input type="checkbox" checked style="accent-color: #1a73e8;">
+                                <span style="
+                                    width: 12px;
+                                    height: 12px;
+                                    background: #a4bdfc;
+                                    border-radius: 3px;
+                                "></span>
+                                <span style="color: #3c4043;">가족</span>
+                            </label>
+                            <a href="#" style="
+                                color: #1a73e8;
+                                font-size: 12px;
+                                text-decoration: none;
+                                margin-top: 4px;
+                            ">+ Google Calendar 연동</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 13. Recent Activity Widget -->
+            <div class="widget-card">
+                <div class="widget-header">
+                    <h3 class="widget-title">🔔 최근 활동</h3>
+                    <span class="widget-type">recent-activity</span>
+                    <div class="widget-actions">
+                        <div class="widget-action">⟲</div>
+                        <div class="widget-action">⚙</div>
+                    </div>
+                </div>
+                <div class="widget-content">
+                    <div class="activity-timeline">
+                        <div class="activity-item">
+                            <div class="activity-dot"></div>
+                            <div class="activity-content">
+                                <div class="activity-title">파일 업로드 완료</div>
+                                <div class="activity-time">방금 전</div>
+                            </div>
+                        </div>
+                        <div class="activity-item">
+                            <div class="activity-dot"></div>
+                            <div class="activity-content">
+                                <div class="activity-title">댓글 추가됨</div>
+                                <div class="activity-time">5분 전</div>
+                            </div>
+                        </div>
+                        <div class="activity-item">
+                            <div class="activity-dot"></div>
+                            <div class="activity-content">
+                                <div class="activity-title">프로젝트 생성</div>
+                                <div class="activity-time">1시간 전</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 14. Time Tracker Widget -->
+            <div class="widget-card">
+                <div class="widget-header">
+                    <h3 class="widget-title">⏰ 시간 추적기</h3>
+                    <span class="widget-type">time-tracker</span>
+                    <div class="widget-actions">
+                        <div class="widget-action">▶️</div>
+                        <div class="widget-action">⚙</div>
+                    </div>
+                </div>
+                <div class="widget-content">
+                    <div class="timer-display">
+                        <div class="timer-value">02:34:18</div>
+                    </div>
+                    <div class="list-container">
+                        <div class="list-item">
+                            <span class="list-text">프로젝트 A</span>
+                            <span style="margin-left: auto;">4h 30m</span>
+                        </div>
+                        <div class="list-item">
+                            <span class="list-text">회의</span>
+                            <span style="margin-left: auto;">1h 15m</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 15. Pomodoro Widget -->
+            <div class="widget-card">
+                <div class="widget-header">
+                    <h3 class="widget-title">🍅 뽀모도로</h3>
+                    <span class="widget-type">pomodoro</span>
+                    <div class="widget-actions">
+                        <div class="widget-action">🔔</div>
+                        <div class="widget-action">⚙</div>
+                    </div>
+                </div>
+                <div class="widget-content">
+                    <div class="timer-display">
+                        <div class="timer-value" style="font-size: 36px;">25:00</div>
+                    </div>
+                    <div class="timer-controls">
+                        <button class="timer-button">시작</button>
+                        <button class="timer-button" style="background: var(--ios-orange);">일시정지</button>
+                        <button class="timer-button" style="background: var(--ios-red);">정지</button>
+                    </div>
+                    <div style="text-align: center; margin-top: 15px; color: var(--ios-text-secondary);">
+                        세션: 3 / 4
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 16. Notes Widget -->
+            <div class="widget-card">
+                <div class="widget-header">
+                    <h3 class="widget-title">📝 메모</h3>
+                    <span class="widget-type">notes</span>
+                    <div class="widget-actions">
+                        <div class="widget-action">📎</div>
+                        <div class="widget-action">⚙</div>
+                    </div>
+                </div>
+                <div class="widget-content">
+                    <div style="padding: 10px; background: var(--ios-bg-secondary); border-radius: 8px; min-height: 120px;">
+                        <div style="font-size: 14px; line-height: 1.6;">
+                            • 다음 회의 아젠다 준비<br>
+                            • 클라이언트 피드백 정리<br>
+                            • 개발 문서 업데이트 필요<br>
+                            • 마감일: 9월 30일
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 17. Reminders Widget -->
+            <div class="widget-card">
+                <div class="widget-header">
+                    <h3 class="widget-title">🔔 리마인더</h3>
+                    <span class="widget-type">reminders</span>
+                    <div class="widget-actions">
+                        <div class="widget-action">+</div>
+                        <div class="widget-action">⚙</div>
+                    </div>
+                </div>
+                <div class="widget-content">
+                    <div class="list-container">
+                        <div class="list-item">
+                            <div style="width: 8px; height: 8px; background: var(--ios-red); border-radius: 50%; flex-shrink: 0;"></div>
+                            <span class="list-text">팀 미팅</span>
+                            <span style="font-size: 12px; color: var(--ios-text-secondary);">오후 3시</span>
+                        </div>
+                        <div class="list-item">
+                            <div style="width: 8px; height: 8px; background: var(--ios-orange); border-radius: 50%; flex-shrink: 0;"></div>
+                            <span class="list-text">보고서 제출</span>
+                            <span style="font-size: 12px; color: var(--ios-text-secondary);">내일</span>
+                        </div>
+                        <div class="list-item">
+                            <div style="width: 8px; height: 8px; background: var(--ios-blue); border-radius: 50%; flex-shrink: 0;"></div>
+                            <span class="list-text">백업 실행</span>
+                            <span style="font-size: 12px; color: var(--ios-text-secondary);">금요일</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 18. Weather Widget -->
+            <div class="widget-card">
+                <div class="widget-header">
+                    <h3 class="widget-title">☁️ 날씨</h3>
+                    <span class="widget-type">weather</span>
+                    <div class="widget-actions">
+                        <div class="widget-action">📍</div>
+                        <div class="widget-action">⚙</div>
+                    </div>
+                </div>
+                <div class="widget-content">
+                    <div class="weather-display">
+                        <div class="weather-icon">☀️</div>
+                        <div class="weather-temp">23°</div>
+                        <div class="weather-desc">맑음</div>
+                        <div style="display: flex; justify-content: center; gap: 20px; margin-top: 10px; font-size: 12px;">
+                            <div>최고: 26°</div>
+                            <div>최저: 18°</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 20. News Feed Widget -->
+            <div class="widget-card">
+                <div class="widget-header">
+                    <h3 class="widget-title">📰 뉴스 피드</h3>
+                    <span class="widget-type">news-feed</span>
+                    <div class="widget-actions">
+                        <div class="widget-action">⟲</div>
+                        <div class="widget-action">⚙</div>
+                    </div>
+                </div>
+                <div class="widget-content">
+                    <div class="news-feed">
+                        <div class="news-item">
+                            <div class="news-title">AI 기술 혁신, 산업 전반에 영향</div>
+                            <div class="news-source">TechNews • 1시간 전</div>
+                        </div>
+                        <div class="news-item">
+                            <div class="news-title">글로벌 시장 동향 분석 리포트</div>
+                            <div class="news-source">경제신문 • 3시간 전</div>
+                        </div>
+                        <div class="news-item">
+                            <div class="news-title">신재생 에너지 투자 확대</div>
+                            <div class="news-source">환경일보 • 5시간 전</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 21. Analytics Dashboard Widget -->
+            <div class="widget-card">
+                <div class="widget-header">
+                    <h3 class="widget-title">📊 분석 대시보드</h3>
+                    <span class="widget-type">analytics-dashboard</span>
+                    <div class="widget-actions">
+                        <div class="widget-action">📈</div>
+                        <div class="widget-action">⚙</div>
+                    </div>
+                </div>
+                <div class="widget-content">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <div style="text-align: center; padding: 15px; background: var(--ios-bg-secondary); border-radius: 8px;">
+                            <div style="font-size: 24px;">📊</div>
+                            <div style="font-size: 18px; font-weight: 600;">1,234</div>
+                            <div style="font-size: 11px; color: var(--ios-text-secondary);">방문자</div>
+                        </div>
+                        <div style="text-align: center; padding: 15px; background: var(--ios-bg-secondary); border-radius: 8px;">
+                            <div style="font-size: 24px;">📈</div>
+                            <div style="font-size: 18px; font-weight: 600;">89%</div>
+                            <div style="font-size: 11px; color: var(--ios-text-secondary);">전환율</div>
+                        </div>
+                        <div style="text-align: center; padding: 15px; background: var(--ios-bg-secondary); border-radius: 8px;">
+                            <div style="font-size: 24px;">⏱️</div>
+                            <div style="font-size: 18px; font-weight: 600;">3:45</div>
+                            <div style="font-size: 11px; color: var(--ios-text-secondary);">체류시간</div>
+                        </div>
+                        <div style="text-align: center; padding: 15px; background: var(--ios-bg-secondary); border-radius: 8px;">
+                            <div style="font-size: 24px;">🎯</div>
+                            <div style="font-size: 18px; font-weight: 600;">156</div>
+                            <div style="font-size: 11px; color: var(--ios-text-secondary);">목표 달성</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 커스텀/기타 위젯 (3개) -->
+    <div class="category-section" data-category="custom">
+        <div class="category-header">
+            <span class="category-icon">🎨</span>
+            <h2 class="category-title">커스텀/기타</h2>
+            <span class="category-count">2</span>
+        </div>
+        
+        <div class="widget-grid">
+            <!-- 23. Quick Actions Widget -->
+            <div class="widget-card">
+                <div class="widget-header">
+                    <h3 class="widget-title">⚡ 빠른 실행</h3>
+                    <span class="widget-type">quick-actions</span>
+                    <div class="widget-actions">
+                        <div class="widget-action">+</div>
+                        <div class="widget-action">⚙</div>
+                    </div>
+                </div>
+                <div class="widget-content">
+                    <div class="quick-actions-grid">
+                        <div class="quick-action">
+                            <div class="quick-action-icon">📊</div>
+                            <div class="quick-action-label">보고서</div>
+                        </div>
+                        <div class="quick-action">
+                            <div class="quick-action-icon">📧</div>
+                            <div class="quick-action-label">메일</div>
+                        </div>
+                        <div class="quick-action">
+                            <div class="quick-action-icon">💾</div>
+                            <div class="quick-action-label">백업</div>
+                        </div>
+                        <div class="quick-action">
+                            <div class="quick-action-icon">🔄</div>
+                            <div class="quick-action-label">동기화</div>
+                        </div>
+                        <div class="quick-action">
+                            <div class="quick-action-icon">📈</div>
+                            <div class="quick-action-label">분석</div>
+                        </div>
+                        <div class="quick-action">
+                            <div class="quick-action-icon">🔒</div>
+                            <div class="quick-action-label">잠금</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 24. Team Collaboration Widget -->
+            <div class="widget-card">
+                <div class="widget-header">
+                    <h3 class="widget-title">👥 팀 협업</h3>
+                    <span class="widget-type">team-collaboration</span>
+                    <div class="widget-actions">
+                        <div class="widget-action">💬</div>
+                        <div class="widget-action">⚙</div>
+                    </div>
+                </div>
+                <div class="widget-content">
+                    <div class="team-grid">
+                        <div class="team-member">
+                            <div class="team-avatar" style="position: relative;">
+                                JK
+                                <div class="team-status"></div>
+                            </div>
+                            <div class="team-name">김준호</div>
+                        </div>
+                        <div class="team-member">
+                            <div class="team-avatar" style="position: relative; background: linear-gradient(135deg, var(--ios-purple), var(--ios-pink));">
+                                SY
+                                <div class="team-status" style="background: var(--ios-orange);"></div>
+                            </div>
+                            <div class="team-name">이서연</div>
+                        </div>
+                        <div class="team-member">
+                            <div class="team-avatar" style="position: relative; background: linear-gradient(135deg, var(--ios-orange), var(--ios-yellow));">
+                                MJ
+                                <div class="team-status" style="background: var(--ios-gray-3);"></div>
+                            </div>
+                            <div class="team-name">박민재</div>
+                        </div>
+                        <div class="team-member">
+                            <div class="team-avatar" style="position: relative; background: linear-gradient(135deg, var(--ios-green), var(--ios-teal));">
+                                HJ
+                                <div class="team-status"></div>
+                            </div>
+                            <div class="team-name">최현정</div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 20px; padding: 10px; background: var(--ios-bg-secondary); border-radius: 8px;">
+                        <div style="font-size: 14px; margin-bottom: 5px;">💬 최근 메시지</div>
+                        <div style="font-size: 13px; color: var(--ios-text-secondary);">
+                            김준호: 회의 자료 공유했습니다 📎
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Control Panel -->
+    <div class="control-panel">
+        <button class="control-button" onclick="toggleEditMode()">✏️</button>
+        <button class="control-button" onclick="toggleTheme()">🌙</button>
+    </div>
+    
+    <!-- JavaScript -->
+    <script>
+        // Edit Mode Toggle
+        let editMode = false;
+        function toggleEditMode() {
+            editMode = !editMode;
+            document.body.classList.toggle('edit-mode');
+            
+            // Add/Remove edit badges
+            const widgets = document.querySelectorAll('.widget-card');
+            widgets.forEach(widget => {
+                if (editMode && !widget.querySelector('.edit-badge')) {
+                    const badge = document.createElement('div');
+                    badge.className = 'edit-badge';
+                    badge.innerHTML = '×';
+                    badge.onclick = () => widget.remove();
+                    widget.appendChild(badge);
+                } else if (!editMode) {
+                    const badge = widget.querySelector('.edit-badge');
+                    if (badge) badge.remove();
+                }
+            });
+        }
+        
+        // Theme Toggle
+        let darkMode = false;
+        function toggleTheme() {
+            darkMode = !darkMode;
+            if (darkMode) {
+                document.documentElement.style.setProperty('--ios-bg-primary', '#000000');
+                document.documentElement.style.setProperty('--ios-bg-secondary', '#1C1C1E');
+                document.documentElement.style.setProperty('--ios-bg-tertiary', '#2C2C2E');
+                document.documentElement.style.setProperty('--ios-text-primary', '#FFFFFF');
+            } else {
+                document.documentElement.style.setProperty('--ios-bg-primary', '#FFFFFF');
+                document.documentElement.style.setProperty('--ios-bg-secondary', '#F2F2F7');
+                document.documentElement.style.setProperty('--ios-bg-tertiary', '#FFFFFF');
+                document.documentElement.style.setProperty('--ios-text-primary', '#000000');
+            }
+        }
+        
+        // Category Filter
+        function showCategory(category) {
+            // Update active tab
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Show/Hide sections
+            document.querySelectorAll('.category-section').forEach(section => {
+                if (category === 'all') {
+                    section.style.display = 'block';
+                } else {
+                    section.style.display = section.dataset.category === category ? 'block' : 'none';
+                }
+            });
+        }
+        
+        // Interactive Elements
+        document.querySelectorAll('.list-checkbox').forEach(checkbox => {
+            checkbox.addEventListener('click', function() {
+                this.classList.toggle('checked');
+            });
+        });
+        
+        // Widget Drag and Drop (for widget cards without data-no-drag attribute)
+        let draggedElement = null;
+        
+        document.querySelectorAll('.widget-card').forEach(widget => {
+            // Skip widgets with data-no-drag attribute (like Todo List)
+            if (widget.getAttribute('data-no-drag') === 'true') {
+                widget.draggable = false;
+                return;
+            }
+            
+            widget.draggable = true;
+            
+            widget.addEventListener('dragstart', (e) => {
+                draggedElement = widget;
+                widget.style.opacity = '0.5';
+            });
+            
+            widget.addEventListener('dragend', (e) => {
+                widget.style.opacity = '1';
+            });
+            
+            widget.addEventListener('dragover', (e) => {
+                e.preventDefault();
+            });
+            
+            widget.addEventListener('drop', (e) => {
+                e.preventDefault();
+                if (draggedElement && draggedElement !== widget) {
+                    const parent = widget.parentNode;
+                    const draggedParent = draggedElement.parentNode;
+                    const nextSibling = widget.nextSibling;
+                    
+                    if (nextSibling) {
+                        parent.insertBefore(draggedElement, nextSibling);
+                    } else {
+                        parent.appendChild(draggedElement);
+                    }
+                    
+                    draggedParent.insertBefore(widget, draggedElement.nextSibling);
+                }
+            });
+        });
+        
+        // Todo Item Drag and Drop
+        let draggedTodoItem = null;
+        let dropIndicator = null;
+        
+        function initializeTodoDragAndDrop() {
+            // Create drop indicator
+            dropIndicator = document.createElement('div');
+            dropIndicator.style.cssText = `
+                height: 2px;
+                background: var(--ios-blue);
+                margin: 2px 0;
+                opacity: 0;
+                transition: opacity 0.2s;
+                pointer-events: none;
+            `;
+            
+            document.querySelectorAll('.todo-item').forEach(item => {
+                item.draggable = true;
+                
+                item.addEventListener('dragstart', (e) => {
+                    draggedTodoItem = item;
+                    item.classList.add('dragging');
+                    e.dataTransfer.effectAllowed = 'move';
+                    // Prevent parent widget from being dragged
+                    e.stopPropagation();
+                });
+                
+                item.addEventListener('dragend', (e) => {
+                    item.classList.remove('dragging');
+                    if (dropIndicator.parentNode) {
+                        dropIndicator.parentNode.removeChild(dropIndicator);
+                    }
+                    draggedTodoItem = null;
+                });
+                
+                item.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    if (!draggedTodoItem || draggedTodoItem === item) return;
+                    
+                    const container = item.parentNode;
+                    const rect = item.getBoundingClientRect();
+                    const midpoint = rect.top + rect.height / 2;
+                    
+                    // Show drop indicator
+                    dropIndicator.style.opacity = '1';
+                    
+                    // Determine if we're dropping as a subtask
+                    const dragX = e.clientX;
+                    const itemX = rect.left;
+                    const threshold = 40; // pixels from left to trigger subtask mode
+                    
+                    if (dragX > itemX + threshold) {
+                        // Make it a subtask - add indent
+                        dropIndicator.style.marginLeft = '24px';
+                        dropIndicator.style.background = 'var(--ios-green)';
+                    } else {
+                        // Regular reorder
+                        dropIndicator.style.marginLeft = '0';
+                        dropIndicator.style.background = 'var(--ios-blue)';
+                    }
+                    
+                    // Position indicator above or below item
+                    if (e.clientY < midpoint) {
+                        container.insertBefore(dropIndicator, item);
+                    } else {
+                        container.insertBefore(dropIndicator, item.nextSibling);
+                    }
+                });
+                
+                item.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    if (!draggedTodoItem || draggedTodoItem === item) return;
+                    
+                    const container = item.parentNode;
+                    const rect = item.getBoundingClientRect();
+                    const dragX = e.clientX;
+                    const itemX = rect.left;
+                    const threshold = 40;
+                    
+                    if (dragX > itemX + threshold) {
+                        // Make it a subtask
+                        draggedTodoItem.classList.add('indent-1');
+                        container.insertBefore(draggedTodoItem, item.nextSibling);
+                    } else {
+                        // Regular reorder
+                        const midpoint = rect.top + rect.height / 2;
+                        if (e.clientY < midpoint) {
+                            container.insertBefore(draggedTodoItem, item);
+                        } else {
+                            container.insertBefore(draggedTodoItem, item.nextSibling);
+                        }
+                    }
+                    
+                    // Remove drop indicator
+                    if (dropIndicator.parentNode) {
+                        dropIndicator.parentNode.removeChild(dropIndicator);
+                    }
+                });
+            });
+            
+            // Prevent drop on section containers
+            document.querySelectorAll('.section-content').forEach(section => {
+                section.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                });
+                
+                section.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    if (draggedTodoItem && !section.contains(draggedTodoItem)) {
+                        // Allow dropping into empty sections or at the end
+                        section.appendChild(draggedTodoItem);
+                    }
+                });
+            });
+        }
+        
+        // Initialize todo drag and drop after page load
+        setTimeout(initializeTodoDragAndDrop, 100);
+        
+        // Widget Action Buttons
+        document.querySelectorAll('.widget-action').forEach(action => {
+            action.addEventListener('click', function(e) {
+                e.stopPropagation();
+                // Haptic feedback simulation
+                this.style.transform = 'scale(0.9)';
+                setTimeout(() => {
+                    this.style.transform = 'scale(1.1)';
+                    setTimeout(() => {
+                        this.style.transform = 'scale(1)';
+                    }, 100);
+                }, 100);
+            });
+        });
+        
+        // Quick Actions
+        document.querySelectorAll('.quick-action').forEach(action => {
+            action.addEventListener('click', function() {
+                this.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    this.style.transform = 'scale(1.05)';
+                    alert(`${this.querySelector('.quick-action-label').textContent} 실행됨`);
+                }, 200);
+            });
+        });
+        
+        // Initialize
+        console.log('iOS 스타일 대시보드 위젯 시스템 - 24개 위젯 로드 완료');
+    </script>
+</body>
+</html>
